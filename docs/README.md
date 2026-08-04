@@ -39,6 +39,7 @@ Welcome to the central documentation repository for **SupportSense AI**, an ente
 | 29 | **UI/UX Design System & Wireframes** | [07_UI_UX_DESIGN_SYSTEM.md](./07_UI_UX_DESIGN_SYSTEM.md) |
 | 30 | **Database Design Specification (PostgreSQL)** | [08_DATABASE_DESIGN_SPECIFICATION.md](./08_DATABASE_DESIGN_SPECIFICATION.md) |
 | 31 | **Express Backend Architecture & REST API Guide** | [09_BACKEND_ARCHITECTURE_AND_API_GUIDE.md](./09_BACKEND_ARCHITECTURE_AND_API_GUIDE.md) |
+| 32 | **FastAPI AI Microservice & Gemini Specification** | [10_AI_SERVICE_SPECIFICATION.md](./10_AI_SERVICE_SPECIFICATION.md) |
 
 ---
 
