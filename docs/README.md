@@ -41,6 +41,8 @@ Welcome to the central documentation repository for **SupportSense AI**, an ente
 | 31 | **Express Backend Architecture & REST API Guide** | [09_BACKEND_ARCHITECTURE_AND_API_GUIDE.md](./09_BACKEND_ARCHITECTURE_AND_API_GUIDE.md) |
 | 32 | **FastAPI AI Microservice & Gemini Specification** | [10_AI_SERVICE_SPECIFICATION.md](./10_AI_SERVICE_SPECIFICATION.md) |
 | 33 | **React SPA Frontend Architecture & Component Guide** | [11_FRONTEND_ARCHITECTURE_GUIDE.md](./11_FRONTEND_ARCHITECTURE_GUIDE.md) |
+| 34 | **Testing Strategy & Automated Quality Assurance** | [12_TESTING_AND_QUALITY_ASSURANCE.md](./12_TESTING_AND_QUALITY_ASSURANCE.md) |
+| 35 | **Deployment, CI/CD Pipeline & DevOps Guide** | [13_DEPLOYMENT_AND_DEVOPS_GUIDE.md](./13_DEPLOYMENT_AND_DEVOPS_GUIDE.md) |
 
 ---
 
