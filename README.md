@@ -80,20 +80,20 @@
 +-----------------------------------------------------------------------------------+
 |                               APPLICATION TIER                                    |
 |                       Node.js + Express REST API Server                           |
-|      (Auth, Ticket Routing, Business Logic, Analytics Engine, RBAC)                |
+|      (Auth, Ticket Routing, Business Logic, Analytics Engine, RBAC)               |
 +------------------+----------------------------------+-----------------------------+
                    |                                  |
    SQL Queries     |                                  | HTTP Internal REST
                    v                                  v
-+------------------+-------------------+  +-----------+-----------------------------+
-|          DATABASE TIER               |  |              AI TIER                    |
++------------------+-------------------+  +-----------+---------------------------------+
+|          DATABASE TIER               |  |              AI TIER                        |
 |        PostgreSQL 15 DB              |  |    Python FastAPI AI Microservice           |
 | (Tickets, Users, Messages, Insights) |  | (Google Gemini SDK, Prompt Orchestration)   |
 +--------------------------------------+  +--------------------+------------------------+
                                                                | HTTPS
                                                                v
                                                   +------------+------------------------+
-                                                  |      Google Gemini 1.5 API         |
+                                                  |      Google Gemini 1.5 API          |
                                                   +-------------------------------------+
 ```
 
