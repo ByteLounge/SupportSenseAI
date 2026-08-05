@@ -1,13 +1,13 @@
 /**
  * Enterprise Reusable Component: Button.jsx
- * Strict clean design with 6px border-radius, explicit variants, and no gradient effects.
+ * Accessible, touch-friendly button (minimum 44px height for interactive targets) using design tokens.
  */
 
 import React from 'react';
 
 export default function Button({
   children,
-  variant = 'primary', // 'primary' | 'secondary' | 'danger' | 'ghost'
+  variant = 'primary', // 'primary' | 'secondary' | 'danger' | 'ghost' | 'warning'
   size = 'md',        // 'sm' | 'md' | 'lg'
   type = 'button',
   disabled = false,
@@ -17,22 +17,23 @@ export default function Button({
   icon: Icon,
   ...props
 }) {
-  // Base classes for 6px rounded, standard typography, focus ring
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-[6px] border text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer';
+  // Base classes with 44px minimum height for touch accessibility and focus ring
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-[6px] border text-sm transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-token-accent focus-visible:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer min-h-[44px] sm:min-h-[38px] select-none';
 
   // Size variations
   const sizeClasses = {
-    sm: 'px-2.5 py-1 text-xs gap-1.5 h-7',
-    md: 'px-3.5 py-1.5 text-sm gap-2 h-9',
-    lg: 'px-4 py-2 text-sm gap-2 h-10',
+    sm: 'px-3 py-1.5 text-xs gap-1.5',
+    md: 'px-4 py-2 text-sm gap-2',
+    lg: 'px-5 py-2.5 text-base gap-2',
   };
 
-  // Variant color definitions
+  // Variant color definitions mapped to tokens
   const variantClasses = {
-    primary: 'bg-[#2563EB] text-white border-[#2563EB] hover:bg-[#1D4ED8] hover:border-[#1D4ED8] active:bg-[#1E40AF]',
-    secondary: 'bg-white text-[#111827] border-[#D1D5DB] hover:bg-[#F3F4F6] hover:border-[#9CA3AF] active:bg-[#E5E7EB]',
-    danger: 'bg-[#DC2626] text-white border-[#DC2626] hover:bg-[#B91C1C] hover:border-[#B91C1C] active:bg-[#991B1B]',
-    ghost: 'bg-transparent text-[#374151] border-transparent hover:bg-[#F3F4F6] active:bg-[#E5E7EB]',
+    primary: 'bg-token-accent text-white border-token-accent hover:bg-token-accent-hover active:bg-token-accent-hover',
+    secondary: 'bg-token-card text-token-text-primary border-token-border hover:bg-token-muted active:bg-token-secondary',
+    danger: 'bg-token-error text-white border-token-error hover:opacity-90 active:opacity-100',
+    warning: 'bg-token-warning text-white border-token-warning hover:opacity-90 active:opacity-100',
+    ghost: 'bg-transparent text-token-text-primary border-transparent hover:bg-token-muted active:bg-token-secondary',
   };
 
   return (
