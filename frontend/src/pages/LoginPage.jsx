@@ -1,13 +1,17 @@
 /**
  * Page: LoginPage.jsx
- * Lead Engineer: Member 1 (Frontend Lead)
- * Description: User authentication sign-in page with pre-filled demo accounts.
+ * Enterprise User Sign-In Page.
+ * Clean, flat login layout with quick demo login buttons.
+ * Background: #F8F9FA, Borders: #E5E7EB, Inputs: 6px radius.
  */
 
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import { Bot, ArrowRight, Lock, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import Input from '../components/common/Input';
+import Button from '../components/common/Button';
+import Alert from '../components/common/Alert';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('agent.sarah@supportsense.ai');
@@ -23,7 +27,7 @@ export default function LoginPage() {
     if (res.success) {
       navigate('/');
     } else {
-      setError(res.message);
+      setError(res.message || 'Invalid credentials');
     }
   };
 
@@ -33,80 +37,67 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 text-white relative overflow-hidden">
-      {/* Ambient background glow */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
-
-      <div className="w-full max-w-md glass-panel bg-slate-900/90 border-slate-800 p-8 space-y-6 shadow-2xl relative z-10">
+    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-4 text-[#111827]">
+      <div className="w-full max-w-md bg-white border border-[#E5E7EB] rounded-[6px] shadow-subtle p-6 space-y-5">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-500/30">
-            <Bot className="w-7 h-7" />
+        <div className="text-center space-y-1">
+          <div className="w-10 h-10 bg-[#2563EB] text-white rounded-[6px] font-bold flex items-center justify-center text-sm mx-auto">
+            SS
           </div>
-          <h2 className="font-display font-bold text-2xl">SupportSense AI</h2>
-          <p className="text-sm text-slate-400">Enterprise AI-Assisted Support Platform</p>
+          <h2 className="text-lg font-semibold text-[#111827]">SupportSense AI</h2>
+          <p className="text-xs text-[#6B7280]">Enterprise Support & AI Triage Workspace</p>
         </div>
 
-        {error && (
-          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center">
-            {error}
-          </div>
-        )}
+        {error && <Alert type="error">{error}</Alert>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Email Address</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="agent@supportsense.ai"
-              />
-            </div>
-          </div>
+          <Input
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="agent@supportsense.ai"
+            icon={Mail}
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Password</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            icon={Lock}
+          />
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-lg font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2"
+            variant="primary"
+            loading={loading}
+            className="w-full"
+            icon={ArrowRight}
           >
-            {loading ? 'Authenticating...' : 'Sign In to Workspace'}
-            {!loading && <ArrowRight className="w-4 h-4" />}
-          </button>
+            Sign In to Workspace
+          </Button>
         </form>
 
         {/* Demo Persona Quick Select */}
-        <div className="space-y-2 pt-2 border-t border-slate-800">
-          <div className="text-[11px] text-center text-slate-500 uppercase font-semibold">Quick Demo Login</div>
+        <div className="pt-3 border-t border-[#E5E7EB] space-y-2">
+          <div className="text-[11px] text-center text-[#6B7280] font-semibold uppercase tracking-wider">
+            Quick Demo Persona Sign In
+          </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <button
+              type="button"
               onClick={() => setQuickUser('agent.sarah@supportsense.ai')}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-left transition-colors"
+              className="p-2 bg-[#F8F9FA] hover:bg-[#F3F4F6] border border-[#E5E7EB] rounded-[6px] text-[#111827] text-left font-medium transition-colors"
             >
               👩‍💻 Sarah (Agent)
             </button>
             <button
+              type="button"
               onClick={() => setQuickUser('alex.rivera@customer.com')}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-left transition-colors"
+              className="p-2 bg-[#F8F9FA] hover:bg-[#F3F4F6] border border-[#E5E7EB] rounded-[6px] text-[#111827] text-left font-medium transition-colors"
             >
               👤 Alex (Customer)
             </button>

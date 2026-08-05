@@ -1,31 +1,62 @@
 /**
  * Page: DashboardPage.jsx
- * Lead Engineer: Member 1 (Frontend Lead)
- * Description: Main support workspace displaying ticket queue, AI mood badges, & triage filters.
+ * Enterprise Dashboard View.
+ * Contains four compact statistic cards, Recent Tickets Table, Department Distribution, Recent Activity, and subtle AI Suggestions.
  */
 
 import React, { useState, useEffect } from 'react';
+import MainLayout from '../layouts/MainLayout';
+import Card from '../components/common/Card';
+import Table from '../components/common/Table';
+import Pagination from '../components/common/Pagination';
+import Button from '../components/common/Button';
+import Input from '../components/common/Input';
+import Dropdown from '../components/common/Dropdown';
+import { StatusBadge, PriorityBadge } from '../components/common/Badge';
+import AISuggestionsPanel from '../components/ai/AISuggestionsPanel';
 import { getTicketsApi } from '../services/api';
-import AIMoodBadge from '../components/ai/AIMoodBadge';
-import PriorityBadge from '../components/common/PriorityBadge';
-import LoadingSkeleton from '../components/common/LoadingSkeleton';
-import { Link } from 'react-router-dom';
-import { Search, Filter, AlertCircle, Clock, CheckCircle2, Ticket as TicketIcon } from 'lucide-react';
+import { formatDate } from '../utils/formatters';
+import { useToast } from '../context/ToastContext';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Ticket,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Plus,
+  Search,
+  Filter,
+  ArrowRight,
+  Activity,
+  Building2,
+} from 'lucide-react';
 
 export default function DashboardPage() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [sortColumn, setSortColumn] = useState('created_at');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const fetchTickets = async () => {
     setLoading(true);
     try {
-      const res = await getTicketsApi({ status: statusFilter, priority: priorityFilter, search });
+      const res = await getTicketsApi({
+        status: statusFilter,
+        priority: priorityFilter,
+        search: searchQuery,
+      });
       setTickets(res.data || []);
     } catch (err) {
-      console.error('Failed to load tickets:', err);
+      console.error('Failed to fetch tickets:', err);
+      addToast('Failed to load tickets', 'error');
     } finally {
       setLoading(false);
     }
@@ -40,150 +71,309 @@ export default function DashboardPage() {
     fetchTickets();
   };
 
-  // Metrics calculation
+  // Statistic calculations
   const totalCount = tickets.length;
-  const openCount = tickets.filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS').length;
-  const frustratedCount = tickets.filter(t => t.customer_mood === 'FRUSTRATED').length;
+  const openCount = tickets.filter((t) => t.status === 'OPEN').length;
+  const pendingCount = tickets.filter((t) => t.status === 'IN_PROGRESS' || t.status === 'PENDING').length;
+  const resolvedCount = tickets.filter((t) => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
+
+  // Sorting logic
+  const sortedTickets = [...tickets].sort((a, b) => {
+    let valA = a[sortColumn] || '';
+    let valB = b[sortColumn] || '';
+    if (sortDirection === 'asc') {
+      return valA > valB ? 1 : -1;
+    }
+    return valA < valB ? 1 : -1;
+  });
+
+  const handleSort = (key) => {
+    if (sortColumn === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(key);
+      setSortDirection('asc');
+    }
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedTickets.length / pageSize) || 1;
+  const paginatedTickets = sortedTickets.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // Table Column Definitions (Resembling Jira / GitHub Issues)
+  const columns = [
+    {
+      key: 'ticket_number',
+      label: 'ID',
+      width: '100px',
+      sortable: true,
+      render: (val, row) => (
+        <span className="font-mono text-xs font-semibold text-[#2563EB]">
+          {val || row.id}
+        </span>
+      ),
+    },
+    {
+      key: 'title',
+      label: 'Subject / Title',
+      sortable: true,
+      render: (val, row) => (
+        <div>
+          <Link
+            to={`/tickets/${row.id}`}
+            className="font-medium text-[#111827] hover:text-[#2563EB] transition-colors"
+          >
+            {val}
+          </Link>
+          <div className="text-xs text-[#6B7280] mt-0.5">
+            Customer: {row.customer_name} ({row.customer_email})
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      width: '120px',
+      sortable: true,
+      render: (val) => <StatusBadge status={val} />,
+    },
+    {
+      key: 'priority',
+      label: 'Priority',
+      width: '100px',
+      sortable: true,
+      render: (val) => <PriorityBadge priority={val} />,
+    },
+    {
+      key: 'assigned_department',
+      label: 'Assigned Dept',
+      width: '160px',
+      sortable: true,
+      render: (val) => <span className="text-xs text-[#374151]">{val || 'Unassigned'}</span>,
+    },
+    {
+      key: 'created_at',
+      label: 'Created Date',
+      width: '160px',
+      sortable: true,
+      render: (val) => <span className="text-xs text-[#6B7280]">{formatDate(val)}</span>,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '90px',
+      align: 'right',
+      render: (_, row) => (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => navigate(`/tickets/${row.id}`)}
+        >
+          View
+        </Button>
+      ),
+    },
+  ];
+
+  // Department distribution calculation
+  const deptCounts = tickets.reduce((acc, t) => {
+    const dept = t.assigned_department || 'Unassigned';
+    acc[dept] = (acc[dept] || 0) + 1;
+    return acc;
+  }, {});
 
   return (
-    <div className="space-y-6">
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-5 glass-panel flex items-center justify-between border-l-4 border-l-indigo-500">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Active Queue</div>
-            <div className="text-3xl font-bold font-display text-slate-900 dark:text-white mt-1">{totalCount}</div>
-          </div>
-          <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-            <TicketIcon className="w-6 h-6" />
-          </div>
+    <MainLayout
+      title="Support Workspace Dashboard"
+      subtitle="Overview of active ticket queue, response SLA metrics, and AI recommendations."
+      actions={
+        <Button variant="primary" icon={Plus} onClick={() => navigate('/tickets/new')}>
+          Submit New Ticket
+        </Button>
+      }
+    >
+      <div className="space-y-5">
+        {/* Four Compact Statistic Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card noPadding className="p-4 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-medium text-[#6B7280]">Total Tickets</div>
+              <div className="text-xl font-semibold text-[#111827] mt-1">{totalCount}</div>
+            </div>
+            <div className="p-2 bg-[#F8F9FA] border border-[#E5E7EB] rounded-[6px] text-[#2563EB]">
+              <Ticket className="w-5 h-5" />
+            </div>
+          </Card>
+
+          <Card noPadding className="p-4 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-medium text-[#6B7280]">Open Tickets</div>
+              <div className="text-xl font-semibold text-[#2563EB] mt-1">{openCount}</div>
+            </div>
+            <div className="p-2 bg-[#EFF6FF] border border-[#BFDBFE] rounded-[6px] text-[#2563EB]">
+              <Clock className="w-5 h-5" />
+            </div>
+          </Card>
+
+          <Card noPadding className="p-4 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-medium text-[#6B7280]">Pending Action</div>
+              <div className="text-xl font-semibold text-[#D97706] mt-1">{pendingCount}</div>
+            </div>
+            <div className="p-2 bg-[#FFFBEB] border border-[#FDE68A] rounded-[6px] text-[#D97706]">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+          </Card>
+
+          <Card noPadding className="p-4 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-medium text-[#6B7280]">Resolved Tickets</div>
+              <div className="text-xl font-semibold text-[#16A34A] mt-1">{resolvedCount}</div>
+            </div>
+            <div className="p-2 bg-[#F0FDF4] border border-[#BBF7D0] rounded-[6px] text-[#16A34A]">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+          </Card>
         </div>
 
-        <div className="p-5 glass-panel flex items-center justify-between border-l-4 border-l-amber-500">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Needs Attention</div>
-            <div className="text-3xl font-bold font-display text-amber-600 dark:text-amber-400 mt-1">{openCount}</div>
-          </div>
-          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-            <Clock className="w-6 h-6" />
-          </div>
-        </div>
+        {/* Filters & Search Toolbar */}
+        <Card noPadding className="p-3">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+            <form onSubmit={handleSearchSubmit} className="w-full md:w-80">
+              <Input
+                placeholder="Search ticket subject, ID, or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                icon={Search}
+              />
+            </form>
 
-        <div className="p-5 glass-panel flex items-center justify-between border-l-4 border-l-rose-500">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Frustrated Customers</div>
-            <div className="text-3xl font-bold font-display text-rose-600 dark:text-rose-400 mt-1">{frustratedCount}</div>
-          </div>
-          <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
-            <AlertCircle className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
-
-      {/* Filter & Search Bar */}
-      <div className="glass-panel p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search tickets by subject, ID, customer..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </form>
-
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold uppercase">
-            <Filter className="w-3.5 h-3.5" /> Filters:
-          </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium focus:outline-none"
-          >
-            <option value="">All Statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="RESOLVED">Resolved</option>
-          </select>
-
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium focus:outline-none"
-          >
-            <option value="">All Priorities</option>
-            <option value="URGENT">Urgent</option>
-            <option value="HIGH">High</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="LOW">Low</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Ticket List Queue */}
-      {loading ? (
-        <LoadingSkeleton type="list" />
-      ) : tickets.length === 0 ? (
-        <div className="p-12 glass-panel text-center space-y-3">
-          <TicketIcon className="w-10 h-10 text-slate-400 mx-auto" />
-          <h3 className="font-display font-semibold text-lg">No tickets found</h3>
-          <p className="text-sm text-slate-500">Try adjusting your search terms or filters.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {tickets.map((ticket) => (
-            <Link
-              key={ticket.id}
-              to={`/tickets/${ticket.id}`}
-              className="p-5 glass-panel flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-indigo-500/50 hover:shadow-md transition-all group"
-            >
-              <div className="space-y-1.5 flex-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded">
-                    {ticket.ticket_number}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    {ticket.category}
-                  </span>
-                  <PriorityBadge priority={ticket.priority} />
-                  <AIMoodBadge mood={ticket.customer_mood} confidence={ticket.mood_confidence} />
-                </div>
-                <h4 className="font-display font-semibold text-base text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  {ticket.title}
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-                  Customer: <strong className="text-slate-700 dark:text-slate-300">{ticket.customer_name}</strong> ({ticket.customer_email})
-                </p>
+            <div className="flex items-center gap-3 w-full md:w-auto text-xs">
+              <div className="flex items-center gap-1 text-[#6B7280] font-medium">
+                <Filter className="w-3.5 h-3.5" /> Filter:
               </div>
+              <Dropdown
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                options={[
+                  { label: 'All Statuses', value: '' },
+                  { label: 'Open', value: 'OPEN' },
+                  { label: 'In Progress', value: 'IN_PROGRESS' },
+                  { label: 'Resolved', value: 'RESOLVED' },
+                ]}
+                size="sm"
+              />
+              <Dropdown
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+                options={[
+                  { label: 'All Priorities', value: '' },
+                  { label: 'Urgent', value: 'URGENT' },
+                  { label: 'High', value: 'HIGH' },
+                  { label: 'Medium', value: 'MEDIUM' },
+                  { label: 'Low', value: 'LOW' },
+                ]}
+                size="sm"
+              />
+            </div>
+          </div>
+        </Card>
 
-              <div className="flex items-center gap-4 shrink-0">
-                {ticket.predicted_resolution_time && (
-                  <div className="text-right hidden sm:block">
-                    <div className="text-[10px] uppercase font-semibold text-slate-400">Est. Resolution</div>
-                    <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      {ticket.predicted_resolution_time}
+        {/* Main Content Grid: Recent Tickets Table + Sidebar Panels */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Left Column: Tickets Table (Spans 2 cols) */}
+          <div className="lg:col-span-2 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#111827]">Active Ticket Queue</h3>
+              <Link to="/tickets" className="text-xs text-[#2563EB] hover:underline font-medium inline-flex items-center gap-1">
+                View All Tickets <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            <Table
+              columns={columns}
+              data={paginatedTickets}
+              loading={loading}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              keyField="id"
+            />
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={sortedTickets.length}
+              onPageChange={(page) => setCurrentPage(page)}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+
+          {/* Right Column: AI Suggestions Panel + Department Distribution & Recent Activity */}
+          <div className="space-y-4">
+            {/* Subtle AI Recommendation */}
+            {tickets.length > 0 && (
+              <AISuggestionsPanel
+                ticket={tickets[0]}
+                onApplyReply={(reply) => {
+                  addToast('AI suggested reply copied to active ticket response', 'success');
+                  navigate(`/tickets/${tickets[0].id}`);
+                }}
+                onEditReply={() => navigate(`/tickets/${tickets[0].id}`)}
+              />
+            )}
+
+            {/* Department Breakdown Panel */}
+            <Card title="Department Distribution">
+              <div className="space-y-2 text-xs">
+                {Object.keys(deptCounts).length === 0 ? (
+                  <p className="text-[#6B7280]">No department data available.</p>
+                ) : (
+                  Object.entries(deptCounts).map(([dept, count]) => (
+                    <div key={dept} className="flex items-center justify-between p-2 bg-[#F8F9FA] border border-[#E5E7EB] rounded-[4px]">
+                      <span className="font-medium text-[#111827] flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-[#6B7280]" />
+                        {dept}
+                      </span>
+                      <span className="font-mono bg-white px-2 py-0.5 border border-[#E5E7EB] rounded-[4px] font-semibold text-[#2563EB]">
+                        {count} {count === 1 ? 'ticket' : 'tickets'}
+                      </span>
                     </div>
-                  </div>
+                  ))
                 )}
-
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    ticket.status === 'RESOLVED'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 border border-emerald-200'
-                      : ticket.status === 'IN_PROGRESS'
-                      ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 border border-amber-200'
-                      : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 border border-rose-200'
-                  }`}
-                >
-                  {ticket.status}
-                </span>
               </div>
-            </Link>
-          ))}
+            </Card>
+
+            {/* Recent Audit Activity */}
+            <Card title="Recent Activity">
+              <div className="space-y-3 text-xs">
+                <div className="flex items-start gap-2.5">
+                  <Activity className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-medium text-[#111827]">Ticket TCK-1001 status changed</div>
+                    <div className="text-[11px] text-[#6B7280]">Updated to OPEN by Sarah Agent</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Activity className="w-4 h-4 text-[#16A34A] shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-medium text-[#111827]">Ticket TCK-1003 resolved</div>
+                    <div className="text-[11px] text-[#6B7280]">Resolved by Identity & Access Team</div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    </MainLayout>
   );
 }
