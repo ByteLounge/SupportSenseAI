@@ -1,6 +1,6 @@
 /**
  * Enterprise Reusable Component: Badge.jsx
- * Standard rectangular badge (4px radius) for ticket status, priority, and category labels.
+ * Standard rectangular badge using design tokens for light and dark modes.
  */
 
 import React from 'react';
@@ -34,11 +34,11 @@ export default function Badge({
   className = '',
 }) {
   const variants = {
-    default: 'bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]',
-    primary: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
-    success: 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]',
-    warning: 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]',
-    danger: 'bg-[#FEF2F2] text-[#B91C1C] border-[#FCA5A5]',
+    default: 'bg-token-muted text-token-text-primary border-token-border',
+    primary: 'bg-blue-500/10 text-token-accent border-blue-500/30',
+    success: 'bg-green-500/10 text-token-success border-green-500/30',
+    warning: 'bg-amber-500/10 text-token-warning border-amber-500/30',
+    danger: 'bg-red-500/10 text-token-error border-red-500/30',
   };
 
   const sizes = {

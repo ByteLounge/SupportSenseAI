@@ -8,19 +8,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Enterprise Neutral Palette
-        app: {
-          bg: '#FFFFFF',
-          secondary: '#F8F9FA',
-          sidebar: '#F5F5F5',
-          border: '#E5E7EB',
-          'text-primary': '#111827',
-          'text-secondary': '#6B7280',
-          accent: '#2563EB',
-          'accent-hover': '#1D4ED8',
-          success: '#16A34A',
-          warning: '#D97706',
-          error: '#DC2626',
+        // Design Token Semantic System mapped to CSS Variables
+        token: {
+          bg: 'var(--color-bg-primary)',
+          secondary: 'var(--color-bg-secondary)',
+          sidebar: 'var(--color-bg-sidebar)',
+          card: 'var(--color-bg-card)',
+          muted: 'var(--color-bg-muted)',
+          border: 'var(--color-border)',
+          'text-primary': 'var(--color-text-primary)',
+          'text-secondary': 'var(--color-text-secondary)',
+          'text-muted': 'var(--color-text-muted)',
+          accent: 'var(--color-accent)',
+          'accent-hover': 'var(--color-accent-hover)',
+          success: 'var(--color-success)',
+          warning: 'var(--color-warning)',
+          error: 'var(--color-error)',
         },
       },
       fontSize: {
@@ -35,6 +38,9 @@ export default {
         DEFAULT: '6px',
         md: '6px',
         lg: '6px',
+      },
+      minHeight: {
+        touch: '44px',
       },
       boxShadow: {
         subtle: '0 1px 2px 0 rgba(0, 0, 0, 0.03)',

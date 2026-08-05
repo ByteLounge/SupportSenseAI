@@ -1,6 +1,6 @@
 /**
  * Enterprise Reusable Component: Dropdown.jsx
- * Clean HTML select component with standard 6px radius and focus state.
+ * Select dropdown component using design tokens and touch height limits.
  */
 
 import React from 'react';
@@ -23,16 +23,16 @@ export default function Dropdown({
   const selectId = id || name;
 
   const sizeClasses = {
-    sm: 'py-1 px-2.5 text-xs h-7',
-    md: 'py-1.5 px-3 text-sm h-9',
+    sm: 'py-1.5 px-2.5 text-xs min-h-[38px]',
+    md: 'py-2 px-3 text-sm min-h-[44px]',
   };
 
   return (
     <div className={`space-y-1 text-left ${className}`}>
       {label && (
-        <label htmlFor={selectId} className="block text-xs font-medium text-[#374151]">
+        <label htmlFor={selectId} className="block text-xs font-medium text-token-text-primary">
           {label}
-          {required && <span className="text-[#DC2626] ml-1" aria-hidden="true">*</span>}
+          {required && <span className="text-token-error ml-1" aria-hidden="true">*</span>}
         </label>
       )}
       <select
@@ -42,9 +42,9 @@ export default function Dropdown({
         onChange={onChange}
         required={required}
         disabled={disabled}
-        className={`w-full bg-white border ${
-          error ? 'border-[#DC2626] focus:ring-[#DC2626]' : 'border-[#D1D5DB] focus:border-[#2563EB] focus:ring-[#2563EB]'
-        } text-[#111827] rounded-[6px] outline-none focus:ring-1 transition-colors duration-150 ${sizeClasses[size] || sizeClasses.md} disabled:bg-[#F3F4F6] disabled:cursor-not-allowed`}
+        className={`w-full bg-token-card border ${
+          error ? 'border-token-error focus:ring-token-error' : 'border-token-border focus:border-token-accent focus:ring-token-accent'
+        } text-token-text-primary rounded-[6px] outline-none focus:ring-1 transition-colors duration-150 ${sizeClasses[size] || sizeClasses.md} disabled:bg-token-muted disabled:cursor-not-allowed`}
         {...props}
       >
         {placeholder && (
@@ -62,7 +62,7 @@ export default function Dropdown({
           );
         })}
       </select>
-      {error && <p className="text-xs text-[#DC2626] mt-1">{error}</p>}
+      {error && <p className="text-xs text-token-error mt-1">{error}</p>}
     </div>
   );
 }
