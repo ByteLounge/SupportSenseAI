@@ -9,6 +9,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getTicketByIdApi, postMessageApi, updateTicketStatusApi, verifyResponseApi } from '../services/api';
 import AIAssistDrawer from '../components/ai/AIAssistDrawer';
 import QualityCheckModal from '../components/ai/QualityCheckModal';
+import PriorityBadge from '../components/common/PriorityBadge';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
 import { useAuth } from '../context/AuthContext';
 import { Send, Sparkles, Shield, ArrowLeft, Lock } from 'lucide-react';
@@ -134,9 +135,7 @@ export default function TicketDetailPage() {
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                 {ticket.category}
               </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 dark:bg-rose-950/50 text-rose-600 border border-rose-200">
-                {ticket.priority} PRIORITY
-              </span>
+              <PriorityBadge priority={ticket.priority} />
             </div>
             <h2 className="font-display font-bold text-xl text-slate-900 dark:text-white">
               {ticket.title}

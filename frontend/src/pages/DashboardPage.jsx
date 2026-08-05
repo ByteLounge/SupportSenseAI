@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { getTicketsApi } from '../services/api';
 import AIMoodBadge from '../components/ai/AIMoodBadge';
+import PriorityBadge from '../components/common/PriorityBadge';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
 import { Link } from 'react-router-dom';
 import { Search, Filter, AlertCircle, Clock, CheckCircle2, Ticket as TicketIcon } from 'lucide-react';
@@ -146,6 +147,7 @@ export default function DashboardPage() {
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     {ticket.category}
                   </span>
+                  <PriorityBadge priority={ticket.priority} />
                   <AIMoodBadge mood={ticket.customer_mood} confidence={ticket.mood_confidence} />
                 </div>
                 <h4 className="font-display font-semibold text-base text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
