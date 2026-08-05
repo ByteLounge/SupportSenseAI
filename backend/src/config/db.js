@@ -10,16 +10,23 @@ const env = require('./env');
 /**
  * Configure PostgreSQL Pool connection options
  */
-const pool = new Pool({
-  host: env.DB_HOST,
-  port: env.DB_PORT,
-  database: env.DB_NAME,
-  user: env.DB_USER,
-  password: env.DB_PASSWORD,
-  max: 20, // Maximum pool connections
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000 // Return error after 2 seconds if connection fails
-});
+const poolConfig = process.env.DATABASE_URL
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    }
+  : {
+      host: env.DB_HOST,
+      port: env.DB_PORT,
+      database: env.DB_NAME,
+      user: env.DB_USER,
+      password: env.DB_PASSWORD,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000
+    };
+
+const pool = new Pool(poolConfig);
 
 /**
  * Execute SQL query with parameter binding.

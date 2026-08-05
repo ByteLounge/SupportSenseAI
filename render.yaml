@@ -1,0 +1,74 @@
+# ============================================================================
+# SupportSense AI — Render Infrastructure as Code Blueprint
+# File: render.yaml
+# Description: Automated 1-Click Multi-Service Deployment Specification for Render.com
+# ============================================================================
+
+databases:
+  - name: supportsense-db
+    databaseName: supportsense_db
+    user: postgres
+    plan: free
+
+services:
+  # --------------------------------------------------------------------------
+  # 1. Python FastAPI AI Microservice (Google Gemini)
+  # --------------------------------------------------------------------------
+  - type: web
+    name: supportsense-ai-service
+    env: docker
+    dockerfilePath: ./ai-service/Dockerfile
+    dockerContext: ./ai-service
+    plan: free
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false # Set via Render Dashboard Environment Variables
+      - key: GEMINI_MODEL_NAME
+        value: gemini-1.5-flash
+
+  # --------------------------------------------------------------------------
+  # 2. Node.js Express Backend API
+  # --------------------------------------------------------------------------
+  - type: web
+    name: supportsense-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: supportsense-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AI_SERVICE_URL
+        fromService:
+          type: web
+          name: supportsense-ai-service
+          property: host
+
+  # --------------------------------------------------------------------------
+  # 3. React SPA Frontend
+  # --------------------------------------------------------------------------
+  - type: web
+    name: supportsense-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    plan: free
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: supportsense-backend
+          property: url
+          append: /api/v1
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
