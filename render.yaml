@@ -53,14 +53,13 @@ services:
           property: host
 
   # --------------------------------------------------------------------------
-  # 3. React SPA Frontend
+  # 3. React SPA Frontend (Static Site)
   # --------------------------------------------------------------------------
   - type: web
     name: supportsense-frontend
     env: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
-    plan: free
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
