@@ -7,7 +7,7 @@
 databases:
   - name: supportsense-db
     databaseName: supportsense_db
-    user: postgres
+    user: supportsense_user
     plan: free
 
 services:
@@ -66,7 +66,7 @@ services:
         fromService:
           type: web
           name: supportsense-backend
-          property: url
+          property: host
           append: /api/v1
     routes:
       - type: rewrite
