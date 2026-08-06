@@ -1,6 +1,6 @@
 /**
  * Main Application Routing Shell: App.jsx
- * Enterprise React Router configuration with Route Code-Splitting (React.lazy), Protected Routes, and Toast Provider.
+ * Simplified React Router configuration with essential screens: Dashboard, Tickets, Departments, Profile.
  */
 
 import React, { lazy, Suspense } from 'react';
@@ -9,17 +9,14 @@ import { useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Loader from './components/common/Loader';
 
-// Lazy-loaded routes for optimal bundle code-splitting and performance
+// Lazy-loaded essential routes for optimal performance
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const TicketsPage = lazy(() => import('./pages/TicketsPage'));
 const TicketDetailPage = lazy(() => import('./pages/TicketDetailPage'));
 const CreateTicketPage = lazy(() => import('./pages/CreateTicketPage'));
 const DepartmentsPage = lazy(() => import('./pages/DepartmentsPage'));
-const KnowledgeBasePage = lazy(() => import('./pages/KnowledgeBasePage'));
-const UsersPage = lazy(() => import('./pages/UsersPage'));
-const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function ProtectedRoute({ children }) {
@@ -36,14 +33,14 @@ export default function App() {
       <Suspense
         fallback={
           <div className="min-h-screen bg-token-secondary flex items-center justify-center p-6">
-            <Loader size="lg" label="Loading SupportSense Workspace..." />
+            <Loader size="lg" label="Loading SupportSense..." />
           </div>
         }
       >
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected Application Routes */}
+          {/* Protected Essential Routes */}
           <Route
             path="/"
             element={
@@ -85,42 +82,10 @@ export default function App() {
             }
           />
           <Route
-            path="/knowledge-base"
+            path="/profile"
             element={
               <ProtectedRoute>
-                <KnowledgeBasePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/insights"
-            element={
-              <ProtectedRoute>
-                <KnowledgeBasePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <ProtectedRoute>
-                <UsersPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute>
-                <AnalyticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <SettingsPage />
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

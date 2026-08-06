@@ -1,6 +1,7 @@
 /**
- * Enterprise Reusable Component: Sidebar.jsx
- * Responsive Left Navigation Sidebar with local storage collapse memory and mobile drawer support.
+ * Component: Sidebar.jsx
+ * Simple, clean left navigation bar.
+ * Contains only essential links: Dashboard, Tickets, Departments, Profile.
  */
 
 import React from 'react';
@@ -9,11 +10,7 @@ import {
   LayoutDashboard,
   Ticket,
   Building2,
-  BookOpen,
-  Users,
-  BarChart3,
-  Settings,
-  ShieldCheck,
+  User,
   ChevronLeft,
   ChevronRight,
   X,
@@ -32,10 +29,7 @@ export default function Sidebar({
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'Tickets', path: '/tickets', icon: Ticket },
     { label: 'Departments', path: '/departments', icon: Building2 },
-    { label: 'Knowledge Base', path: '/knowledge-base', icon: BookOpen },
-    { label: 'Users', path: '/users', icon: Users },
-    { label: 'Analytics', path: '/analytics', icon: BarChart3 },
-    { label: 'Settings', path: '/settings', icon: Settings },
+    { label: 'Profile', path: '/profile', icon: User },
   ];
 
   const sidebarContent = (
@@ -44,13 +38,13 @@ export default function Sidebar({
         {/* Brand Header */}
         <div className="h-14 px-4 flex items-center justify-between border-b border-token-border bg-token-card">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-7 h-7 bg-token-accent text-white rounded-[4px] flex items-center justify-center font-bold text-xs shrink-0">
+            <div className="w-7 h-7 bg-token-accent text-white rounded-[6px] flex items-center justify-center font-bold text-xs shrink-0">
               SS
             </div>
             {!isCollapsed && (
               <div className="truncate">
                 <div className="font-semibold text-xs text-token-text-primary leading-none">SupportSense AI</div>
-                <div className="text-[10px] text-token-text-secondary leading-tight mt-0.5">Enterprise Operations</div>
+                <div className="text-[10px] text-token-text-secondary leading-tight mt-0.5">Support Dashboard</div>
               </div>
             )}
           </div>
@@ -80,12 +74,7 @@ export default function Sidebar({
         </div>
 
         {/* Navigation List */}
-        <nav className="p-2 space-y-0.5" aria-label="Main Navigation">
-          {!isCollapsed && (
-            <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-token-text-muted">
-              Workspace
-            </div>
-          )}
+        <nav className="p-2 space-y-1" aria-label="Main Navigation">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -95,7 +84,7 @@ export default function Sidebar({
                 end={item.path === '/'}
                 onClick={() => onCloseMobile && onCloseMobile()}
                 className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-2.5 py-2 rounded-[6px] text-xs font-medium transition-colors duration-150 min-h-[40px] ${
+                  `flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-xs font-medium transition-colors min-h-[40px] ${
                     isActive
                       ? 'bg-token-accent text-white font-semibold'
                       : 'text-token-text-primary hover:bg-token-muted'
@@ -111,14 +100,11 @@ export default function Sidebar({
         </nav>
       </div>
 
-      {/* Footer Status Banner */}
-      {!isCollapsed && (
-        <div className="p-3 m-2 bg-token-card border border-token-border rounded-[6px] text-[11px] text-token-text-secondary">
-          <div className="font-semibold text-token-text-primary flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-token-success" />
-            Enterprise Tier
-          </div>
-          <div className="mt-0.5 text-[10px] text-token-text-muted">AI Triage Active</div>
+      {/* Simplified Footer User Badge */}
+      {user && !isCollapsed && (
+        <div className="p-3 m-2 bg-token-card border border-token-border rounded-[6px] text-xs text-token-text-secondary">
+          <div className="font-semibold text-token-text-primary truncate">{user.name}</div>
+          <div className="text-[11px] text-token-text-muted capitalize">{user.role || 'Agent'}</div>
         </div>
       )}
     </div>
@@ -138,14 +124,11 @@ export default function Sidebar({
       {/* Mobile Slide-Out Drawer Overlay */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
-          {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/50 transition-opacity"
             onClick={onCloseMobile}
             aria-hidden="true"
           />
-
-          {/* Drawer Slide Panel */}
           <div className="relative w-64 max-w-[80vw] h-full bg-token-sidebar shadow-lg z-10 animate-slide-in">
             {sidebarContent}
           </div>
