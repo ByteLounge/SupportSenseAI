@@ -59,8 +59,8 @@ SupportSense AI uses a multi-container Docker deployment:
 
 | Risk ID | Identified Risk | Impact | Likelihood | Mitigation Strategy |
 |---|---|---|---|---|
-| **R-01** | Gemini API Rate Limits or Outage | High | Medium | Implement retry logic with exponential backoff and a clean fallback UI flagging tickets as "Pending AI Triage" without blocking manual support flow. |
-| **R-02** | Hallucinated AI Responses | High | Low | Enforce strict Pydantic JSON schemas with required `confidence_score`. Disallow autonomous message sending (HITL model). |
+| **R-01** | Gemini API Rate Limits or Microservice Timeout | High | Medium | Enforce `AbortSignal.timeout(5000)` on HTTP requests with graceful fallback JSON payloads so manual support workflow is never blocked. |
+| **R-02** | Privilege Escalation via Registration | High | Low | Enforce strict server-side role sanitization forcing public self-signups to `CUSTOMER`. |
 | **R-03** | Sensitive Customer PII Leakage | High | Low | Strip credit card patterns, social security numbers, and auth credentials before passing raw text to external AI endpoints. |
 | **R-04** | Database Query Bottlenecks under Load | Medium | Medium | Apply strict SQL indexes on `status`, `assigned_agent_id`, `created_at`, and utilize connection pooling. |
 

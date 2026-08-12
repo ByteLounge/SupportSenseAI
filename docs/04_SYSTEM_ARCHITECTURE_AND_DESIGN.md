@@ -212,3 +212,12 @@ sequenceDiagram
 - `POST /api/v1/ai/verify-response`: Evaluates agent draft reply for professionalism, empathy, clarity, actionability.
 - `POST /api/v1/ai/summarize-timeline`: Generates 5-6 bullet history summary for reopened/reassigned tickets.
 - `POST /api/v1/ai/generate-weekly-insights`: Aggregates weekly ticket logs to produce top issues and FAQ recommendations.
+
+---
+
+## 20. Security Architecture & Resiliency Specifications
+
+1. **Role Sanitization (Anti-Privilege Escalation)**: Public registration at `/api/v1/auth/register` explicitly sanitizes input role parameters, forcing self-registered users to `CUSTOMER`.
+2. **CORS Origin Filtering**: Express and FastAPI enforce explicit origin whitelisting (`ALLOWED_ORIGINS`) to protect Bearer JWT headers and eliminate wildcard `*` credential risks.
+3. **Microservice Timeout Resiliency**: All inter-service REST calls from Express backend to FastAPI microservice enforce 5-second HTTP request timeouts using `AbortSignal.timeout(5000)` with graceful HITL fallbacks.
+4. **Production Observability**: Configured for structured JSON log formatting when `NODE_ENV=production` alongside detailed system uptime and memory health telemetry `/health`.

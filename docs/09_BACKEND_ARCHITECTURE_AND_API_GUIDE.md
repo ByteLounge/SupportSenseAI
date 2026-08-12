@@ -29,10 +29,14 @@ The SupportSense AI backend is built using Node.js and Express 4.x following str
 
 ## 2. Security & Middleware Configuration
 
-1. **JWT Authentication & RBAC (`authMiddleware.js`)**: Enforces secure Bearer token verification and restricts specific operations (e.g. status updates, checklist toggles) to `AGENT` and `ADMIN` roles.
-2. **Security Headers (`Helmet.js`)**: Enforces HTTP security headers to protect against clickjacking, MIME sniffing, and cross-site scripting (XSS).
-3. **Rate Limiting (`rateLimiter.js`)**: Enforces IP-based request rate limiting (100 req/15min for API endpoints, 10 req/15min for login/registration).
-4. **Global Error Handling (`errorHandler.js`)**: Captures unhandled exceptions and returns standardized error payloads.
+1. **JWT Authentication & RBAC (`authMiddleware.js`)**: Enforces secure Bearer token verification and restricts agent/admin endpoints.
+2. **Public Self-Registration Role Guard (`authController.js`)**: Sanitizes registration input to strictly enforce `'CUSTOMER'` role on public signups, preventing privilege escalation.
+3. **CORS Origin Whitelisting (`app.js`)**: Enforces explicit domain origin validation via `env.ALLOWED_ORIGINS` to protect credentialed requests.
+4. **Microservice Request Timeout Guard (`aiService.js`)**: Integrates `AbortSignal.timeout(5000)` on all HTTP calls to Python FastAPI service to prevent Node.js thread hanging.
+5. **Security Headers (`Helmet.js`)**: Enforces HTTP security headers against clickjacking, MIME sniffing, and XSS.
+6. **Rate Limiting (`rateLimiter.js`)**: Enforces IP-based rate limiting (100 req/15min for API endpoints, 10 req/15min for auth).
+7. **Production Structured Logging (`logger.js`)**: Emits structured JSON log formatting when `NODE_ENV=production` for Datadog / ELK ingestion.
+8. **Global Error Handling (`errorHandler.js`)**: Captures unhandled exceptions and returns standardized JSON error payloads.
 
 ---
 
