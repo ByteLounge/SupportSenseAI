@@ -11,6 +11,7 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Dropdown from '../components/common/Dropdown';
 import Card from '../components/common/Card';
+import AIMoodBadge from '../components/ai/AIMoodBadge';
 import { StatusBadge, PriorityBadge } from '../components/common/Badge';
 import { getTicketsApi } from '../services/api';
 import { formatDate } from '../utils/formatters';
@@ -102,6 +103,17 @@ export default function TicketsPage() {
       label: 'Priority',
       width: '100px',
       render: (val) => <PriorityBadge priority={val} />,
+    },
+    {
+      key: 'customer_mood',
+      label: 'AI Mood',
+      width: '140px',
+      render: (_, row) => (
+        <AIMoodBadge
+          mood={row.customer_mood || (row.ai_metadata && row.ai_metadata.customer_mood) || 'NEUTRAL'}
+          confidence={row.mood_confidence || (row.ai_metadata && row.ai_metadata.mood_confidence) || 0.85}
+        />
+      ),
     },
     {
       key: 'created_at',

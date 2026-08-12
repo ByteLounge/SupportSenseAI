@@ -11,6 +11,7 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Textarea from '../components/common/Textarea';
 import Dropdown from '../components/common/Dropdown';
+import AIMoodBadge from '../components/ai/AIMoodBadge';
 import { StatusBadge, PriorityBadge } from '../components/common/Badge';
 import Skeleton from '../components/common/Skeleton';
 import { useAuth } from '../context/AuthContext';
@@ -148,10 +149,14 @@ export default function TicketDetailPage() {
           <Card title="Ticket Information">
             <div className="space-y-4 text-xs">
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-token-border">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge status={ticket.status} />
                   <PriorityBadge priority={ticket.priority} />
-                  <span className="font-semibold text-token-text-primary">{ticket.category}</span>
+                  <AIMoodBadge
+                    mood={ticket.customer_mood || ai.customer_mood || 'NEUTRAL'}
+                    confidence={ticket.mood_confidence || ai.mood_confidence || 0.85}
+                  />
+                  <span className="font-semibold text-token-text-primary text-xs ml-1">{ticket.category}</span>
                 </div>
                 <div className="text-token-text-secondary">
                   Created {formatDate(ticket.created_at)}
@@ -277,8 +282,16 @@ export default function TicketDetailPage() {
             }
           >
             <div className="space-y-4 text-xs">
-              {/* Category & Department */}
+              {/* Customer Mood & Category & Department */}
               <div className="space-y-2">
+                <div className="p-2.5 bg-token-secondary border border-token-border rounded-[4px] flex items-center justify-between">
+                  <span className="text-token-text-secondary text-[11px]">Customer Mood</span>
+                  <AIMoodBadge
+                    mood={ticket.customer_mood || ai.customer_mood || 'NEUTRAL'}
+                    confidence={ticket.mood_confidence || ai.mood_confidence || 0.85}
+                  />
+                </div>
+
                 <div className="p-2.5 bg-token-secondary border border-token-border rounded-[4px] space-y-0.5">
                   <span className="text-token-text-secondary text-[11px] block">Suggested Category</span>
                   <span className="font-semibold text-token-text-primary">{suggestedCategory}</span>
