@@ -15,7 +15,7 @@ describe('Backend Auth Unit Tests', () => {
     const hash = await bcrypt.hash(rawPassword, salt);
 
     expect(hash).not.toEqual(rawPassword);
-    expect(hash).toMatch(/^\$2b\$10\$/); // Valid bcrypt salt prefix
+    expect(hash).toMatch(/^\$2[ably]\$10\$/); // Valid bcrypt salt prefix ($2a$, $2b$, $2y$)
 
     const match = await bcrypt.compare(rawPassword, hash);
     expect(match).toBe(true);

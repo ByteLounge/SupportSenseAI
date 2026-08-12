@@ -17,9 +17,21 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
+const env = require('./config/env');
+
 // 1. Security & CORS Middlewares
 app.use(helmet());
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
+    if (!origin || env.ALLOWED_ORIGINS.includes(origin) || env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy does not allow access from origin ${origin}`));
+    }
+  },
+  credentials: true
+}));
 
 // 2. Body Parser Middleware
 app.use(express.json());
@@ -43,7 +55,12 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // 5. Health Check Endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
+  res.status(200).json({
+    status: 'UP',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memoryUsage: process.memoryUsage()
+  });
 });
 
 // 6. Application API Routes

@@ -33,12 +33,16 @@ async function register(req, res, next) {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // 4. Insert user record
+    // 4. Insert user record (Sanitize role: public self-registration is strictly CUSTOMER to prevent privilege escalation)
+    const assignedRole = (req.user && req.user.role === 'ADMIN' && ['CUSTOMER', 'AGENT', 'ADMIN'].includes(role))
+      ? role
+      : 'CUSTOMER';
+
     const newUser = await userModel.createUser({
       name,
       email,
       passwordHash,
-      role: role || 'CUSTOMER'
+      role: assignedRole
     });
 
     // 5. Generate JWT token

@@ -4,16 +4,20 @@
  * Description: Simple logging utility for structured console outputs.
  */
 
-const logger = {
-  info: (message, meta = '') => {
-    console.log(`[INFO] [${new Date().toISOString()}] ${message}`, meta ? JSON.stringify(meta) : '');
-  },
-  warn: (message, meta = '') => {
-    console.warn(`[WARN] [${new Date().toISOString()}] ${message}`, meta ? JSON.stringify(meta) : '');
-  },
-  error: (message, meta = '') => {
-    console.error(`[ERROR] [${new Date().toISOString()}] ${message}`, meta ? JSON.stringify(meta) : '');
+const isProd = process.env.NODE_ENV === 'production';
+
+function formatMessage(level, message, meta = '') {
+  const timestamp = new Date().toISOString();
+  if (isProd) {
+    return JSON.stringify({ timestamp, level, message, meta: meta || undefined });
   }
+  return `[${level.toUpperCase()}] [${timestamp}] ${message} ${meta ? JSON.stringify(meta) : ''}`;
+}
+
+const logger = {
+  info: (message, meta = '') => console.log(formatMessage('info', message, meta)),
+  warn: (message, meta = '') => console.warn(formatMessage('warn', message, meta)),
+  error: (message, meta = '') => console.error(formatMessage('error', message, meta))
 };
 
 module.exports = logger;
