@@ -17,5 +17,8 @@ class Settings:
     # Gemini API Key (Loaded from environment)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "MOCK_GEMINI_KEY_FOR_LOCAL_DEV")
     GEMINI_MODEL_NAME: str = os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash")
+    ALLOWED_ORIGINS: list = [
+        o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:5000,http://localhost:5173,http://localhost:3000,http://backend:5000").split(",") if o.strip()
+    ]
 
 settings = Settings()

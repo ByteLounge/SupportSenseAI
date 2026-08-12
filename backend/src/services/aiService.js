@@ -19,7 +19,8 @@ async function performAITriage(title, description) {
     const response = await fetch(`${env.AI_SERVICE_URL}/api/v1/ai/triage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description })
+      body: JSON.stringify({ title, description }),
+      signal: AbortSignal.timeout(5000)
     });
 
     if (!response.ok) {
@@ -59,7 +60,8 @@ async function verifyResponseQuality(ticketContext, draftReply) {
     const response = await fetch(`${env.AI_SERVICE_URL}/api/v1/ai/verify-response`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ticket_context: ticketContext, draft_reply: draftReply })
+      body: JSON.stringify({ ticket_context: ticketContext, draft_reply: draftReply }),
+      signal: AbortSignal.timeout(5000)
     });
 
     if (!response.ok) {
@@ -87,7 +89,8 @@ async function summarizeTimeline(messagesHistory) {
     const response = await fetch(`${env.AI_SERVICE_URL}/api/v1/ai/summarize-timeline`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: messagesHistory })
+      body: JSON.stringify({ messages: messagesHistory }),
+      signal: AbortSignal.timeout(5000)
     });
 
     if (!response.ok) {

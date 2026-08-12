@@ -142,14 +142,19 @@ const MOCK_TICKETS = [
   }
 ];
 
-// Helper to handle API calls with mock fallback
+const USE_MOCK_FALLBACK = import.meta.env.VITE_ENABLE_MOCK === 'true';
+
+// Helper to handle API calls with optional dev mock fallback
 async function safeApiCall(apiFunc, mockFallback) {
   try {
     const res = await apiFunc();
     return res;
   } catch (err) {
-    console.warn('API call failed or backend offline. Returning mock payload.', err);
-    return { data: mockFallback };
+    if (USE_MOCK_FALLBACK) {
+      console.warn('[DEV MOCK] Backend unavailable. Returning fallback mock payload.', err);
+      return { data: mockFallback };
+    }
+    throw err;
   }
 }
 
