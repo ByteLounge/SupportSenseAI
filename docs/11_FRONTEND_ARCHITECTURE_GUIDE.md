@@ -30,8 +30,9 @@ Built using **React 18 + Vite** and styled with **Tailwind CSS**, the SupportSen
 ## 2. Implemented Features
 
 1. **Authentication & Quick Persona Switch**: Sign in as Agent Sarah or Customer Alex.
-2. **Interactive Ticket Queue Dashboard**: Filter by status, priority, and text search query.
-3. **AI Decision Assist Drawer**: Live rendering of customer mood, patience rating, resolution time prediction, interactive checklist checkboxes, and reopened timeline summary.
-4. **Pre-Send Response Quality Checker**: 4-axis evaluation (Professionalism, Empathy, Clarity, Actionability) with 1-click suggestion insertion.
+2. **Interactive Ticket Queue Dashboard**: Filter by status, priority, and text search query with embedded **AI Mood Indicators** (`🙂 HAPPY`, `😐 NEUTRAL`, `😠 FRUSTRATED`).
+3. **AI Mood Badges (`AIMoodBadge.jsx`)**: Prominently rendered across the Tickets Queue table, Recent Tickets Dashboard, and Ticket Header/AI Assist sidebars.
+4. **AI Decision Assist Drawer**: Live rendering of customer mood, patience rating, resolution time prediction, interactive checklist checkboxes, and reopened timeline summary.
+5. **Pre-Send Response Quality Checker**: 4-axis evaluation (Professionalism, Empathy, Clarity, Actionability) with 1-click suggestion insertion.
 5. **Weekly AI Learning Insights**: Top repeated customer issues, common agent mistakes, and recommended Knowledge Base FAQs.
 6. **Dark / Light Theme Switcher**: Persisted theme preferences toggling Tailwind `dark` class on root HTML.
