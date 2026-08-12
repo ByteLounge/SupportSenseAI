@@ -62,6 +62,11 @@ SupportSenseAI/
 │   ├── docker-compose.yml
 │   └── nginx.conf
 │
+├── .github/                      # CI/CD Automation Workflows
+│   └── workflows/
+│       └── ci.yml                # GitHub Actions backend test, frontend build & pytest pipeline
+│
+├── render.yaml                   # 1-Click Render Blueprint deployment specification
 └── docs/                         # Project Documentation Hub (Member 4 & Team)
     ├── 01_PROJECT_VISION_AND_PRD.md
     ├── 02_REQUIREMENTS_AND_USE_CASES.md

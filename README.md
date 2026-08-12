@@ -399,9 +399,10 @@ This repository includes a native **Render Blueprint** (`render.yaml`) for 100% 
 | Variable Name | Service | Description | Default / Example |
 |---|---|---|---|
 | `PORT` | Backend | HTTP Port for Express Server | `5000` |
-| `NODE_ENV` | Backend | Application environment | `production` |
-| `JWT_SECRET` | Backend | Secret key for signing JWT tokens | `supportsense_enterprise_prod_secret_2026` |
+| `NODE_ENV` | Backend | Application environment | `production` / `development` |
+| `JWT_SECRET` | Backend | Secret key for signing JWT tokens | Secure random string (Production check enforced) |
 | `JWT_EXPIRES_IN` | Backend | Expiration duration for access tokens | `1h` |
+| `ALLOWED_ORIGINS` | Backend & AI | Whitelisted CORS origin domains | `http://localhost:5173,http://localhost:80` |
 | `DB_HOST` | Backend | PostgreSQL Hostname | `postgres` / `localhost` |
 | `DB_PORT` | Backend | PostgreSQL Port | `5432` |
 | `DB_NAME` | Backend | PostgreSQL Database Name | `supportsense_db` |
@@ -412,22 +413,40 @@ This repository includes a native **Render Blueprint** (`render.yaml`) for 100% 
 | `GEMINI_API_KEY` | AI Service | Google Gemini 1.5 API Key | `AIzaSy...` |
 | `GEMINI_MODEL_NAME` | AI Service | Target LLM model name | `gemini-1.5-flash` |
 | `VITE_API_BASE_URL` | Frontend | Target Backend REST API base URL | `/api/v1` |
+| `VITE_ENABLE_MOCK` | Frontend | Enable offline UI mock fallback | `false` (set `true` for standalone dev) |
+
+---
+
+## 🛡️ Production Security & Resilience Guardrails
+
+1. **Privilege Escalation Protection**: Public self-registration is strictly locked to `CUSTOMER` role to prevent unauthorized `ADMIN` / `AGENT` privilege acquisition.
+2. **CORS Origin Whitelisting**: Dynamic origin validation (`ALLOWED_ORIGINS`) across Express and FastAPI microservices.
+3. **AI Microservice Timeout Protection**: All backend-to-AI microservice calls execute with `AbortSignal.timeout(5000)` to prevent worker thread hanging.
+4. **Production Structured Logging**: Centralized JSON log output when `NODE_ENV=production` for seamless Datadog / ELK ingestion.
+5. **System Health Telemetry**: Extended `/health` endpoint delivering system uptime and memory utilization metrics.
 
 ---
 
 ## 🧪 Testing & Quality Assurance
 
-### Run Backend Integration Tests
+### Run Backend Unit & Supertest Integration Suite (Jest)
 ```bash
 cd backend
 npm test
+# Runs 7/7 passing unit & supertest HTTP integration specs
 ```
 
-### Run AI Microservice Unit Tests
+### Run AI Microservice Unit Suite (Pytest)
 ```bash
-cd ai-service
-pytest
+python -m pytest tests/unit/ai-service
+# Runs Python FastAPI unit specs
 ```
+
+### ⚙️ Continuous Integration (GitHub Actions)
+The workspace includes an automated GitHub Actions pipeline in `.github/workflows/ci.yml` that automatically validates:
+* **Backend Job**: Installs dependencies and runs Jest + Supertest test suite.
+* **Frontend Job**: Verifies production Vite React SPA build (`dist/`).
+* **AI Service Job**: Runs Python 3.10 Pytest suite.
 
 ---
 

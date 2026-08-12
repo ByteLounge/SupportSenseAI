@@ -35,48 +35,61 @@ docker-compose ps
 ## 3. GitHub Actions CI/CD Pipeline Configuration (`.github/workflows/ci.yml`)
 
 ```yaml
-name: SupportSense AI Continuous Integration
+name: SupportSense AI CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
 
 jobs:
-  test-backend:
+  backend-tests:
+    name: Backend Unit & Integration Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Install & Run Backend Tests
-        run: |
-          cd backend
-          npm ci
-          npm test
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: Install Dependencies
+        run: cd backend && npm ci
+      - name: Run Jest Test Suite
+        run: cd backend && npm test
 
-  test-ai-service:
+  frontend-build:
+    name: Frontend Build & Type Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install Dependencies
+        run: cd frontend && npm ci
+      - name: Build React Production Bundle
+        run: cd frontend && npm run build
+
+  ai-service-tests:
+    name: AI Microservice Pytest Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: Install & Run AI Unit Tests
+      - name: Install Python Dependencies
         run: |
           cd ai-service
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pytest
-
-  docker-build:
-    needs: [test-backend, test-ai-service]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build Docker Compose Stack
-        run: |
-          cd deployment
-          docker-compose build
+      - name: Run Pytest Test Suite
+        run: PYTHONPATH=ai-service pytest tests/unit/ai-service
 ```
