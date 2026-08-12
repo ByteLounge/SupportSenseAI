@@ -142,16 +142,18 @@ const MOCK_TICKETS = [
   }
 ];
 
-const USE_MOCK_FALLBACK = import.meta.env.VITE_ENABLE_MOCK === 'true';
-
-// Helper to handle API calls with optional dev mock fallback
+// Helper to handle API calls with smart dev/demo mock fallback
 async function safeApiCall(apiFunc, mockFallback) {
   try {
     const res = await apiFunc();
     return res;
   } catch (err) {
-    if (USE_MOCK_FALLBACK) {
-      console.warn('[DEV MOCK] Backend unavailable. Returning fallback mock payload.', err);
+    // Fall back to demo mock payload if backend is offline/unreachable or if VITE_ENABLE_MOCK=true
+    const isNetworkError = !err.status && (!err.response || err.message === 'Network / Server Error' || err.code === 'ERR_NETWORK');
+    const allowMockFallback = import.meta.env.VITE_ENABLE_MOCK === 'true' || isNetworkError;
+
+    if (allowMockFallback && mockFallback !== undefined) {
+      console.warn('[DEV DEMO] Backend server offline or unreachable. Using demo fallback payload.', err);
       return { data: mockFallback };
     }
     throw err;
