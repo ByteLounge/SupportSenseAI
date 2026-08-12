@@ -268,6 +268,9 @@ sequenceDiagram
 
 ```
 SupportSenseAI/
+├── .github/                      # CI/CD Automation Workflows
+│   └── workflows/
+│       └── ci.yml                # GitHub Actions backend test, frontend build & pytest pipeline
 ├── .env.example                # Environment variables template
 ├── .gitignore                   # Git exclusion rules
 ├── render.yaml                 # 1-Click Render Blueprint infrastructure spec
@@ -287,21 +290,22 @@ SupportSenseAI/
 │   └── src/
 │       ├── app.js              # Middleware, security & router setup
 │       ├── config/             # DB pool, env loader & dbInit.js script
-│       │   └── sql/            # Self-contained schema & seed SQL scripts
 │       ├── controllers/        # Auth, Ticket, and AI Proxy logic
 │       ├── middleware/         # Auth JWT guards & rate limiters
 │       ├── models/             # Data access layer
 │       └── routes/             # REST API endpoint routes
-├── database/                   # Root Database Scripts
+├── database/                   # Single Source of Truth Database Scripts
 │   ├── migrations/             # 001_init_schema.sql
 │   └── seeds/                  # 001_seed_data.sql
 ├── deployment/                 # Docker Compose Orchestration
-│   ├── docker-compose.yml      # Multi-container orchestration specification
-│   └── nginx.conf              # Production Nginx reverse proxy configuration
+│   └── docker-compose.yml      # Multi-container orchestration specification
 ├── docs/                       # Comprehensive Engineering Documentation
+├── tests/                      # Unit & Integration Test Suites
+│   ├── integration/            # Supertest HTTP API specs
+│   └── unit/                   # Backend & AI microservice unit specs
 └── frontend/                   # React SPA Frontend
     ├── Dockerfile
-    ├── nginx.conf
+    ├── nginx.conf              # Nginx static asset proxy configuration
     ├── package.json
     ├── vite.config.js
     └── src/

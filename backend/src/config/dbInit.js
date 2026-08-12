@@ -23,15 +23,15 @@ async function initializeDatabase() {
     if (!tableExists) {
       logger.info('Initializing PostgreSQL schema & seed data for cloud deployment...');
 
-      // Find schema & seed file locations (Primary: self-contained in backend, Fallback: workspace root)
-      let schemaPath = path.join(__dirname, 'sql/schema.sql');
-      let seedPath = path.join(__dirname, 'sql/seed.sql');
+      // Find schema & seed file locations in database/ migrations directory
+      let schemaPath = path.join(__dirname, '../../../database/migrations/001_init_schema.sql');
+      let seedPath = path.join(__dirname, '../../../database/seeds/001_seed_data.sql');
 
       if (!fs.existsSync(schemaPath)) {
-        schemaPath = path.join(__dirname, '../../../database/migrations/001_init_schema.sql');
+        schemaPath = path.join(process.cwd(), 'database/migrations/001_init_schema.sql');
       }
       if (!fs.existsSync(seedPath)) {
-        seedPath = path.join(__dirname, '../../../database/seeds/001_seed_data.sql');
+        seedPath = path.join(process.cwd(), 'database/seeds/001_seed_data.sql');
       }
 
       if (fs.existsSync(schemaPath)) {
