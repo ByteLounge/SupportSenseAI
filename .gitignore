@@ -32,6 +32,11 @@ env.bak/
 venv.bak/
 .pytest_cache/
 
+# Large Datasets (> 50MB for GitHub limits)
+Customer Support on Twitter/twcs/
+*.zip
+*.tar.gz
+
 # OS Generated Files
 .DS_Store
 .DS_Store?

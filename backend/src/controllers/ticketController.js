@@ -1,7 +1,8 @@
 /**
  * Controller: ticketController.js
  * Lead Engineer: Member 2 (Backend Lead)
- * Description: Manages support tickets lifecycle, threaded messages, and checklist toggles.
+ * Description: Manages support tickets lifecycle, threaded messages, checklist toggles,
+ *              and automated department replies.
  */
 
 const ticketModel = require('../models/ticketModel');
@@ -10,7 +11,7 @@ const aiService = require('../services/aiService');
 const { sendSuccess, sendError } = require('../utils/responseFormatter');
 
 /**
- * Create a new ticket & trigger asynchronous AI Triage.
+ * Create a new ticket & trigger AI Triage + Department Auto-Reply evaluation.
  * POST /api/v1/tickets
  */
 async function createTicket(req, res, next) {
@@ -30,7 +31,7 @@ async function createTicket(req, res, next) {
       priority
     });
 
-    // 2. Also insert initial customer message into thread
+    // 2. Insert initial customer message into thread
     await ticketModel.createMessage({
       ticketId: newTicket.id,
       senderId: req.user.id,
@@ -38,7 +39,7 @@ async function createTicket(req, res, next) {
       isInternalNote: false
     });
 
-    // 3. Trigger AI Triage microservice
+    // 3. Trigger AI Triage microservice with role-based prompting & dataset benchmarks
     const aiResult = await aiService.performAITriage(title, description);
 
     // 4. Save AI decision metadata & generated checklist items
@@ -56,10 +57,30 @@ async function createTicket(req, res, next) {
       aiResult.checklist || []
     );
 
+    // 5. Evaluate Automated Department Response
+    const autoReplyResult = await aiService.evaluateDepartmentAutoReply({
+      title,
+      description,
+      category: aiResult.category || category
+    });
+
+    let autoReplyMessage = null;
+    if (autoReplyResult && autoReplyResult.should_auto_reply && autoReplyResult.confidence_score >= 0.75) {
+      // Post the department automated response to the ticket thread
+      autoReplyMessage = await ticketModel.createMessage({
+        ticketId: newTicket.id,
+        senderId: req.user.id, // Or system bot
+        messageBody: `[Automated Response from ${autoReplyResult.target_department}]:\n${autoReplyResult.automated_reply_body}`,
+        isInternalNote: false
+      });
+    }
+
     newTicket.ai_metadata = aiMetadata;
     newTicket.checklists = checklistItems;
+    newTicket.auto_reply = autoReplyResult;
+    newTicket.initial_auto_message = autoReplyMessage;
 
-    return sendSuccess(res, 201, 'Ticket created successfully with AI decision support.', newTicket);
+    return sendSuccess(res, 201, 'Ticket created successfully with AI decision support and department routing.', newTicket);
   } catch (error) {
     next(error);
   }

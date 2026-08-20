@@ -1,7 +1,8 @@
 /**
  * Service: aiService.js
  * Lead Engineer: Member 2 & Member 3
- * Description: HTTP client interacting with Python FastAPI AI microservice (Gemini wrapper).
+ * Description: HTTP client interacting with Python FastAPI AI microservice (Gemini wrapper)
+ *              with support for automated department replies and dataset benchmarks.
  */
 
 const env = require('../config/env');
@@ -44,7 +45,46 @@ async function performAITriage(title, description) {
         'Verify customer account details',
         'Review recent account activity logs',
         'Respond with standard initial intake message'
-      ]
+      ],
+      suggested_reply: `Hello, thank you for reaching out regarding '${title}'. An agent will inspect this shortly.`
+    };
+  }
+}
+
+/**
+ * Call FastAPI microservice to evaluate and generate automated department response.
+ * 
+ * @param {object} params - { title, description, category, departmentName }
+ */
+async function evaluateDepartmentAutoReply({ title, description, category, departmentName }) {
+  try {
+    const response = await fetch(`${env.AI_SERVICE_URL}/api/v1/ai/department-auto-reply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        description,
+        category,
+        department_name: departmentName
+      }),
+      signal: AbortSignal.timeout(5000)
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI Service returned HTTP status ${response.status}`);
+    }
+
+    const json = await response.json();
+    return json.data;
+  } catch (error) {
+    logger.error('Failed to evaluate Department Auto-Reply:', error.message);
+    return {
+      should_auto_reply: false,
+      target_department: departmentName || 'Technical Support',
+      confidence_score: 0.50,
+      automated_reply_body: `Hello, your ticket regarding '${title}' has been received and routed to our team.`,
+      actions_triggered: ['Logged ticket intake timestamp'],
+      requires_human_escalation: false
     };
   }
 }
@@ -105,8 +145,29 @@ async function summarizeTimeline(messagesHistory) {
   }
 }
 
+/**
+ * Fetch dataset benchmarks.
+ */
+async function getDatasetBenchmarks() {
+  try {
+    const response = await fetch(`${env.AI_SERVICE_URL}/api/v1/ai/datasets/benchmark-metrics`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!response.ok) return null;
+    const json = await response.json();
+    return json.data;
+  } catch (error) {
+    logger.error('Failed to fetch dataset benchmarks:', error.message);
+    return null;
+  }
+}
+
 module.exports = {
   performAITriage,
+  evaluateDepartmentAutoReply,
   verifyResponseQuality,
-  summarizeTimeline
+  summarizeTimeline,
+  getDatasetBenchmarks
 };
