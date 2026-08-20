@@ -1,11 +1,12 @@
 """
 Pydantic Schemas Module: schemas.py
 Lead Engineer: Member 3 (AI Engineer)
-Description: Input and Output JSON schemas enforcing strict field types and confidence scores.
+Description: Input and Output JSON schemas enforcing strict field types, confidence scores,
+             and department automated response payload structures.
 """
 
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 # ----------------------------------------------------------------------------
 # 1. TICKET TRIAGE SCHEMAS
@@ -26,7 +27,25 @@ class TriageResponse(BaseModel):
     suggested_reply: str = Field(..., description="Suggested initial customer response draft")
 
 # ----------------------------------------------------------------------------
-# 2. RESPONSE QUALITY CHECK SCHEMAS
+# 2. DEPARTMENT AUTO-REPLY SCHEMAS
+# ----------------------------------------------------------------------------
+class DepartmentAutoReplyRequest(BaseModel):
+    title: str = Field(..., description="Ticket title")
+    description: str = Field(..., description="Ticket description")
+    category: Optional[str] = Field(None, description="Assigned category if already triaged")
+    department_name: Optional[str] = Field(None, description="Department name, e.g. Finance & Billing, Technical Support")
+
+class DepartmentAutoReplyResponse(BaseModel):
+    should_auto_reply: bool = Field(..., description="Whether auto-reply should be dispatched")
+    target_department: str = Field(..., description="Assigned department")
+    confidence_score: float = Field(..., ge=0.0, le=1.0)
+    automated_reply_body: str = Field(..., description="Generated automated response text")
+    actions_triggered: List[str] = Field(default=[], description="Automated diagnostics / ledger tasks triggered")
+    requires_human_escalation: bool = Field(default=False)
+    reasoning: Optional[str] = None
+
+# ----------------------------------------------------------------------------
+# 3. RESPONSE QUALITY CHECK SCHEMAS
 # ----------------------------------------------------------------------------
 class QualityCheckRequest(BaseModel):
     ticket_context: str = Field(..., description="Original customer ticket description")
@@ -45,7 +64,7 @@ class QualityCheckResponse(BaseModel):
     confidence_score: float = Field(..., ge=0.0, le=1.0)
 
 # ----------------------------------------------------------------------------
-# 3. REOPENED TIMELINE SUMMARY SCHEMAS
+# 4. REOPENED TIMELINE SUMMARY SCHEMAS
 # ----------------------------------------------------------------------------
 class MessageItem(BaseModel):
     sender_name: str
@@ -61,7 +80,7 @@ class TimelineSummaryResponse(BaseModel):
     confidence_score: float = Field(..., ge=0.0, le=1.0)
 
 # ----------------------------------------------------------------------------
-# 4. WEEKLY LEARNING INSIGHTS SCHEMAS
+# 5. WEEKLY LEARNING INSIGHTS SCHEMAS
 # ----------------------------------------------------------------------------
 class WeeklyInsightsResponse(BaseModel):
     week_identifier: str

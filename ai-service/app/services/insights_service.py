@@ -1,15 +1,38 @@
 """
 Service Module: insights_service.py
 Lead Engineer: Member 3 (AI Engineer)
-Description: Generates weekly organizational learning insights and FAQ recommendations.
+Description: Generates weekly organizational learning insights and FAQ recommendations
+             using the Knowledge Base Architect role and historical ticket data.
 """
 
-def generate_weekly_learning_insights() -> dict:
+import json
+from app.core.gemini_client import generate_json_response
+from app.prompts.templates import ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT
+from app.services.dataset_service import load_local_kaggle_tickets
+
+
+def generate_weekly_learning_insights(week_identifier: str = "2026-W34") -> dict:
     """
     Synthesizes ticket analytics into weekly learning insights for knowledge base articles.
     """
-    return {
-        "week_identifier": "2026-W31",
+    # Sample recent resolved tickets to provide real dataset context
+    recent_samples = load_local_kaggle_tickets(limit=15)
+    sample_summary = []
+    for s in recent_samples:
+        sample_summary.append({
+            "ticket_title": s.get("title", ""),
+            "category": s.get("category", "General"),
+            "resolution": s.get("resolution", ""),
+            "satisfaction": s.get("customer_satisfaction", "3")
+        })
+
+    prompt = ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT.format(
+        weekly_ticket_data=json.dumps(sample_summary, indent=2),
+        week_identifier=week_identifier
+    )
+
+    fallback = {
+        "week_identifier": week_identifier,
         "top_issues": [
             {"issue": "Duplicate subscription renewal charges", "count": "14 tickets"},
             {"issue": "API JWT Token expiration during high load", "count": "9 tickets"},
@@ -29,3 +52,10 @@ def generate_weekly_learning_insights() -> dict:
         ],
         "confidence_score": 0.94
     }
+
+    result = generate_json_response(
+        prompt_text=prompt,
+        fallback_payload=fallback,
+        system_instruction=ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT
+    )
+    return result

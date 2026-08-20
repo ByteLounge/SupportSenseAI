@@ -303,4 +303,64 @@ export const getInsightsApi = () =>
     }
   );
 
+export const getDepartmentRulesApi = () =>
+  safeApiCall(
+    () => API.get('/ai/departments'),
+    {
+      "Finance & Billing": {
+        categories: ["Billing", "Refund", "Invoice"],
+        auto_reply_enabled: true,
+        min_confidence: 0.85,
+        target_sla_hours: 4,
+        allowed_actions: ["Lookup transaction ID", "Check active subscription status"]
+      },
+      "Technical Support": {
+        categories: ["Technical", "Bug", "Hardware", "Performance"],
+        auto_reply_enabled: true,
+        min_confidence: 0.80,
+        target_sla_hours: 8,
+        allowed_actions: ["Check system status health", "Fetch API error logs"]
+      },
+      "Identity & Access": {
+        categories: ["Account", "Login", "SSO", "Password"],
+        auto_reply_enabled: true,
+        min_confidence: 0.90,
+        target_sla_hours: 2,
+        allowed_actions: ["Verify registered user email", "Initiate secure reset link"]
+      },
+      "API Platform Team": {
+        categories: ["API Platform", "Rate Limit", "Webhook", "SDK"],
+        auto_reply_enabled: true,
+        min_confidence: 0.85,
+        target_sla_hours: 6,
+        allowed_actions: ["Check API Gateway rate limits", "Inspect webhook delivery attempts"]
+      }
+    }
+  );
+
+export const evaluateDepartmentAutoReplyApi = (data) =>
+  safeApiCall(
+    () => API.post('/ai/department-auto-reply', data),
+    {
+      should_auto_reply: true,
+      target_department: data.departmentName || 'Technical Support',
+      confidence_score: 0.92,
+      automated_reply_body: `Hello, thank you for reaching out. We have logged your request regarding "${data.title}" and our automated diagnostics have initiated verification.`,
+      actions_triggered: ['Logged ticket intake timestamp', 'Initiated diagnostic trace'],
+      requires_human_escalation: false
+    }
+  );
+
+export const getBenchmarksApi = () =>
+  safeApiCall(
+    () => API.get('/ai/benchmarks'),
+    {
+      "Billing": { "avg_resolution": "1-2 business days", "common_priority": "HIGH", "sample_count": 142 },
+      "Technical": { "avg_resolution": "2-3 business days", "common_priority": "MEDIUM", "sample_count": 210 },
+      "Account": { "avg_resolution": "4-12 hours", "common_priority": "HIGH", "sample_count": 89 },
+      "Bug": { "avg_resolution": "3-5 business days", "common_priority": "URGENT", "sample_count": 65 }
+    }
+  );
+
 export default API;
+

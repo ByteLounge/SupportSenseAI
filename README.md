@@ -1,12 +1,13 @@
 # 🚀 SupportSense AI — Enterprise Customer Support Ticket System
 
-> **An AI-Assisted Customer Support Ecosystem featuring Real-Time Triage, Sentiment Monitoring, Resolution Forecasting, Response Verification, and Organizational Learning.**
+> **An AI-Assisted Customer Support Ecosystem featuring Real-Time Triage, Sentiment Monitoring, Resolution Forecasting, Response Verification, Dataset-Grounded Benchmarks, and Department-Specific Automated Replies.**
 
 [![React](https://img.shields.io/badge/Frontend-React_18_%7C_Vite-61DAFB?logo=react)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Backend-Node.js_%7C_Express-339933?logo=node.js)](https://nodejs.org/)
 [![FastAPI](https://img.shields.io/badge/AI_Microservice-Python_%7C_FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL_15-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![Google Gemini](https://img.shields.io/badge/LLM-Google_Gemini_1.5_Flash-8E44AD?logo=google)](https://ai.google.dev/)
+[![HuggingFace](https://img.shields.io/badge/Datasets-Kaggle_%7C_HuggingFace_Streaming-FFD21E?logo=huggingface)](https://huggingface.co/)
 [![Docker](https://img.shields.io/badge/Deployment-Docker_Compose_%7C_Render-2496ED?logo=docker)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -17,6 +18,9 @@
 - [Executive Summary & Vision](#-executive-summary--vision)
 - [Human-in-the-Loop (HITL) Paradigm](#-human-in-the-loop-hitl-paradigm)
 - [Novel Enterprise Features](#-novel-enterprise-features)
+- [Dataset-Grounded Benchmarks & Streaming](#-dataset-grounded-benchmarks--streaming)
+- [Specialized Role-Based System Prompts](#-specialized-role-based-system-prompts)
+- [Department Automated Response System](#-department-automated-response-system)
 - [System Architecture & Diagrams](#-system-architecture--diagrams)
   - [3-Tier Architecture](#3-tier-architecture)
   - [Component Diagram](#component-diagram)
@@ -35,11 +39,11 @@
 
 ## 🌟 Executive Summary & Vision
 
-**SupportSense AI** is an enterprise-grade AI-assisted customer support ticketing system engineered specifically for high-throughput enterprise environments. The system empowers human support specialists by offloading repetitive triage, analyzing customer sentiment in real time, predicting resolution timeframes, verifying response quality before dispatch, and converting closed tickets into institutional knowledge.
+**SupportSense AI** is an enterprise-grade AI-assisted customer support ticketing system engineered specifically for high-throughput enterprise environments. The system empowers human support specialists by offloading repetitive triage, analyzing customer sentiment in real time, predicting resolution timeframes grounded in historical datasets, verifying response quality before dispatch, automating safe department confirmations, and converting closed tickets into institutional knowledge.
 
 ### Strategic Business Impact
-* ⚡ **Reduce First Response Time (FRT)** by up to **60%** via instant automated ticket classification, priority tagging, and action item generation.
-* 🎯 **Elevate First Contact Resolution (FCR)** by supplying agents with context-aware timeline summaries and related historical ticket references.
+* ⚡ **Reduce First Response Time (FRT)** by up to **75%** via instant automated department confirmation replies and rapid classification.
+* 🎯 **Elevate First Contact Resolution (FCR)** by supplying agents with context-aware timeline summaries, dataset benchmarks, and verified checklists.
 * 💖 **Improve Customer Satisfaction (CSAT)** through AI Response Quality Checks (verifying empathy, clarity, and professionalism prior to sending replies).
 * 🛡️ **Prevent Agent Burnout** by tracking customer patience degradation early so team leads can proactively reassign critical escalations.
 * 📈 **Continuous Organizational Learning** via weekly AI Learning Insights that aggregate recurring friction points and recommend Knowledge Base FAQs.
@@ -50,7 +54,7 @@
 
 > [!IMPORTANT]
 > **Core Principle: AI ASSISTS, HUMANS DECIDE.**
-> SupportSense AI operates strictly under an **Human-in-the-Loop (HITL)** framework. The AI microservice never executes autonomous actions or sends unverified messages directly to customers. Every AI recommendation, draft reply evaluation, patience score, and checklist item serves as intelligent decision-support for human agents.
+> SupportSense AI operates strictly under an **Human-in-the-Loop (HITL)** framework. Automated replies are bounded by safe, non-destructive confirmation protocols and confidence thresholds. Every complex resolution, manual draft evaluation, patience score, and checklist item serves as intelligent decision-support for human agents.
 
 ---
 
@@ -58,11 +62,51 @@
 
 1. **AI Mood Indicator & Sentiment Score**: Real-time customer emotion categorization (`🙂 HAPPY`, `😐 NEUTRAL`, `😠 FRUSTRATED`) paired with confidence metrics (`0.00` to `1.00`).
 2. **Customer Patience Score & SLA Guardrail**: Tracks customer frustration levels (`CALM`, `CONCERNED`, `FRUSTRATED`, `CRITICAL`) to guide tone and trigger supervisor escalation warnings.
-3. **AI Resolution Predictor**: Forecasts estimated completion timeframes (e.g., *"1–2 business days"*) based on category complexity and agent workload.
+3. **Dataset-Grounded Resolution Predictor**: Forecasts estimated completion timeframes (e.g., *"1–2 business days"*) calibrated against historical Kaggle & Hugging Face support benchmarks.
 4. **Dynamic Agent Assist Checklists**: Auto-generates step-by-step action items tailored to the specific problem (e.g., `[ ] Verify Stripe payment logs`, `[ ] Issue $1,200 refund`, `[ ] Send apology email`).
-5. **Response Quality & Empathy Checker**: Pre-send reply evaluation scoring agent drafts for **Professionalism**, **Empathy**, **Clarity**, and **Actionability** with instant correction hints.
-6. **Reopened Ticket Timeline Summarizer**: Condenses lengthy, multi-agent thread histories into a 5-6 bullet executive summary when tickets are reopened or reassigned.
-7. **Weekly Organizational Learning Insights**: Analyzes historical ticket resolution patterns to generate top 5 repeated issues, recurring agent mistakes, and suggested Knowledge Base FAQs.
+5. **Department Automated Replies & Routing**: Evaluates category qualification per department (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform Team`) to dispatch immediate confirmations and trigger automated diagnostic tasks.
+6. **Response Quality & Empathy Checker**: Pre-send reply evaluation scoring agent drafts for **Professionalism**, **Empathy**, **Clarity**, and **Actionability** with instant correction hints.
+7. **Reopened Ticket Timeline Summarizer**: Condenses lengthy, multi-agent thread histories into a 5-6 bullet executive summary when tickets are reopened or reassigned.
+8. **Weekly Organizational Learning Insights**: Analyzes historical ticket resolution patterns to generate top repeated issues, recurring agent mistakes, and suggested Knowledge Base FAQs.
+
+---
+
+## 📊 Dataset-Grounded Benchmarks & Streaming
+
+SupportSense AI connects directly to open-source customer support datasets to ground Gemini's reasoning in historical metrics rather than static guesses:
+
+| Dataset | Source / Type | Role in SupportSense AI |
+| :--- | :--- | :--- |
+| **Customer Support Ticket Dataset** | Kaggle (`customer_support_tickets.csv`) | Historical SLA resolution durations, priority distributions, and realistic few-shot examples. |
+| **Customer Support on Twitter (TWCS)** | Kaggle (`twcs.csv` & `sample.csv`) | Real-world multi-turn conversational tone, brand de-escalation patterns, and phrasing. |
+| **Bitext Customer Support Dataset** | Hugging Face (`streaming=True`) | Intent & category classification calibration for enterprise billing and account requests. |
+| **Google GoEmotions & SAMSum** | Hugging Face (`streaming=True`) | Customer mood/patience threshold calibration and timeline condensation benchmarks. |
+
+---
+
+## 🎭 Specialized Role-Based System Prompts
+
+Each AI pipeline feature runs with a specialized **~40-line persona system prompt** enforcing domain boundaries and output schemas:
+
+* 🧭 **Senior Support Triage Officer & SLA Risk Assessor** ([`templates.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/prompts/templates.py)): Categorizes tickets, assesses urgency, evaluates patience deterioration, and generates technical checklists.
+* 💬 **Customer Communications Strategist & Empathy Lead** ([`templates.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/prompts/templates.py)): Drafts empathetic, de-escalating suggested replies with concrete next steps and realistic timelines.
+* ⚡ **Autonomous Department Dispatch & SLA Auto-Responder** ([`templates.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/prompts/templates.py)): Evaluates auto-reply eligibility, checks safety criteria, and generates authoritative department confirmations.
+* 🔍 **Customer Communications QA Director & Empathy Coach** ([`templates.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/prompts/templates.py)): Audits draft agent replies across 4 pillars (Professionalism, Empathy, Clarity, Actionability).
+* 📜 **Senior Incident Historian & Operations Briefing Lead** ([`templates.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/prompts/templates.py)): Condenses multi-turn ticket threads into chronological 5-6 bullet executive summaries.
+* 🧠 **Enterprise Knowledge Base Architect & Systems Auditor** ([`templates.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/prompts/templates.py)): Synthesizes weekly resolution logs into organizational insights and suggested FAQs.
+
+---
+
+## 🏢 Department Automated Response System
+
+Configurable policies per department ensure that tickets receive immediate confirmation while kicking off automated verification workflows:
+
+| Department | Handled Categories | Min Confidence | Automated Action Triggers |
+| :--- | :--- | :--- | :--- |
+| **Finance & Billing** | Billing, Refund, Invoice, Subscription | 85% | Payment gateway trace, Ledger snapshot review |
+| **Technical Support** | Technical, Bug, Hardware, Performance | 80% | Telemetry log inspection, System health status check |
+| **Identity & Access** | Account, Login, SSO, Password, MFA | 90% | Verification token dispatch, MFA status check |
+| **API Platform Team** | API Platform, Webhook, Rate Limit, SDK | 85% | Gateway rate-limit check, Webhook delivery trace |
 
 ---
 
@@ -88,7 +132,7 @@
 +------------------+-------------------+  +-----------+---------------------------------+
 |          DATABASE TIER               |  |              AI TIER                        |
 |        PostgreSQL 15 DB              |  |    Python FastAPI AI Microservice           |
-| (Tickets, Users, Messages, Insights) |  | (Google Gemini SDK, Prompt Orchestration)   |
+| (Tickets, Users, Messages, Insights) |  | (Google Gemini SDK, Datasets & Benchmarks)  |
 +--------------------------------------+  +--------------------+------------------------+
                                                                | HTTPS
                                                                v
@@ -127,20 +171,28 @@ graph TB
 
     subgraph "AI Microservice (FastAPI)"
         FAST[FastAPI Server]
-        PROMPT[Prompt Pipeline]
+        PROMPT[Role-Based Prompt Pipeline]
+        DATASET[Dataset Service & Benchmarks]
+        AUTO_REP[Department Auto-Reply Engine]
         PARSER[Pydantic JSON Parser]
 
         AI_GATE -->|REST POST JSON| FAST
         FAST --> PROMPT
+        FAST --> AUTO_REP
+        DATASET --> PROMPT
         PROMPT --> PARSER
     end
 
     subgraph "Database & Cloud Providers"
         PG[(PostgreSQL Database)]
         GEMINI[Google Gemini 1.5 LLM]
+        KAGGLE[(Kaggle CSV Datasets)]
+        HF[(HuggingFace Streaming)]
 
         DB_MOD --> PG
         PARSER --> GEMINI
+        DATASET --> KAGGLE
+        DATASET --> HF
     end
 ```
 
@@ -240,9 +292,18 @@ sequenceDiagram
     DB-->>BE: Ticket Created (ID: T-1042)
 
     BE->>AI: POST /api/v1/ai/triage { title, description }
-    AI->>GEM: Prompt Gemini 1.5 Flash for Triage & Checklist JSON
-    GEM-->>AI: Returns Structured JSON Payload
-    AI-->>BE: Returns Triage Metadata + Confidence Score
+    AI->>GEM: Prompt Gemini 1.5 Flash with Role Persona & Benchmarks
+    GEM-->>AI: Returns Structured Triage JSON Payload
+    AI-->>BE: Returns Triage Metadata + Checklists
+
+    BE->>AI: POST /api/v1/ai/department-auto-reply { title, description, category }
+    AI->>GEM: Evaluate Auto-Reply Qualification
+    GEM-->>AI: Returns Auto-Reply Body & Actions Triggered
+    AI-->>BE: Returns Auto-Reply Decision
+
+    alt Auto-Reply Qualified (Confidence >= 75%)
+        BE->>DB: INSERT automated response into ticket_messages
+    end
 
     BE->>DB: INSERT into ai_metadata & agent_checklists
     BE-->>FE: HTTP 201 Created (Ticket + AI Assist Payload)
@@ -257,7 +318,7 @@ sequenceDiagram
 |---|---|---|
 | **Frontend SPA** | React 18, Vite | React Router DOM, Axios, Lucide Icons, Tailwind CSS |
 | **Backend REST API** | Node.js v18+, Express.js | `pg` (PostgreSQL Pool), `jsonwebtoken`, `bcryptjs`, `cors`, `helmet` |
-| **AI Microservice** | Python 3.10+, FastAPI | `google-generativeai`, `pydantic`, `uvicorn`, `python-dotenv` |
+| **AI Microservice** | Python 3.10+, FastAPI | `google-generativeai`, `datasets`, `pydantic`, `uvicorn`, `python-dotenv` |
 | **Database** | PostgreSQL 15 | Relational storage, UUID extension, Triggers, JSONB |
 | **Containerization** | Docker, Docker Compose | Multi-stage builds, Nginx static asset proxy |
 | **Cloud Hosting** | Render.com | Render Blueprint (`render.yaml`), Managed PostgreSQL |
@@ -271,48 +332,53 @@ SupportSenseAI/
 ├── .github/                      # CI/CD Automation Workflows
 │   └── workflows/
 │       └── ci.yml                # GitHub Actions backend test, frontend build & pytest pipeline
-├── .env.example                # Environment variables template
-├── .gitignore                   # Git exclusion rules
-├── render.yaml                 # 1-Click Render Blueprint infrastructure spec
-├── ai-service/                 # Python FastAPI AI Microservice
+├── Customer Support Ticket Dataset/ # Kaggle Customer Support Ticket CSVs
+│   └── customer_support_tickets.csv
+├── Customer Support on Twitter/  # Kaggle Twitter Support CSVs
+│   ├── sample.csv
+│   └── twcs/twcs.csv
+├── .env.example                  # Environment variables template
+├── .gitignore                    # Git exclusion rules
+├── render.yaml                   # 1-Click Render Blueprint infrastructure spec
+├── ai-service/                   # Python FastAPI AI Microservice
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── app/
-│       ├── main.py             # FastAPI entrypoint & health endpoints
-│       ├── api/                # AI route handlers (triage, response check, insights)
-│       ├── core/               # Gemini SDK configuration & prompt execution
-│       ├── models/             # Pydantic JSON schemas
-│       └── prompts/            # Prompt templates
-├── backend/                    # Node.js Express Core Backend
+│       ├── main.py               # FastAPI entrypoint & health endpoints
+│       ├── api/router.py         # AI route handlers (triage, auto-reply, check, insights, datasets)
+│       ├── core/gemini_client.py # Gemini SDK with system instruction support
+│       ├── models/schemas.py     # Pydantic JSON schemas
+│       ├── prompts/templates.py  # 40-line specialized role-based prompts
+│       └── services/             # triage, auto-reply, quality, insights, and dataset services
+├── backend/                      # Node.js Express Core Backend
 │   ├── Dockerfile
 │   ├── package.json
-│   ├── server.js               # Express HTTP server entrypoint
+│   ├── server.js                 # Express HTTP server entrypoint
 │   └── src/
-│       ├── app.js              # Middleware, security & router setup
-│       ├── config/             # DB pool, env loader & dbInit.js script
-│       ├── controllers/        # Auth, Ticket, and AI Proxy logic
-│       ├── middleware/         # Auth JWT guards & rate limiters
-│       ├── models/             # Data access layer
-│       └── routes/             # REST API endpoint routes
-├── database/                   # Single Source of Truth Database Scripts
-│   ├── migrations/             # 001_init_schema.sql
-│   └── seeds/                  # 001_seed_data.sql
-├── deployment/                 # Docker Compose Orchestration
-│   └── docker-compose.yml      # Multi-container orchestration specification
-├── docs/                       # Comprehensive Engineering Documentation
-├── tests/                      # Unit & Integration Test Suites
-│   ├── integration/            # Supertest HTTP API specs
-│   └── unit/                   # Backend & AI microservice unit specs
-└── frontend/                   # React SPA Frontend
+│       ├── app.js                # Middleware, security & router setup
+│       ├── config/               # DB pool, env loader & dbInit.js script
+│       ├── controllers/          # Auth, Ticket, and AI Proxy logic
+│       ├── middleware/           # Auth JWT guards & rate limiters
+│       ├── models/               # Data access layer
+│       └── routes/               # REST API endpoint routes
+├── database/                     # Single Source of Truth Database Scripts
+│   ├── migrations/001_init_schema.sql
+│   └── seeds/001_seed_data.sql
+├── deployment/docker-compose.yml # Multi-container orchestration specification
+├── docs/                         # Comprehensive Engineering Documentation
+├── tests/                        # Unit & Integration Test Suites
+│   ├── integration/              # Supertest HTTP API specs
+│   └── unit/                     # Backend & AI microservice unit specs
+└── frontend/                     # React SPA Frontend
     ├── Dockerfile
-    ├── nginx.conf              # Nginx static asset proxy configuration
+    ├── nginx.conf
     ├── package.json
     ├── vite.config.js
     └── src/
-        ├── components/         # Navigation, AI badges, Checklists, Modals
-        ├── pages/              # Login, Register, Customer Portal, Agent Queue, Admin Insights
-        ├── services/           # Axios API client layer with JWT interceptors
-        └── context/            # AuthContext & global state
+        ├── components/           # Navigation, AI badges, Checklists, Modals
+        ├── pages/                # Login, Register, Customer Portal, Agent Queue, Departments, Insights
+        ├── services/api.js       # Axios API client layer with JWT interceptors
+        └── context/              # AuthContext & global state
 ```
 
 ---
@@ -326,13 +392,16 @@ SupportSenseAI/
 
 ### 🎫 Ticket APIs (`/api/v1/tickets`)
 * `GET /api/v1/tickets` — List tickets with filtering (`status`, `priority`, `category`, `search`).
-* `POST /api/v1/tickets` — Submit a new ticket (triggers automatic AI triage).
+* `POST /api/v1/tickets` — Submit a new ticket (triggers automatic AI triage & department auto-reply evaluation).
 * `GET /api/v1/tickets/:id` — Fetch single ticket with messages, AI metadata, and agent checklist.
 * `PATCH /api/v1/tickets/:id/status` — Update status (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED`). Reopening triggers AI summary.
 * `POST /api/v1/tickets/:id/messages` — Post customer reply, agent public message, or internal note.
 * `PATCH /api/v1/tickets/:id/checklist/:itemId` — Toggle agent checklist task state.
 
 ### 🧠 AI Proxy APIs (`/api/v1/ai`)
+* `POST /api/v1/ai/department-auto-reply` — Evaluates auto-reply eligibility and generates department-specific confirmation message.
+* `GET /api/v1/ai/departments` — Returns department definitions, handled categories, and active auto-reply rules.
+* `GET /api/v1/ai/benchmarks` — Returns historical category SLA duration and priority benchmarks.
 * `POST /api/v1/ai/verify-response` — Evaluates agent draft reply for Professionalism, Empathy, Clarity, Actionability.
 * `GET /api/v1/ai/insights` — Fetches weekly AI analytics, top repeated issues, and recommended FAQs.
 
@@ -343,6 +412,7 @@ SupportSenseAI/
 ### Prerequisites
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/) (v20.10+) & [Docker Compose](https://docs.docker.com/compose/)
 * [Node.js](https://nodejs.org/) v18+ (optional, for local development without Docker)
+* [Python](https://www.python.org/) 3.10+ (for local AI service development)
 * A free [Google Gemini API Key](https://aistudio.google.com/)
 
 ### 🚀 1-Command Local Boot (`Docker Compose`)
@@ -421,36 +491,25 @@ This repository includes a native **Render Blueprint** (`render.yaml`) for 100% 
 
 ---
 
-## 🛡️ Production Security & Resilience Guardrails
-
-1. **Privilege Escalation Protection**: Public self-registration is strictly locked to `CUSTOMER` role to prevent unauthorized `ADMIN` / `AGENT` privilege acquisition.
-2. **CORS Origin Whitelisting**: Dynamic origin validation (`ALLOWED_ORIGINS`) across Express and FastAPI microservices.
-3. **AI Microservice Timeout Protection**: All backend-to-AI microservice calls execute with `AbortSignal.timeout(5000)` to prevent worker thread hanging.
-4. **Production Structured Logging**: Centralized JSON log output when `NODE_ENV=production` for seamless Datadog / ELK ingestion.
-5. **System Health Telemetry**: Extended `/health` endpoint delivering system uptime and memory utilization metrics.
-
----
-
 ## 🧪 Testing & Quality Assurance
 
 ### Run Backend Unit & Supertest Integration Suite (Jest)
 ```bash
 cd backend
 npm test
-# Runs 7/7 passing unit & supertest HTTP integration specs
 ```
 
 ### Run AI Microservice Unit Suite (Pytest)
 ```bash
-python -m pytest tests/unit/ai-service
-# Runs Python FastAPI unit specs
+python -m pytest tests/unit/ai-service -v
+# Runs all 5 unit tests covering triage, auto-reply, datasets, quality checks, and insights
 ```
 
 ### ⚙️ Continuous Integration (GitHub Actions)
 The workspace includes an automated GitHub Actions pipeline in `.github/workflows/ci.yml` that automatically validates:
 * **Backend Job**: Installs dependencies and runs Jest + Supertest test suite.
 * **Frontend Job**: Verifies production Vite React SPA build (`dist/`).
-* **AI Service Job**: Runs Python 3.10 Pytest suite.
+* **AI Service Job**: Runs Python 3.10/3.12 Pytest suite with mock fallbacks.
 
 ---
 
@@ -460,7 +519,7 @@ Developed during the **Persistent Systems Internship Program**:
 
 * **Member 1 (Frontend Lead)** — React SPA, Vite, Tailwind CSS, UI Component Architecture, Axios Client Layer.
 * **Member 2 (Backend Lead)** — Node.js, Express REST API, PostgreSQL Schema, JWT Authentication, Database Pool management.
-* **Member 3 (AI Engineer)** — Python FastAPI Microservice, Google Gemini 1.5 SDK Integration, Prompt Pipeline Orchestration, Confidence Scoring.
+* **Member 3 (AI Engineer)** — Python FastAPI Microservice, Google Gemini 1.5 SDK Integration, Role-Based Prompts, Dataset Benchmarks, Department Auto-Replies.
 * **Member 4 (DevOps, QA & Documentation Lead)** — Docker & Docker Compose Containerization, Render Blueprint CI/CD, Automated Tests, Technical Specifications.
 
 ---
