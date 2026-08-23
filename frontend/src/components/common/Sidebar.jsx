@@ -1,7 +1,6 @@
 /**
  * Component: Sidebar.jsx
- * Simple, clean left navigation bar.
- * Contains only essential links: Dashboard, Tickets, Departments, Profile.
+ * Role-adaptive enterprise navigation sidebar with customized menus and permission badges.
  */
 
 import React from 'react';
@@ -11,9 +10,18 @@ import {
   Ticket,
   Building2,
   User,
+  PlusCircle,
+  HelpCircle,
+  Users,
+  BarChart3,
+  Lightbulb,
   ChevronLeft,
   ChevronRight,
   X,
+  Shield,
+  Briefcase,
+  Sparkles,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -23,14 +31,67 @@ export default function Sidebar({
   isMobileOpen = false,
   onCloseMobile,
 }) {
-  const { user } = useAuth();
+  const { user, isCustomer, isAgent, isAdmin } = useAuth();
 
-  const navigationItems = [
-    { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { label: 'Tickets', path: '/tickets', icon: Ticket },
-    { label: 'Departments', path: '/departments', icon: Building2 },
-    { label: 'Profile', path: '/profile', icon: User },
-  ];
+  const getNavigationItems = () => {
+    if (isCustomer) {
+      return [
+        { label: 'My Tickets', path: '/tickets', icon: Ticket },
+        { label: 'Submit Query', path: '/tickets/new', icon: PlusCircle },
+        { label: 'Help Center & FAQs', path: '/knowledge-base', icon: HelpCircle },
+        { label: 'My Profile', path: '/profile', icon: User },
+      ];
+    }
+
+    if (isAgent) {
+      return [
+        { label: 'Triage Dashboard', path: '/', icon: LayoutDashboard },
+        { label: 'All Tickets Queue', path: '/tickets', icon: Ticket },
+        { label: 'New Ticket', path: '/tickets/new', icon: PlusCircle },
+        { label: 'Department Routing', path: '/departments', icon: Building2 },
+        { label: 'Knowledge Base', path: '/knowledge-base', icon: HelpCircle },
+        { label: 'My Profile', path: '/profile', icon: User },
+      ];
+    }
+
+    // Admin Navigation Items
+    return [
+      { label: 'Command Center', path: '/', icon: LayoutDashboard },
+      { label: 'Ticket Master List', path: '/tickets', icon: Ticket },
+      { label: 'Create Ticket', path: '/tickets/new', icon: PlusCircle },
+      { label: 'Department Policies', path: '/departments', icon: Building2 },
+      { label: 'User & Access (RBAC)', path: '/users', icon: Users },
+      { label: 'SLA Analytics', path: '/analytics', icon: BarChart3 },
+      { label: 'Learning Insights', path: '/insights', icon: Lightbulb },
+      { label: 'System Profile', path: '/profile', icon: User },
+    ];
+  };
+
+  const navigationItems = getNavigationItems();
+
+  const getRoleHeaderInfo = () => {
+    if (isCustomer) {
+      return {
+        badgeText: 'Client Portal',
+        subText: 'Customer Self-Serve',
+        logoBg: 'bg-emerald-600',
+      };
+    }
+    if (isAgent) {
+      return {
+        badgeText: 'Agent Cockpit',
+        subText: 'AI Triage & Forwarding',
+        logoBg: 'bg-blue-600',
+      };
+    }
+    return {
+      badgeText: 'Admin Suite',
+      subText: 'Full System Control',
+      logoBg: 'bg-purple-600',
+    };
+  };
+
+  const roleHeader = getRoleHeaderInfo();
 
   const sidebarContent = (
     <div className="flex flex-col justify-between h-full bg-token-sidebar border-r border-token-border text-token-text-primary">
@@ -38,13 +99,13 @@ export default function Sidebar({
         {/* Brand Header */}
         <div className="h-14 px-4 flex items-center justify-between border-b border-token-border bg-token-card">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-7 h-7 bg-token-accent text-white rounded-[6px] flex items-center justify-center font-bold text-xs shrink-0">
+            <div className={`w-7 h-7 ${roleHeader.logoBg} text-white rounded-[6px] flex items-center justify-center font-bold text-xs shrink-0 shadow-xs`}>
               SS
             </div>
             {!isCollapsed && (
               <div className="truncate">
                 <div className="font-semibold text-xs text-token-text-primary leading-none">SupportSense AI</div>
-                <div className="text-[10px] text-token-text-secondary leading-tight mt-0.5">Support Dashboard</div>
+                <div className="text-[10px] text-token-text-secondary leading-tight mt-0.5">{roleHeader.subText}</div>
               </div>
             )}
           </div>
@@ -81,12 +142,16 @@ export default function Sidebar({
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/'}
+                end={item.path === '/' || item.path === '/tickets'}
                 onClick={() => onCloseMobile && onCloseMobile()}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-xs font-medium transition-colors min-h-[40px] ${
                     isActive
-                      ? 'bg-token-accent text-white font-semibold'
+                      ? isCustomer
+                        ? 'bg-emerald-600 text-white font-semibold shadow-xs'
+                        : isAgent
+                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                        : 'bg-purple-600 text-white font-semibold shadow-xs'
                       : 'text-token-text-primary hover:bg-token-muted'
                   } ${isCollapsed ? 'justify-center px-0' : ''}`
                 }
@@ -100,11 +165,30 @@ export default function Sidebar({
         </nav>
       </div>
 
-      {/* Simplified Footer User Badge */}
+      {/* Role-Specific Footer User Badge */}
       {user && !isCollapsed && (
-        <div className="p-3 m-2 bg-token-card border border-token-border rounded-[6px] text-xs text-token-text-secondary">
-          <div className="font-semibold text-token-text-primary truncate">{user.name}</div>
-          <div className="text-[11px] text-token-text-muted capitalize">{user.role || 'Agent'}</div>
+        <div className="p-3 m-2 bg-token-card border border-token-border rounded-[6px] text-xs space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-token-text-primary truncate">{user.name}</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
+                isCustomer
+                  ? 'bg-emerald-500/10 text-emerald-600'
+                  : isAgent
+                  ? 'bg-blue-500/10 text-blue-600'
+                  : 'bg-purple-500/10 text-purple-600'
+              }`}
+            >
+              {user.role}
+            </span>
+          </div>
+          <div className="text-[11px] text-token-text-secondary truncate">
+            {user.department || (isCustomer ? 'Acme Corp' : 'Support Specialist')}
+          </div>
+          <div className="pt-1 border-t border-token-border text-[10px] text-token-text-muted flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-token-accent" />
+            <span>{isCustomer ? 'Customer View' : isAgent ? 'Agent AI Assist Active' : 'Admin Master Override'}</span>
+          </div>
         </div>
       )}
     </div>
@@ -137,3 +221,4 @@ export default function Sidebar({
     </>
   );
 }
+

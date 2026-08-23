@@ -126,8 +126,43 @@ async function getMe(req, res, next) {
   }
 }
 
+/**
+ * Fetch all users (Admin only).
+ * GET /api/v1/auth/users
+ */
+async function getUsers(req, res, next) {
+  try {
+    const users = await userModel.getAllUsers();
+    return sendSuccess(res, 200, 'Users retrieved successfully', users);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Update user role (Admin only).
+ * PATCH /api/v1/auth/users/:id/role
+ */
+async function updateUserRole(req, res, next) {
+  try {
+    const { role } = req.body;
+    if (!role || !['CUSTOMER', 'AGENT', 'ADMIN'].includes(role)) {
+      return sendError(res, 400, 'Valid role is required (CUSTOMER, AGENT, ADMIN).');
+    }
+    const updated = await userModel.updateUserRole(req.params.id, role);
+    if (!updated) {
+      return sendError(res, 404, 'User not found.');
+    }
+    return sendSuccess(res, 200, 'User role updated successfully', updated);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   register,
   login,
-  getMe
+  getMe,
+  getUsers,
+  updateUserRole
 };

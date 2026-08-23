@@ -1,6 +1,6 @@
 /**
  * Main Application Routing Shell: App.jsx
- * Simplified React Router configuration with essential screens: Dashboard, Tickets, Departments, Profile.
+ * Multi-role React Router configuration with screens for Customer, Agent, and Admin workflows.
  */
 
 import React, { lazy, Suspense } from 'react';
@@ -16,6 +16,10 @@ const TicketsPage = lazy(() => import('./pages/TicketsPage'));
 const TicketDetailPage = lazy(() => import('./pages/TicketDetailPage'));
 const CreateTicketPage = lazy(() => import('./pages/CreateTicketPage'));
 const DepartmentsPage = lazy(() => import('./pages/DepartmentsPage'));
+const KnowledgeBasePage = lazy(() => import('./pages/KnowledgeBasePage'));
+const UsersPage = lazy(() => import('./pages/UsersPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const InsightsPage = lazy(() => import('./pages/InsightsPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
@@ -40,7 +44,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected Essential Routes */}
+          {/* Protected Routes */}
           <Route
             path="/"
             element={
@@ -82,6 +86,38 @@ export default function App() {
             }
           />
           <Route
+            path="/knowledge-base"
+            element={
+              <ProtectedRoute>
+                <KnowledgeBasePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <AnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/insights"
+            element={
+              <ProtectedRoute>
+                <InsightsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/profile"
             element={
               <ProtectedRoute>
@@ -95,3 +131,4 @@ export default function App() {
     </ToastProvider>
   );
 }
+

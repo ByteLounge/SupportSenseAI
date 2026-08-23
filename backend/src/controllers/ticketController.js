@@ -115,7 +115,7 @@ async function getTickets(req, res, next) {
 async function getTicketById(req, res, next) {
   try {
     const ticketId = req.params.id;
-    const ticket = await ticketModel.getTicketById(ticketId);
+    const ticket = await ticketModel.getTicketById(ticketId, req.user.role);
 
     if (!ticket) {
       return sendError(res, 404, 'Ticket not found.');
@@ -158,6 +158,99 @@ async function updateStatus(req, res, next) {
     }
 
     return sendSuccess(res, 200, 'Ticket status updated successfully', updatedTicket);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Forward ticket to specific department with agent comments.
+ * POST /api/v1/tickets/:id/forward
+ */
+async function forwardTicket(req, res, next) {
+  try {
+    const ticketId = req.params.id;
+    const { targetDepartment, comments, assignedAgentId } = req.body;
+
+    if (!targetDepartment) {
+      return sendError(res, 400, 'Target department is required for forwarding.');
+    }
+
+    const currentTicket = await ticketModel.getTicketById(ticketId);
+    if (!currentTicket) {
+      return sendError(res, 404, 'Ticket not found.');
+    }
+
+    // Update status to IN_PROGRESS and reassign if specified
+    const updatedTicket = await ticketModel.modifyTicket(ticketId, {
+      status: 'IN_PROGRESS',
+      assigned_agent_id: assignedAgentId || currentTicket.assigned_agent_id
+    });
+
+    // Record internal handover note
+    const handoverComment = comments ? ` [Comments: ${comments}]` : '';
+    await ticketModel.createMessage({
+      ticketId,
+      senderId: req.user.id,
+      messageBody: `[Inter-Department Forwarding]: Ticket routed to ${targetDepartment} by ${req.user.name}.${handoverComment}`,
+      isInternalNote: true
+    });
+
+    return sendSuccess(res, 200, `Ticket successfully forwarded to ${targetDepartment}.`, updatedTicket);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Modify any ticket attributes (Admin / Escalation control).
+ * PATCH /api/v1/tickets/:id
+ */
+async function modifyTicket(req, res, next) {
+  try {
+    const ticketId = req.params.id;
+    const { title, description, category, priority, status, assignedAgentId } = req.body;
+
+    const currentTicket = await ticketModel.getTicketById(ticketId);
+    if (!currentTicket) {
+      return sendError(res, 404, 'Ticket not found.');
+    }
+
+    const updatedTicket = await ticketModel.modifyTicket(ticketId, {
+      title,
+      description,
+      category,
+      priority,
+      status,
+      assigned_agent_id: assignedAgentId
+    });
+
+    // Post an internal note for administrative override
+    await ticketModel.createMessage({
+      ticketId,
+      senderId: req.user.id,
+      messageBody: `[Ticket Modified by ${req.user.name} (${req.user.role})]: Properties updated.`,
+      isInternalNote: true
+    });
+
+    return sendSuccess(res, 200, 'Ticket modified successfully.', updatedTicket);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Delete / Archive a ticket record (Admin only).
+ * DELETE /api/v1/tickets/:id
+ */
+async function deleteTicket(req, res, next) {
+  try {
+    const ticketId = req.params.id;
+    const result = await ticketModel.deleteTicket(ticketId);
+    if (!result) {
+      return sendError(res, 404, 'Ticket not found.');
+    }
+    return sendSuccess(res, 200, 'Ticket deleted successfully.', { id: ticketId });
   } catch (error) {
     next(error);
   }
@@ -217,6 +310,9 @@ module.exports = {
   getTickets,
   getTicketById,
   updateStatus,
+  forwardTicket,
+  modifyTicket,
+  deleteTicket,
   postMessage,
   toggleChecklist
 };

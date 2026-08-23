@@ -48,8 +48,31 @@ async function createUser({ name, email, passwordHash, role = 'CUSTOMER', avatar
   return result.rows[0];
 }
 
+/**
+ * Get all users for admin management.
+ */
+async function getAllUsers() {
+  const result = await db.query(
+    'SELECT id, name, email, role, avatar_url, created_at FROM users ORDER BY created_at ASC;'
+  );
+  return result.rows;
+}
+
+/**
+ * Update user role.
+ */
+async function updateUserRole(id, role) {
+  const result = await db.query(
+    'UPDATE users SET role = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, name, email, role, avatar_url;',
+    [role, id]
+  );
+  return result.rows[0];
+}
+
 module.exports = {
   findUserByEmail,
   findUserById,
-  createUser
+  createUser,
+  getAllUsers,
+  updateUserRole
 };

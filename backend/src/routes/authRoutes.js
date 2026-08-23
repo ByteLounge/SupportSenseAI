@@ -17,4 +17,8 @@ router.post('/login', authLimiter, authController.login);
 // Authenticated user route
 router.get('/me', authenticateToken, authController.getMe);
 
+// Admin-only user management endpoints
+router.get('/users', authenticateToken, authorizeRoles('ADMIN'), authController.getUsers);
+router.patch('/users/:id/role', authenticateToken, authorizeRoles('ADMIN'), authController.updateUserRole);
+
 module.exports = router;

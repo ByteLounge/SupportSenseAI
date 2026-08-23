@@ -77,7 +77,7 @@ async function getAllTickets({ status, priority, search, userRole, userId }) {
 /**
  * Fetch complete ticket detail by ID including messages, AI metadata, and checklists.
  */
-async function getTicketById(ticketId) {
+async function getTicketById(ticketId, userRole = null) {
   // 1. Fetch ticket primary row
   const ticketSql = `
     SELECT 
@@ -93,16 +93,21 @@ async function getTicketById(ticketId) {
   if (ticketRes.rows.length === 0) return null;
   const ticket = ticketRes.rows[0];
 
-  // 2. Fetch threaded messages
-  const msgSql = `
+  // 2. Fetch threaded messages (Customers cannot see internal notes)
+  let msgSql = `
     SELECT m.id, m.message_body, m.is_internal_note, m.created_at,
            u.name AS sender_name, u.role AS sender_role, u.avatar_url AS sender_avatar
     FROM ticket_messages m
     JOIN users u ON m.sender_id = u.id
     WHERE m.ticket_id = $1
-    ORDER BY m.created_at ASC;
   `;
-  const msgRes = await db.query(msgSql, [ticketId]);
+  const msgParams = [ticketId];
+  if (userRole === 'CUSTOMER') {
+    msgSql += ` AND m.is_internal_note = FALSE`;
+  }
+  msgSql += ` ORDER BY m.created_at ASC;`;
+
+  const msgRes = await db.query(msgSql, msgParams);
   ticket.messages = msgRes.rows;
 
   // 3. Fetch AI decision metadata
@@ -143,6 +148,43 @@ async function updateTicketStatus(ticketId, { status, assignedAgentId }) {
 }
 
 /**
+ * Modify ticket attributes (Admin / Agent escalation override).
+ */
+async function modifyTicket(ticketId, fields = {}) {
+  const allowedFields = ['title', 'description', 'category', 'priority', 'status', 'assigned_agent_id'];
+  const setClauses = ['updated_at = CURRENT_TIMESTAMP'];
+  const params = [];
+
+  for (const [key, val] of Object.entries(fields)) {
+    const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    if (allowedFields.includes(snakeKey) && val !== undefined) {
+      params.push(val);
+      setClauses.push(`${snakeKey} = $${params.length}`);
+    }
+  }
+
+  params.push(ticketId);
+  const sql = `
+    UPDATE tickets 
+    SET ${setClauses.join(', ')} 
+    WHERE id = $${params.length} 
+    RETURNING *;
+  `;
+
+  const result = await db.query(sql, params);
+  return result.rows[0];
+}
+
+/**
+ * Delete a ticket record by ID.
+ */
+async function deleteTicket(ticketId) {
+  const sql = `DELETE FROM tickets WHERE id = $1 RETURNING id;`;
+  const result = await db.query(sql, [ticketId]);
+  return result.rows[0];
+}
+
+/**
  * Add message to ticket thread.
  */
 async function createMessage({ ticketId, senderId, messageBody, isInternalNote = false }) {
@@ -174,6 +216,8 @@ module.exports = {
   getAllTickets,
   getTicketById,
   updateTicketStatus,
+  modifyTicket,
+  deleteTicket,
   createMessage,
   toggleChecklistItem
 };
