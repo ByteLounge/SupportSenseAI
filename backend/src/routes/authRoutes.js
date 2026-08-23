@@ -7,7 +7,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 const { authLimiter } = require('../middleware/rateLimiter');
 
 // Public auth endpoints protected by rate limiting
