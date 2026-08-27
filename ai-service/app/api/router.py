@@ -13,10 +13,24 @@ from app.models.schemas import (
     WeeklyInsightsResponse,
     DepartmentAutoReplyRequest
 )
-from app.services.triage_service import process_ticket_triage, process_timeline_summary
-from app.services.quality_service import evaluate_response_quality
-from app.services.insights_service import generate_weekly_learning_insights
-from app.services.auto_reply_service import evaluate_department_auto_reply
+from app.services.triage_service import (
+    process_ticket_triage,
+    process_ticket_triage_async,
+    process_timeline_summary,
+    process_timeline_summary_async
+)
+from app.services.quality_service import (
+    evaluate_response_quality,
+    evaluate_response_quality_async
+)
+from app.services.insights_service import (
+    generate_weekly_learning_insights,
+    generate_weekly_learning_insights_async
+)
+from app.services.auto_reply_service import (
+    evaluate_department_auto_reply,
+    evaluate_department_auto_reply_async
+)
 from app.services.dataset_service import (
     get_dataset_benchmark_metrics,
     stream_huggingface_dataset,
@@ -30,9 +44,10 @@ router = APIRouter()
 async def triage_ticket_endpoint(request: TriageRequest):
     """
     Auto-classifies ticket, detects mood/patience score, predicts resolution duration, and generates checklist.
+    Non-blocking async execution.
     """
     try:
-        data = process_ticket_triage(request.title, request.description)
+        data = await process_ticket_triage_async(request.title, request.description)
         return {"success": True, "message": "Triage analysis completed", "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -43,7 +58,7 @@ async def department_auto_reply_endpoint(request: DepartmentAutoReplyRequest):
     Evaluates whether a ticket qualifies for automated department reply and generates the response.
     """
     try:
-        data = evaluate_department_auto_reply(
+        data = await evaluate_department_auto_reply_async(
             title=request.title,
             description=request.description,
             category=request.category,
@@ -59,7 +74,7 @@ async def verify_response_endpoint(request: QualityCheckRequest):
     Evaluates pre-send agent response quality and tone against customer ticket.
     """
     try:
-        data = evaluate_response_quality(request.ticket_context, request.draft_reply)
+        data = await evaluate_response_quality_async(request.ticket_context, request.draft_reply)
         return {"success": True, "message": "Quality evaluation completed", "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -70,7 +85,7 @@ async def summarize_timeline_endpoint(request: TimelineSummaryRequest):
     Generates a 5-6 bullet timeline summary of ticket history.
     """
     try:
-        data = process_timeline_summary(request.messages)
+        data = await process_timeline_summary_async(request.messages)
         return {"success": True, "message": "Timeline summary generated", "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -81,10 +96,11 @@ async def weekly_insights_endpoint():
     Returns weekly organizational learning insights and FAQ suggestions.
     """
     try:
-        data = generate_weekly_learning_insights()
+        data = await generate_weekly_learning_insights_async()
         return {"success": True, "message": "Weekly insights generated", "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/ai/datasets/benchmark-metrics", response_model=dict)
 async def dataset_benchmarks_endpoint():

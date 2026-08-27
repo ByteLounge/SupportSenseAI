@@ -16,11 +16,13 @@ from app.services.dataset_service import (
     get_department_definitions,
     stream_huggingface_dataset
 )
-from app.services.auto_reply_service import evaluate_department_auto_reply
-from app.services.triage_service import process_ticket_triage, process_timeline_summary
-from app.services.quality_service import evaluate_response_quality
-from app.services.insights_service import generate_weekly_learning_insights
-
+import pytest
+import asyncio
+from app.services.auto_reply_service import evaluate_department_auto_reply, evaluate_department_auto_reply_async
+from app.services.triage_service import process_ticket_triage, process_ticket_triage_async, process_timeline_summary, process_timeline_summary_async
+from app.services.quality_service import evaluate_response_quality, evaluate_response_quality_async
+from app.services.insights_service import generate_weekly_learning_insights, generate_weekly_learning_insights_async
+from app.core.gemini_client import _get_cache_key, _save_to_cache, _get_from_cache
 
 def test_kaggle_dataset_loading_and_benchmarks():
     tickets = load_local_kaggle_tickets(limit=10)
@@ -81,3 +83,40 @@ def test_quality_and_insights_services():
     assert insights["week_identifier"] == "2026-W34"
     assert len(insights["top_issues"]) > 0
     assert len(insights["recommended_faqs"]) > 0
+
+
+def test_async_ai_services_and_caching():
+    async def _runner():
+        # Test Async Triage
+        triage_async = await process_ticket_triage_async(
+            title="Payment gateway timeout",
+            description="Stripe webhook dropping with HTTP 504 on checkout."
+        )
+        assert "category" in triage_async
+        assert "priority" in triage_async
+
+        # Test Async Auto-Reply
+        auto_async = await evaluate_department_auto_reply_async(
+            title="Refund status query",
+            description="When will my credit appear?",
+            category="Billing"
+        )
+        assert auto_async["should_auto_reply"] is True
+
+        # Test Async Quality Check
+        quality_async = await evaluate_response_quality_async(
+            ticket_context="Can't log in",
+            draft_reply="Hello, please reset your password using the secure link."
+        )
+        assert "scores" in quality_async
+
+        # Test In-Memory TTL Cache
+        key = _get_cache_key("test prompt", "test instruction")
+        _save_to_cache(key, {"cached": True, "result": 100})
+        cached = _get_from_cache(key)
+        assert cached is not None
+        assert cached.get("cached") is True
+
+    asyncio.run(_runner())
+
+
