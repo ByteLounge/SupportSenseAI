@@ -97,17 +97,22 @@ def load_local_twitter_sample(limit: int = 50) -> List[Dict[str, str]]:
 def get_dataset_benchmark_metrics() -> Dict[str, Any]:
     """
     Computes SLA resolution time and priority metrics across categories from the dataset.
-    Used by Gemini to ground its forecasts in historical data.
+    Uses in-memory caching to guarantee O(1) instantaneous lookup.
     """
+    if "benchmark_metrics" in _DATASET_CACHE:
+        return _DATASET_CACHE["benchmark_metrics"]
+
     tickets = load_local_kaggle_tickets(limit=1000)
     if not tickets:
-        return {
+        fallback_metrics = {
             "Billing": {"avg_resolution": "1 business day", "common_priority": "HIGH", "sample_count": 0},
             "Technical": {"avg_resolution": "2 business days", "common_priority": "MEDIUM", "sample_count": 0},
             "Account": {"avg_resolution": "4-8 hours", "common_priority": "HIGH", "sample_count": 0},
             "Bug": {"avg_resolution": "3-5 business days", "common_priority": "URGENT", "sample_count": 0},
             "Feature Request": {"avg_resolution": "1-2 weeks", "common_priority": "LOW", "sample_count": 0}
         }
+        _DATASET_CACHE["benchmark_metrics"] = fallback_metrics
+        return fallback_metrics
 
     stats = {
         "Billing": {"count": 0, "sample_res": "Verify payment gateway logs and issue invoice credit."},
@@ -122,7 +127,7 @@ def get_dataset_benchmark_metrics() -> Dict[str, Any]:
         if cat in stats:
             stats[cat]["count"] += 1
 
-    return {
+    computed = {
         "Billing": {
             "avg_resolution": "1-2 business days",
             "common_priority": "HIGH",
@@ -148,23 +153,31 @@ def get_dataset_benchmark_metrics() -> Dict[str, Any]:
             "typical_checklist": ["Capture reproduction steps", "Check error log stacktrace", "Create issue in engineering backlog"]
         }
     }
+    _DATASET_CACHE["benchmark_metrics"] = computed
+    return computed
 
 
 def get_few_shot_examples_for_category(category: Optional[str] = None, count: int = 2) -> List[Dict[str, str]]:
     """
-    Retrieves representative few-shot ticket examples from the local Kaggle dataset.
+    Retrieves representative few-shot ticket examples with category indexing for O(1) access.
     """
-    tickets = load_local_kaggle_tickets(limit=500)
-    matched = []
-    if category:
-        matched = [t for t in tickets if t.get("category", "").lower() == category.lower()]
+    if "category_index" not in _DATASET_CACHE:
+        tickets = load_local_kaggle_tickets(limit=500)
+        idx_map: Dict[str, List[Dict[str, str]]] = {}
+        for t in tickets:
+            c = t.get("category", "General").lower()
+            if c not in idx_map:
+                idx_map[c] = []
+            if len(idx_map[c]) < 5:
+                idx_map[c].append(t)
+        _DATASET_CACHE["category_index"] = idx_map
+        _DATASET_CACHE["all_tickets_slice"] = tickets[:count]
 
-    if len(matched) < count:
-        matched = tickets[:count]
-    else:
-        matched = matched[:count]
+    idx_map = _DATASET_CACHE["category_index"]
+    if category and category.lower() in idx_map:
+        return idx_map[category.lower()][:count]
 
-    return matched
+    return _DATASET_CACHE.get("all_tickets_slice", [])[:count]
 
 
 def stream_huggingface_dataset(
@@ -174,8 +187,12 @@ def stream_huggingface_dataset(
 ) -> List[Dict[str, Any]]:
     """
     Streams samples from Hugging Face datasets with streaming=True.
-    Falls back safely to local Kaggle data if network is unavailable.
+    Falls back safely and instantly to local Kaggle data without network hangs.
     """
+    cache_key = f"hf_{dataset_name}_{split}_{limit}"
+    if cache_key in _DATASET_CACHE:
+        return _DATASET_CACHE[cache_key]
+
     results = []
     try:
         from datasets import load_dataset
@@ -184,19 +201,24 @@ def stream_huggingface_dataset(
             if i >= limit:
                 break
             results.append(item)
-        logger.info(f"Streamed {len(results)} records from Hugging Face ({dataset_name}).")
+        if results:
+            _DATASET_CACHE[cache_key] = results
+            logger.info(f"Streamed {len(results)} records from Hugging Face ({dataset_name}).")
+            return results
     except Exception as e:
         logger.warning(f"Hugging Face streaming fallback triggered ({e}). Using local Kaggle dataset samples.")
-        local_tickets = load_local_kaggle_tickets(limit=limit)
-        for t in local_tickets:
-            results.append({
-                "instruction": t["title"],
-                "response": t["resolution"],
-                "category": t["category"],
-                "source": "Local Kaggle Dataset"
-            })
 
+    local_tickets = load_local_kaggle_tickets(limit=limit)
+    for t in local_tickets:
+        results.append({
+            "instruction": t["title"],
+            "response": t["resolution"],
+            "category": t["category"],
+            "source": "Local Kaggle Dataset"
+        })
+    _DATASET_CACHE[cache_key] = results
     return results
+
 
 
 def get_department_definitions() -> Dict[str, Dict[str, Any]]:

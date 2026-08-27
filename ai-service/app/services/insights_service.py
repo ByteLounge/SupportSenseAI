@@ -3,19 +3,15 @@ Service Module: insights_service.py
 Lead Engineer: Member 3 (AI Engineer)
 Description: Generates weekly organizational learning insights and FAQ recommendations
              using the Knowledge Base Architect role and historical ticket data.
+             Supports async non-blocking and sync execution with max output token bounds.
 """
 
 import json
-from app.core.gemini_client import generate_json_response
+from app.core.gemini_client import generate_json_response, generate_json_response_async
 from app.prompts.templates import ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT
 from app.services.dataset_service import load_local_kaggle_tickets
 
-
-def generate_weekly_learning_insights(week_identifier: str = "2026-W34") -> dict:
-    """
-    Synthesizes ticket analytics into weekly learning insights for knowledge base articles.
-    """
-    # Sample recent resolved tickets to provide real dataset context
+def _build_insights_context(week_identifier: str):
     recent_samples = load_local_kaggle_tickets(limit=15)
     sample_summary = []
     for s in recent_samples:
@@ -52,10 +48,33 @@ def generate_weekly_learning_insights(week_identifier: str = "2026-W34") -> dict
         ],
         "confidence_score": 0.94
     }
+    return prompt, fallback
 
-    result = generate_json_response(
+
+async def generate_weekly_learning_insights_async(week_identifier: str = "2026-W34") -> dict:
+    """
+    Asynchronously synthesizes ticket analytics into weekly insights with 768 token ceiling.
+    """
+    prompt, fallback = _build_insights_context(week_identifier)
+    return await generate_json_response_async(
         prompt_text=prompt,
         fallback_payload=fallback,
-        system_instruction=ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT
+        system_instruction=ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT,
+        max_output_tokens=768,
+        temperature=0.1
     )
-    return result
+
+
+def generate_weekly_learning_insights(week_identifier: str = "2026-W34") -> dict:
+    """
+    Synchronously synthesizes ticket analytics into weekly learning insights.
+    """
+    prompt, fallback = _build_insights_context(week_identifier)
+    return generate_json_response(
+        prompt_text=prompt,
+        fallback_payload=fallback,
+        system_instruction=ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT,
+        max_output_tokens=768,
+        temperature=0.1
+    )
+

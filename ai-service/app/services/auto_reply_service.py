@@ -3,34 +3,24 @@ Service Module: auto_reply_service.py
 Lead Engineer: AI & Automation Specialist
 Description: Evaluates and generates department-specific automated ticket replies based on
              department policies, category eligibility, and historical resolution benchmarks.
+             Supports async non-blocking and sync execution with max output token bounds.
 """
 
 import logging
 from typing import Dict, Any, Optional
-from app.core.gemini_client import generate_json_response
+from app.core.gemini_client import generate_json_response, generate_json_response_async
 from app.prompts.templates import DEPARTMENT_AUTO_REPLY_ROLE_PROMPT
-from app.services.dataset_service import (
-    get_department_definitions,
-    get_dataset_benchmark_metrics,
-    get_few_shot_examples_for_category
-)
+from app.services.dataset_service import get_department_definitions
 
 logger = logging.getLogger("ai_service")
 
-
-def evaluate_department_auto_reply(
+def _build_auto_reply_context(
     title: str,
     description: str,
     category: Optional[str] = None,
     department_name: Optional[str] = None
-) -> Dict[str, Any]:
-    """
-    Evaluates whether an incoming ticket qualifies for automated response by a specific department.
-    If qualified, produces an empathetic, authoritative auto-reply and automated actions.
-    """
+):
     dept_defs = get_department_definitions()
-
-    # Determine matched department based on category if not explicitly specified
     inferred_category = category or ("Billing" if "bill" in (title + " " + description).lower() or "charge" in (title + " " + description).lower() else "Technical")
     
     target_dept = department_name
@@ -64,11 +54,43 @@ def evaluate_department_auto_reply(
         "requires_human_escalation": False,
         "reasoning": f"Automated confirmation dispatched by {target_dept} based on category '{inferred_category}' rules."
     }
+    return prompt, fallback
 
-    result = generate_json_response(
+
+async def evaluate_department_auto_reply_async(
+    title: str,
+    description: str,
+    category: Optional[str] = None,
+    department_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Asynchronously evaluates department auto-reply with 384 token ceiling.
+    """
+    prompt, fallback = _build_auto_reply_context(title, description, category, department_name)
+    return await generate_json_response_async(
         prompt_text=prompt,
         fallback_payload=fallback,
-        system_instruction=DEPARTMENT_AUTO_REPLY_ROLE_PROMPT
+        system_instruction=DEPARTMENT_AUTO_REPLY_ROLE_PROMPT,
+        max_output_tokens=384,
+        temperature=0.1
     )
 
-    return result
+
+def evaluate_department_auto_reply(
+    title: str,
+    description: str,
+    category: Optional[str] = None,
+    department_name: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Synchronously evaluates department auto-reply for testing and sync callers.
+    """
+    prompt, fallback = _build_auto_reply_context(title, description, category, department_name)
+    return generate_json_response(
+        prompt_text=prompt,
+        fallback_payload=fallback,
+        system_instruction=DEPARTMENT_AUTO_REPLY_ROLE_PROMPT,
+        max_output_tokens=384,
+        temperature=0.1
+    )
+

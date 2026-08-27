@@ -3,10 +3,11 @@ Service Module: triage_service.py
 Lead Engineer: Member 3 (AI Engineer)
 Description: Performs ticket classification, sentiment/mood detection, resolution duration forecasting
              grounded in Kaggle/HuggingFace dataset benchmarks, and checklist generation.
+             Supports both async non-blocking and sync execution with max output token bounds.
 """
 
 import json
-from app.core.gemini_client import generate_json_response
+from app.core.gemini_client import generate_json_response, generate_json_response_async
 from app.prompts.templates import (
     TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT,
     TIMELINE_SUMMARIZER_ROLE_PROMPT
@@ -16,13 +17,7 @@ from app.services.dataset_service import (
     get_few_shot_examples_for_category
 )
 
-
-def process_ticket_triage(title: str, description: str) -> dict:
-    """
-    Analyzes ticket title & description using Role-Based System Prompting and Dataset Benchmarks.
-    Returns category, priority, mood, patience score, resolution time, and agent checklist.
-    """
-    # 1. Fetch benchmark metrics from local Kaggle / streamed datasets
+def _build_triage_context(title: str, description: str):
     benchmarks = get_dataset_benchmark_metrics()
     few_shots = get_few_shot_examples_for_category(count=2)
 
@@ -32,7 +27,6 @@ def process_ticket_triage(title: str, description: str) -> dict:
         for idx, ex in enumerate(few_shots, 1):
             benchmark_str += f"- Example #{idx}: [{ex['category']} / {ex['priority']}] -> {ex['resolution']} (Time: {ex['resolution_time']})\n"
 
-    # 2. Build prompt with role constraints and dataset benchmarks
     prompt = TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT.format(
         benchmark_context=benchmark_str,
         title=title,
@@ -54,19 +48,38 @@ def process_ticket_triage(title: str, description: str) -> dict:
         ],
         "suggested_reply": f"Hello, thank you for reaching out regarding '{title}'. We are investigating your issue right now."
     }
+    return prompt, fallback
 
-    result = generate_json_response(
+
+async def process_ticket_triage_async(title: str, description: str) -> dict:
+    """
+    Asynchronously analyzes ticket with non-blocking Gemini call and 512 token ceiling.
+    """
+    prompt, fallback = _build_triage_context(title, description)
+    return await generate_json_response_async(
         prompt_text=prompt,
         fallback_payload=fallback,
-        system_instruction=TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT
+        system_instruction=TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT,
+        max_output_tokens=512,
+        temperature=0.1
     )
-    return result
 
 
-def process_timeline_summary(messages: list) -> dict:
+def process_ticket_triage(title: str, description: str) -> dict:
     """
-    Generates a 5-6 bullet point summary for reopened/reassigned tickets using Incident Historian role.
+    Synchronous ticket triage function for backward compatibility and test runners.
     """
+    prompt, fallback = _build_triage_context(title, description)
+    return generate_json_response(
+        prompt_text=prompt,
+        fallback_payload=fallback,
+        system_instruction=TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT,
+        max_output_tokens=512,
+        temperature=0.1
+    )
+
+
+def _build_timeline_context(messages: list):
     formatted_messages = []
     for idx, msg in enumerate(messages, start=1):
         role = getattr(msg, 'sender_role', 'USER') if not isinstance(msg, dict) else msg.get('sender_role', 'USER')
@@ -76,16 +89,38 @@ def process_timeline_summary(messages: list) -> dict:
 
     messages_text = "\n".join(formatted_messages)
     prompt = TIMELINE_SUMMARIZER_ROLE_PROMPT.format(messages_text=messages_text)
-
     bullets = [f"• {msg}" for msg in formatted_messages[:6]]
     fallback = {
         "timeline_summary": "\n".join(bullets) if bullets else "• Ticket history initialized.",
         "confidence_score": 0.92
     }
+    return prompt, fallback
 
-    result = generate_json_response(
+
+async def process_timeline_summary_async(messages: list) -> dict:
+    """
+    Asynchronously generates timeline summary with 384 token ceiling.
+    """
+    prompt, fallback = _build_timeline_context(messages)
+    return await generate_json_response_async(
         prompt_text=prompt,
         fallback_payload=fallback,
-        system_instruction=TIMELINE_SUMMARIZER_ROLE_PROMPT
+        system_instruction=TIMELINE_SUMMARIZER_ROLE_PROMPT,
+        max_output_tokens=384,
+        temperature=0.1
     )
-    return result
+
+
+def process_timeline_summary(messages: list) -> dict:
+    """
+    Synchronous timeline summarizer function.
+    """
+    prompt, fallback = _build_timeline_context(messages)
+    return generate_json_response(
+        prompt_text=prompt,
+        fallback_payload=fallback,
+        system_instruction=TIMELINE_SUMMARIZER_ROLE_PROMPT,
+        max_output_tokens=384,
+        temperature=0.1
+    )
+
