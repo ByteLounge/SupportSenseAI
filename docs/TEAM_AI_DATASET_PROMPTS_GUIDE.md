@@ -195,19 +195,17 @@ When a ticket is created, [`auto_reply_service.py`](file:///D:/Projects/SupportS
 
 ---
 
-## 6. File-by-File AI Code Walkthrough
-
-### Core Client & Fallback Engine
+### Core Client & Latency Optimization Engine
 
 1. [`ai-service/app/core/config.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/core/config.py)
    - Loads `GEMINI_API_KEY`, `GEMINI_MODEL_NAME` (default `gemini-1.5-flash`), and `ALLOWED_ORIGINS` using `pydantic`/`dotenv`.
 
 2. [`ai-service/app/core/gemini_client.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/core/gemini_client.py)
-   - **`generate_json_response(prompt_text, fallback_payload, system_instruction)`:**
-     - Checks if an active API key is present. If missing, returns `fallback_payload`.
-     - Initializes `genai.GenerativeModel` with `response_mime_type: "application/json"`.
-     - Passes `system_instruction` to enforce role personas natively at the model level.
-     - Parses and returns the resulting JSON. If an exception occurs, it safely falls back.
+   - **Model Instance Pooling (`_MODEL_CACHE`):** Caches `genai.GenerativeModel` instances in memory, eliminating redundant initialization and SDK configuration latency on every request.
+   - **Async Non-Blocking Execution (`generate_json_response_async`):** Calls `model.generate_content_async(...)` with an async 4.5-second timeout, allowing FastAPI to handle high-concurrency workloads without blocking the event loop.
+   - **In-Memory TTL Response Cache (`_RESPONSE_CACHE`):** SHA256-hashed cache with 300s TTL returns sub-millisecond responses for repeated checks or identical queries.
+   - **Output Token Ceiling (`max_output_tokens`):** Restricts generation to 384–512 tokens to minimize time-to-first-token and overall latency.
+   - **Deterministic Temperature:** Uses `temperature=0.1` for faster token decoding and strict JSON outputs.
 
 ---
 
@@ -248,17 +246,18 @@ class DepartmentAutoReplyResponse(BaseModel):
 ### Service Modules
 
 1. [`ai-service/app/services/triage_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/triage_service.py)
-   - **`process_ticket_triage(title, description)`:** Pulls dataset benchmarks and few-shot examples, formats `TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT`, calls Gemini, and returns categorized output with checklist and suggested reply.
-   - **`process_timeline_summary(messages)`:** Formats threaded messages chronologically, executes `TIMELINE_SUMMARIZER_ROLE_PROMPT`, and returns a 5-6 bullet summary.
+   - **`process_ticket_triage_async(title, description)`:** Pulls precomputed dataset benchmarks and few-shot examples, formats `TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT`, and executes asynchronous Gemini call with a 512 token limit.
+   - **`process_timeline_summary_async(messages)`:** Asynchronously condenses threaded messages into 5-6 bullet executive summaries with a 384 token limit.
 
 2. [`ai-service/app/services/auto_reply_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/auto_reply_service.py)
-   - **`evaluate_department_auto_reply(title, description, category, department_name)`:** Matches categories against department definitions and evaluates auto-reply qualification using `DEPARTMENT_AUTO_REPLY_ROLE_PROMPT`.
+   - **`evaluate_department_auto_reply_async(title, description, category, department_name)`:** Matches categories against department definitions and evaluates auto-reply qualification using `DEPARTMENT_AUTO_REPLY_ROLE_PROMPT` asynchronously.
 
 3. [`ai-service/app/services/quality_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/quality_service.py)
-   - **`evaluate_response_quality(ticket_context, draft_reply)`:** Evaluates pre-send agent replies against the customer complaint using `RESPONSE_QUALITY_AUDIT_ROLE_PROMPT`.
+   - **`evaluate_response_quality_async(ticket_context, draft_reply)`:** Asynchronously audits agent draft responses across the 4 pillars (0-100) with a 384 token ceiling.
 
 4. [`ai-service/app/services/insights_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/insights_service.py)
-   - **`generate_weekly_learning_insights(week_identifier)`:** Aggregates ticket samples and generates friction points, mistakes, and FAQ suggestions using `ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT`.
+   - **`generate_weekly_learning_insights_async(week_identifier)`:** Aggregates ticket samples and generates friction points, mistakes, and FAQ suggestions asynchronously.
+
 
 ---
 
