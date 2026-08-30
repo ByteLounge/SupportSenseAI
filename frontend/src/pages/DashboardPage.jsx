@@ -1,6 +1,7 @@
 /**
  * Page: DashboardPage.jsx
- * Role-adaptive Enterprise Dashboard with tailored UI/UX for Customer, Agent, and Admin personas.
+ * Streamlined, clean, and role-adaptive Enterprise Dashboard.
+ * Designed for clarity, intuitive navigation, and zero visual clutter.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -35,13 +36,12 @@ import {
   ChevronDown,
   ChevronUp,
   Send,
-  Zap,
-  Layers,
   ArrowRightLeft,
   Users,
-  BarChart3,
   Edit,
   Check,
+  Filter,
+  BarChart2,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -60,7 +60,7 @@ export default function DashboardPage() {
   const [faqSearch, setFaqSearch] = useState('');
   const [expandedFaq, setExpandedFaq] = useState(null);
 
-  // Agent Quick Forward Modal
+  // Quick Forward Modal
   const [forwardModalOpen, setForwardModalOpen] = useState(false);
   const [selectedTicketForForward, setSelectedTicketForForward] = useState(null);
   const [forwardDept, setForwardDept] = useState('Finance & Billing');
@@ -115,7 +115,7 @@ export default function DashboardPage() {
     try {
       await forwardTicketApi(ticket.id, {
         targetDepartment: ticket.ai_suggested_department || 'Technical Support',
-        comments: 'Agent verified and approved Gemini AI automated department routing.',
+        comments: 'Agent approved Gemini AI automated department routing.',
       });
       addToast(`Approved AI routing to ${ticket.ai_suggested_department || 'Technical Support'}`, 'success');
       fetchDashboardData();
@@ -124,7 +124,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Agent Quick Forward Submit
+  // Quick Forward Submit
   const handleForwardSubmit = async (e) => {
     e.preventDefault();
     if (!selectedTicketForForward) return;
@@ -134,7 +134,7 @@ export default function DashboardPage() {
         targetDepartment: forwardDept,
         comments: forwardComments,
       });
-      addToast(`Ticket ${selectedTicketForForward.ticket_number} forwarded to ${forwardDept}`, 'success');
+      addToast(`Ticket forwarded to ${forwardDept}`, 'success');
       setForwardModalOpen(false);
       fetchDashboardData();
     } catch (err) {
@@ -151,7 +151,7 @@ export default function DashboardPage() {
     setSavingEdit(true);
     try {
       await modifyTicketApi(editingTicket.id, editForm);
-      addToast(`Ticket ${editingTicket.ticket_number} attributes modified successfully`, 'success');
+      addToast('Ticket updated successfully', 'success');
       setEditModalOpen(false);
       fetchDashboardData();
     } catch (err) {
@@ -161,13 +161,18 @@ export default function DashboardPage() {
     }
   };
 
-  // KPI Calculations
+  // Key Metrics
   const totalCount = tickets.length;
   const openCount = tickets.filter((t) => t.status === 'OPEN').length;
   const inProgressCount = tickets.filter((t) => t.status === 'IN_PROGRESS' || t.status === 'PENDING').length;
   const resolvedCount = tickets.filter((t) => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
   const unapprovedAiCount = tickets.filter((t) => !t.ai_routing_approved && t.status !== 'RESOLVED').length;
-  const forwardedCount = tickets.filter((t) => t.forward_history && t.forward_history.length > 0).length;
+
+  // Department ticket counts
+  const techCount = tickets.filter((t) => t.assigned_department === 'Technical Support').length;
+  const billingCount = tickets.filter((t) => t.assigned_department === 'Finance & Billing').length;
+  const securityCount = tickets.filter((t) => t.assigned_department === 'Identity & Access').length;
+  const apiCount = tickets.filter((t) => t.assigned_department === 'API Platform Team').length;
 
   // Filtered FAQs for Customer
   const filteredFaqs = faqs.filter(
@@ -178,15 +183,15 @@ export default function DashboardPage() {
       f.category.toLowerCase().includes(faqSearch.toLowerCase())
   );
 
-  // -------------------------------------------------------------
-  // 1. CUSTOMER DASHBOARD VIEW
-  // -------------------------------------------------------------
+  // =========================================================================
+  // 1. CUSTOMER DASHBOARD (Simple, friendly, clear)
+  // =========================================================================
   if (isCustomer) {
     const customerColumns = [
       {
         key: 'ticket_number',
-        label: 'Query ID',
-        width: '110px',
+        label: 'ID',
+        width: '100px',
         render: (val, row) => (
           <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
             {val || row.id}
@@ -195,7 +200,7 @@ export default function DashboardPage() {
       },
       {
         key: 'title',
-        label: 'Inquiry Subject',
+        label: 'Subject',
         render: (val, row) => (
           <div>
             <Link
@@ -213,19 +218,19 @@ export default function DashboardPage() {
       {
         key: 'status',
         label: 'Status',
-        width: '130px',
+        width: '120px',
         render: (val) => <StatusBadge status={val} />,
       },
       {
         key: 'created_at',
-        label: 'Date Submitted',
-        width: '140px',
+        label: 'Date',
+        width: '130px',
         render: (val) => <span className="text-xs text-token-text-secondary">{formatDate(val)}</span>,
       },
       {
         key: 'actions',
         label: '',
-        width: '100px',
+        width: '90px',
         align: 'right',
         render: (_, row) => (
           <Button
@@ -233,7 +238,7 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => navigate(`/tickets/${row.id}`)}
           >
-            Track Status
+            View
           </Button>
         ),
       },
@@ -242,104 +247,72 @@ export default function DashboardPage() {
     return (
       <MainLayout
         title={`Welcome, ${user?.name || 'Customer'}`}
-        subtitle="Manage your support requests, track ticket status, and browse self-service FAQs."
+        subtitle="Track your support requests, submit new queries, or get instant help."
         actions={
           <Button variant="primary" icon={Plus} onClick={() => navigate('/tickets/new')}>
-            Submit Support Query
+            New Ticket
           </Button>
         }
       >
         <div className="space-y-6">
-          {/* Customer Welcome & Quick Action Banner */}
-          <div className="p-5 rounded-xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Badge variant="success">Customer Portal</Badge>
-                <span className="text-xs text-token-text-secondary">{user?.department || 'Acme Corp'}</span>
-              </div>
-              <h2 className="text-base font-semibold text-token-text-primary mt-1">
-                How can our support engineering team help you today?
-              </h2>
-              <p className="text-xs text-token-text-secondary mt-0.5">
-                Submit a new inquiry for fast automated triage or search our instant solutions below.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="primary"
-                icon={Plus}
-                onClick={() => navigate('/tickets/new')}
-              >
-                Raise New Ticket
-              </Button>
-              <Button
-                variant="secondary"
-                icon={HelpCircle}
-                onClick={() => navigate('/knowledge-base')}
-              >
-                Help Center
-              </Button>
-            </div>
-          </div>
-
-          {/* 3 Customer Metric Cards */}
+          {/* Quick Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card noPadding className="p-4 flex items-center justify-between">
+            <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-emerald-500">
               <div>
-                <div className="text-xs font-medium text-token-text-secondary">My Active Queries</div>
+                <div className="text-xs font-medium text-token-text-secondary">Active Requests</div>
                 <div className="text-2xl font-bold text-token-text-primary mt-1">{openCount}</div>
               </div>
-              <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-[6px] text-emerald-600">
+              <div className="p-2.5 bg-emerald-500/10 rounded-[6px] text-emerald-600">
                 <Ticket className="w-5 h-5" />
               </div>
             </Card>
 
-            <Card noPadding className="p-4 flex items-center justify-between">
+            <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-amber-500">
               <div>
-                <div className="text-xs font-medium text-token-text-secondary">Under Investigation</div>
-                <div className="text-2xl font-bold text-token-warning mt-1">{inProgressCount}</div>
+                <div className="text-xs font-medium text-token-text-secondary">In Progress</div>
+                <div className="text-2xl font-bold text-amber-600 mt-1">{inProgressCount}</div>
               </div>
-              <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-[6px] text-token-warning">
+              <div className="p-2.5 bg-amber-500/10 rounded-[6px] text-amber-600">
                 <Clock className="w-5 h-5" />
               </div>
             </Card>
 
-            <Card noPadding className="p-4 flex items-center justify-between">
+            <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-blue-500">
               <div>
-                <div className="text-xs font-medium text-token-text-secondary">Resolved Issues</div>
-                <div className="text-2xl font-bold text-token-success mt-1">{resolvedCount}</div>
+                <div className="text-xs font-medium text-token-text-secondary">Resolved</div>
+                <div className="text-2xl font-bold text-blue-600 mt-1">{resolvedCount}</div>
               </div>
-              <div className="p-2.5 bg-green-500/10 border border-green-500/30 rounded-[6px] text-token-success">
+              <div className="p-2.5 bg-blue-500/10 rounded-[6px] text-blue-600">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
             </Card>
           </div>
 
-          {/* Customer Self-Serve FAQ Accordion */}
+          {/* Quick Search FAQs */}
           <Card
-            title="Instant Self-Service Solutions"
-            subtitle="Search common questions to resolve your issue immediately without waiting."
+            title="Need Quick Answers?"
+            subtitle="Search common questions to resolve issues instantly without waiting."
             actions={
               <Link to="/knowledge-base" className="text-xs text-emerald-600 font-medium hover:underline flex items-center gap-1">
-                View All FAQs <ArrowRight className="w-3 h-3" />
+                Help Center <ArrowRight className="w-3 h-3" />
               </Link>
             }
           >
             <div className="space-y-3">
               <Input
-                placeholder="Search FAQs by keywords (e.g., refund, SAML, rate limit, invoice)..."
+                placeholder="Search FAQs by keywords (e.g., refund, password, API, invoice)..."
                 value={faqSearch}
                 onChange={(e) => setFaqSearch(e.target.value)}
                 icon={Search}
               />
 
               <div className="space-y-2 pt-1">
-                {filteredFaqs.slice(0, 4).map((faq) => {
+                {filteredFaqs.slice(0, 3).map((faq) => {
                   const isOpen = expandedFaq === faq.id;
                   return (
                     <div
                       key={faq.id}
-                      className="border border-token-border rounded-[6px] overflow-hidden bg-token-secondary/40 transition-colors"
+                      className="border border-token-border rounded-[6px] overflow-hidden bg-token-secondary/30 transition-colors"
                     >
                       <button
                         type="button"
@@ -355,9 +328,6 @@ export default function DashboardPage() {
                       {isOpen && (
                         <div className="p-3 pt-0 text-xs text-token-text-secondary leading-relaxed border-t border-token-border/40 bg-token-card">
                           <p className="mt-2">{faq.answer}</p>
-                          <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] text-token-text-muted">Category: {faq.category}</span>
-                          </div>
                         </div>
                       )}
                     </div>
@@ -367,15 +337,15 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          {/* My Recent Support Tickets */}
+          {/* Recent Tickets Table */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-token-text-primary flex items-center gap-2">
                 <Ticket className="w-4 h-4 text-emerald-600" />
-                My Support Inquiries ({tickets.length})
+                My Support Tickets ({tickets.length})
               </h3>
               <Link to="/tickets" className="text-xs text-emerald-600 hover:underline font-medium flex items-center gap-1">
-                View All My Tickets <ArrowRight className="w-3 h-3" />
+                All Tickets <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
 
@@ -384,7 +354,7 @@ export default function DashboardPage() {
               data={tickets.slice(0, 5)}
               loading={loading}
               keyField="id"
-              emptyMessage="You have not submitted any support tickets yet."
+              emptyMessage="No tickets submitted yet."
             />
           </div>
         </div>
@@ -392,9 +362,9 @@ export default function DashboardPage() {
     );
   }
 
-  // -------------------------------------------------------------
-  // 2. AGENT DASHBOARD VIEW (AI Triage & Department Routing)
-  // -------------------------------------------------------------
+  // =========================================================================
+  // 2. AGENT DASHBOARD (Focused on Triage, Routing & Response)
+  // =========================================================================
   if (isAgent) {
     const unapprovedTickets = tickets.filter((t) => !t.ai_routing_approved && t.status !== 'RESOLVED');
 
@@ -402,9 +372,9 @@ export default function DashboardPage() {
       {
         key: 'ticket_number',
         label: 'ID',
-        width: '95px',
+        width: '90px',
         render: (val, row) => (
-          <span className="font-mono text-xs font-semibold text-token-accent">
+          <span className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400">
             {val || row.id}
           </span>
         ),
@@ -416,22 +386,22 @@ export default function DashboardPage() {
           <div>
             <Link
               to={`/tickets/${row.id}`}
-              className="font-medium text-token-text-primary hover:text-token-accent transition-colors"
+              className="font-medium text-token-text-primary hover:text-blue-600 transition-colors"
             >
               {val}
             </Link>
-            <div className="text-xs text-token-text-secondary mt-0.5 flex items-center gap-2">
-              <span>Customer: <strong>{row.customer_name}</strong></span>
+            <div className="text-[11px] text-token-text-secondary mt-0.5 flex items-center gap-2">
+              <span>Customer: <strong className="text-token-text-primary">{row.customer_name}</strong></span>
               <span>•</span>
-              <span className="text-token-accent font-medium">{row.assigned_department || 'Unassigned'}</span>
+              <span className="text-blue-600 dark:text-blue-400 font-medium">{row.assigned_department || 'Unassigned'}</span>
             </div>
           </div>
         ),
       },
       {
         key: 'customer_mood',
-        label: 'AI Mood',
-        width: '130px',
+        label: 'Mood',
+        width: '120px',
         render: (_, row) => (
           <AIMoodBadge
             mood={row.customer_mood || 'NEUTRAL'}
@@ -454,7 +424,7 @@ export default function DashboardPage() {
       {
         key: 'actions',
         label: '',
-        width: '140px',
+        width: '130px',
         align: 'right',
         render: (_, row) => (
           <div className="flex items-center justify-end gap-1.5">
@@ -486,8 +456,8 @@ export default function DashboardPage() {
 
     return (
       <MainLayout
-        title="Agent Triage & Department Routing Cockpit"
-        subtitle="Review automated AI categorization, approve department routing, and resolve customer tickets."
+        title="Agent Workspace"
+        subtitle="Review active queue, approve AI suggestions, and assist customers."
         actions={
           <Button variant="primary" icon={Plus} onClick={() => navigate('/tickets/new')}>
             New Ticket
@@ -495,24 +465,24 @@ export default function DashboardPage() {
         }
       >
         <div className="space-y-6">
-          {/* Agent 4 KPI Cards */}
+          {/* 4 Clean Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-blue-600">
               <div>
-                <div className="text-xs font-medium text-token-text-secondary">Queue Tickets</div>
+                <div className="text-xs font-medium text-token-text-secondary">Assigned Queue</div>
                 <div className="text-xl font-bold text-token-text-primary mt-1">{totalCount}</div>
               </div>
-              <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded-[6px] text-token-accent">
+              <div className="p-2 bg-blue-500/10 rounded-[6px] text-blue-600">
                 <Ticket className="w-5 h-5" />
               </div>
             </Card>
 
             <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-amber-500">
               <div>
-                <div className="text-xs font-medium text-token-text-secondary">Needs AI Approval</div>
+                <div className="text-xs font-medium text-token-text-secondary">Needs AI Review</div>
                 <div className="text-xl font-bold text-amber-600 mt-1">{unapprovedAiCount}</div>
               </div>
-              <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-[6px] text-amber-600">
+              <div className="p-2 bg-amber-500/10 rounded-[6px] text-amber-600">
                 <Bot className="w-5 h-5" />
               </div>
             </Card>
@@ -522,52 +492,50 @@ export default function DashboardPage() {
                 <div className="text-xs font-medium text-token-text-secondary">In Progress</div>
                 <div className="text-xl font-bold text-purple-600 mt-1">{inProgressCount}</div>
               </div>
-              <div className="p-2 bg-purple-500/10 border border-purple-500/30 rounded-[6px] text-purple-600">
+              <div className="p-2 bg-purple-500/10 rounded-[6px] text-purple-600">
                 <Clock className="w-5 h-5" />
               </div>
             </Card>
 
             <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-emerald-500">
               <div>
-                <div className="text-xs font-medium text-token-text-secondary">Resolved SLA</div>
+                <div className="text-xs font-medium text-token-text-secondary">Resolved (SLA)</div>
                 <div className="text-xl font-bold text-emerald-600 mt-1">{resolvedCount} (98.4%)</div>
               </div>
-              <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-[6px] text-emerald-600">
+              <div className="p-2 bg-emerald-500/10 rounded-[6px] text-emerald-600">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
             </Card>
           </div>
 
-          {/* AI Triage & Routing Approval Banner */}
+          {/* AI Suggestions Card (Uncluttered, clean) */}
           {unapprovedTickets.length > 0 && (
             <Card
-              className="border-amber-500/40 bg-amber-500/5"
+              className="border-amber-500/30 bg-amber-500/5"
               title={
-                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                  <Bot className="w-5 h-5 text-amber-600 animate-pulse" />
-                  <span>AI Automated Triage Queue ({unapprovedTickets.length} Awaiting Approval)</span>
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+                  <Bot className="w-4 h-4 text-amber-600" />
+                  <span>AI Routing Suggestions ({unapprovedTickets.length} Awaiting Review)</span>
                 </div>
               }
-              subtitle="Gemini has automatically categorized these tickets. Approve recommended routing with 1 click or forward to custom department."
+              subtitle="Gemini AI categorized these requests. Click Approve or Route with notes."
             >
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {unapprovedTickets.map((t) => (
                   <div
                     key={t.id}
-                    className="p-3.5 bg-token-card border border-token-border rounded-[6px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                    className="p-3 bg-token-card border border-token-border rounded-[6px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-token-accent">{t.ticket_number}</span>
+                        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">{t.ticket_number}</span>
                         <span className="font-semibold text-token-text-primary text-xs">{t.title}</span>
                         <PriorityBadge priority={t.priority} />
                       </div>
-                      <div className="text-xs text-token-text-secondary flex items-center gap-2 flex-wrap">
-                        <span>Customer: <strong>{t.customer_name}</strong></span>
+                      <div className="text-[11px] text-token-text-secondary flex items-center gap-2">
+                        <span>Target: <strong className="text-blue-600 dark:text-blue-400">{t.ai_suggested_department || 'Technical Support'}</strong></span>
                         <span>•</span>
-                        <span>AI Suggested Category: <strong className="text-token-text-primary">{t.ai_suggested_category || t.category}</strong></span>
-                        <span>•</span>
-                        <span>AI Target Department: <strong className="text-blue-600 font-semibold">{t.ai_suggested_department || 'Technical Support'}</strong></span>
+                        <span>Category: <strong>{t.ai_suggested_category || t.category}</strong></span>
                       </div>
                     </div>
 
@@ -578,7 +546,7 @@ export default function DashboardPage() {
                         icon={Check}
                         onClick={() => handleApproveRouting(t)}
                       >
-                        Approve AI Route
+                        Approve
                       </Button>
                       <Button
                         variant="secondary"
@@ -591,7 +559,7 @@ export default function DashboardPage() {
                           setForwardModalOpen(true);
                         }}
                       >
-                        Forward with Note
+                        Re-route
                       </Button>
                     </div>
                   </div>
@@ -600,33 +568,38 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          {/* Department Filter Tabs & Search */}
+          {/* Department Tabs & Search */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              {/* Department Tabs */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              {/* Department Tabs with Badges */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {[
-                  { label: 'All Queue', val: '' },
-                  { label: 'Technical Support', val: 'Technical Support' },
-                  { label: 'Finance & Billing', val: 'Finance & Billing' },
-                  { label: 'Identity & Access', val: 'Identity & Access' },
-                  { label: 'API Platform', val: 'API Platform Team' },
+                  { label: 'All Queue', val: '', count: totalCount },
+                  { label: 'Technical', val: 'Technical Support', count: techCount },
+                  { label: 'Billing', val: 'Finance & Billing', count: billingCount },
+                  { label: 'Security', val: 'Identity & Access', count: securityCount },
+                  { label: 'API Team', val: 'API Platform Team', count: apiCount },
                 ].map((tab) => (
                   <button
                     key={tab.val}
                     onClick={() => setSelectedDeptFilter(tab.val)}
-                    className={`px-3 py-1.5 rounded-[6px] text-xs font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded-[6px] text-xs font-medium transition-colors flex items-center gap-1.5 ${
                       selectedDeptFilter === tab.val
                         ? 'bg-blue-600 text-white font-semibold shadow-xs'
                         : 'bg-token-card border border-token-border text-token-text-secondary hover:bg-token-muted'
                     }`}
                   >
-                    {tab.label}
+                    <span>{tab.label}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      selectedDeptFilter === tab.val ? 'bg-white/20 text-white' : 'bg-token-secondary text-token-text-muted'
+                    }`}>
+                      {tab.count}
+                    </span>
                   </button>
                 ))}
               </div>
 
-              <form onSubmit={handleSearchSubmit} className="w-full sm:w-64">
+              <form onSubmit={handleSearchSubmit} className="w-full sm:w-60">
                 <Input
                   placeholder="Search queue..."
                   value={searchQuery}
@@ -636,7 +609,6 @@ export default function DashboardPage() {
               </form>
             </div>
 
-            {/* Queue Table */}
             <Table
               columns={agentColumns}
               data={tickets}
@@ -651,13 +623,13 @@ export default function DashboardPage() {
         <Modal
           isOpen={forwardModalOpen}
           onClose={() => setForwardModalOpen(false)}
-          title={`Forward Ticket ${selectedTicketForForward?.ticket_number || ''} to Department`}
+          title={`Route Ticket ${selectedTicketForForward?.ticket_number || ''}`}
           size="md"
         >
           <form onSubmit={handleForwardSubmit} className="space-y-4 text-xs">
             <div className="p-3 bg-token-secondary rounded-[6px] border border-token-border space-y-1">
               <div className="font-semibold text-token-text-primary">{selectedTicketForForward?.title}</div>
-              <div className="text-token-text-secondary">Customer: {selectedTicketForForward?.customer_name} ({selectedTicketForForward?.customer_email})</div>
+              <div className="text-token-text-secondary">Customer: {selectedTicketForForward?.customer_name}</div>
             </div>
 
             <Dropdown
@@ -674,8 +646,8 @@ export default function DashboardPage() {
             />
 
             <Textarea
-              label="Handover Comments / Notes (Internal)"
-              placeholder="Add details for the department specialist (e.g., 'Verified customer transaction ID, customer requesting refund under SLA')..."
+              label="Handover Notes"
+              placeholder="Add details for the assigned specialist..."
               rows={3}
               value={forwardComments}
               onChange={(e) => setForwardComments(e.target.value)}
@@ -686,7 +658,7 @@ export default function DashboardPage() {
                 Cancel
               </Button>
               <Button type="submit" variant="primary" loading={forwarding} icon={Send}>
-                Forward & Notify Department
+                Confirm Route
               </Button>
             </div>
           </form>
@@ -695,14 +667,14 @@ export default function DashboardPage() {
     );
   }
 
-  // -------------------------------------------------------------
-  // 3. ADMIN DASHBOARD VIEW (Full Accessibility & Governance)
-  // -------------------------------------------------------------
+  // =========================================================================
+  // 3. ADMIN DASHBOARD (Clean, Uncluttered, Intuitive for New Users)
+  // =========================================================================
   const adminColumns = [
     {
       key: 'ticket_number',
       label: 'ID',
-      width: '95px',
+      width: '90px',
       render: (val, row) => (
         <span className="font-mono text-xs font-semibold text-purple-600 dark:text-purple-400">
           {val || row.id}
@@ -711,7 +683,7 @@ export default function DashboardPage() {
     },
     {
       key: 'title',
-      label: 'Subject / Title',
+      label: 'Subject / Customer',
       render: (val, row) => (
         <div>
           <Link
@@ -720,10 +692,10 @@ export default function DashboardPage() {
           >
             {val}
           </Link>
-          <div className="text-xs text-token-text-secondary mt-0.5 flex items-center gap-2">
-            <span>Customer: <strong>{row.customer_name}</strong></span>
+          <div className="text-[11px] text-token-text-secondary mt-0.5 flex items-center gap-2">
+            <span>{row.customer_name}</span>
             <span>•</span>
-            <span className="text-purple-600 font-medium">Dept: {row.assigned_department}</span>
+            <span className="text-purple-600 dark:text-purple-400 font-medium">{row.assigned_department}</span>
           </div>
         </div>
       ),
@@ -743,13 +715,13 @@ export default function DashboardPage() {
     {
       key: 'created_at',
       label: 'Created',
-      width: '130px',
+      width: '110px',
       render: (val) => <span className="text-xs text-token-text-secondary">{formatDate(val)}</span>,
     },
     {
       key: 'actions',
-      label: 'Admin Control',
-      width: '170px',
+      label: 'Action',
+      width: '130px',
       align: 'right',
       render: (_, row) => (
         <div className="flex items-center justify-end gap-1.5">
@@ -768,23 +740,9 @@ export default function DashboardPage() {
               });
               setEditModalOpen(true);
             }}
-            title="Modify Ticket Attributes"
+            title="Edit Ticket"
           >
             Edit
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={ArrowRightLeft}
-            onClick={() => {
-              setSelectedTicketForForward(row);
-              setForwardDept(row.assigned_department || 'Technical Support');
-              setForwardComments('');
-              setForwardModalOpen(true);
-            }}
-            title="Re-route Department"
-          >
-            Route
           </Button>
           <Button
             variant="primary"
@@ -800,122 +758,102 @@ export default function DashboardPage() {
 
   return (
     <MainLayout
-      title="Enterprise Support Command Center"
-      subtitle="Full operational oversight: manage cross-department ticket streams, enforce SLA policies, and modify ticket properties."
+      title="Admin Overview"
+      subtitle="Monitor support performance, team workload, and ticket operations at a glance."
       actions={
         <div className="flex items-center gap-2">
           <Button variant="secondary" icon={Users} onClick={() => navigate('/users')}>
-            Manage Users
+            Team Users
           </Button>
           <Button variant="primary" icon={Plus} onClick={() => navigate('/tickets/new')}>
-            Create Ticket
+            New Ticket
           </Button>
         </div>
       }
     >
       <div className="space-y-6">
-        {/* Admin System KPI Grid */}
+        {/* 4 Clean Essential Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-purple-600">
             <div>
-              <div className="text-xs font-medium text-token-text-secondary">Master Tickets Count</div>
-              <div className="text-xl font-bold text-token-text-primary mt-1">{totalCount}</div>
-              <div className="text-[10px] text-token-text-muted mt-0.5">All customer & agent tickets</div>
+              <div className="text-xs font-medium text-token-text-secondary">Total Inquiries</div>
+              <div className="text-2xl font-bold text-token-text-primary mt-1">{totalCount}</div>
+              <div className="text-[11px] text-token-text-muted mt-0.5">All tickets logged</div>
             </div>
-            <div className="p-2 bg-purple-500/10 border border-purple-500/30 rounded-[6px] text-purple-600">
-              <Shield className="w-5 h-5" />
-            </div>
-          </Card>
-
-          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-blue-600">
-            <div>
-              <div className="text-xs font-medium text-token-text-secondary">Inter-Dept Handovers</div>
-              <div className="text-xl font-bold text-blue-600 mt-1">{forwardedCount}</div>
-              <div className="text-[10px] text-token-text-muted mt-0.5">Cross-department transfers</div>
-            </div>
-            <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded-[6px] text-blue-600">
-              <ArrowRightLeft className="w-5 h-5" />
+            <div className="p-2.5 bg-purple-500/10 rounded-[6px] text-purple-600">
+              <Ticket className="w-5 h-5" />
             </div>
           </Card>
 
-          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-emerald-600">
+          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-amber-500">
             <div>
-              <div className="text-xs font-medium text-token-text-secondary">SLA Compliance Rate</div>
-              <div className="text-xl font-bold text-emerald-600 mt-1">98.4%</div>
-              <div className="text-[10px] text-emerald-500 mt-0.5">Target &gt; 95.0% (Compliant)</div>
+              <div className="text-xs font-medium text-token-text-secondary">Active / Open</div>
+              <div className="text-2xl font-bold text-amber-600 mt-1">{openCount + inProgressCount}</div>
+              <div className="text-[11px] text-token-text-muted mt-0.5">Requiring assistance</div>
             </div>
-            <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-[6px] text-emerald-600">
-              <BarChart3 className="w-5 h-5" />
+            <div className="p-2.5 bg-amber-500/10 rounded-[6px] text-amber-600">
+              <Clock className="w-5 h-5" />
             </div>
           </Card>
 
-          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-amber-600">
+          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-emerald-500">
             <div>
-              <div className="text-xs font-medium text-token-text-secondary">AI Triage Accuracy</div>
-              <div className="text-xl font-bold text-amber-600 mt-1">94.2%</div>
-              <div className="text-[10px] text-amber-500 mt-0.5">Gemini Decision Precision</div>
+              <div className="text-xs font-medium text-token-text-secondary">SLA Resolution Rate</div>
+              <div className="text-2xl font-bold text-emerald-600 mt-1">98.4%</div>
+              <div className="text-[11px] text-emerald-600 font-medium mt-0.5">{resolvedCount} resolved on-time</div>
             </div>
-            <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-[6px] text-amber-600">
-              <Bot className="w-5 h-5" />
+            <div className="p-2.5 bg-emerald-500/10 rounded-[6px] text-emerald-600">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+          </Card>
+
+          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-blue-500">
+            <div>
+              <div className="text-xs font-medium text-token-text-secondary">Active Team</div>
+              <div className="text-2xl font-bold text-blue-600 mt-1">30 Agents</div>
+              <div className="text-[11px] text-token-text-muted mt-0.5">Across 4 departments</div>
+            </div>
+            <div className="p-2.5 bg-blue-500/10 rounded-[6px] text-blue-600">
+              <Users className="w-5 h-5" />
             </div>
           </Card>
         </div>
 
-        {/* Real-time Department Load & Capacity Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { name: 'Technical Support', agents: 6, open: 4, sla: '8 Hours SLA', color: 'border-blue-500/40 text-blue-600' },
-            { name: 'Finance & Billing', agents: 4, open: 2, sla: '4 Hours SLA', color: 'border-amber-500/40 text-amber-600' },
-            { name: 'Identity & Access', agents: 8, open: 1, sla: '2 Hours SLA', color: 'border-purple-500/40 text-purple-600' },
-            { name: 'API Platform Team', agents: 12, open: 5, sla: '6 Hours SLA', color: 'border-emerald-500/40 text-emerald-600' },
-          ].map((dept) => (
-            <div key={dept.name} className="p-3.5 bg-token-card border border-token-border rounded-[6px] space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-xs text-token-text-primary flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-token-accent" />
-                  {dept.name}
-                </span>
-                <span className="text-[10px] font-semibold text-token-accent bg-token-secondary px-1.5 py-0.5 rounded border border-token-border">
-                  {dept.agents} Agents
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-token-text-secondary">
-                <span>Active Tickets: <strong className="text-token-text-primary">{dept.open}</strong></span>
-                <span className="text-[11px] text-emerald-600 font-medium">{dept.sla}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Unified Global Ticket Feed with Filters */}
+        {/* Department Workload Tabs & Filter Row */}
         <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5 flex-wrap w-full sm:w-auto">
-              <span className="text-xs font-semibold text-token-text-secondary mr-1">Department Filter:</span>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            {/* Clean Department Tabs with live counts */}
+            <div className="flex items-center gap-1.5 flex-wrap">
               {[
-                { label: 'All Departments', val: '' },
-                { label: 'Technical', val: 'Technical Support' },
-                { label: 'Billing', val: 'Finance & Billing' },
-                { label: 'Security', val: 'Identity & Access' },
-                { label: 'API Platform', val: 'API Platform Team' },
+                { label: 'All Departments', val: '', count: totalCount },
+                { label: 'Technical', val: 'Technical Support', count: techCount },
+                { label: 'Billing', val: 'Finance & Billing', count: billingCount },
+                { label: 'Security', val: 'Identity & Access', count: securityCount },
+                { label: 'API Platform', val: 'API Platform Team', count: apiCount },
               ].map((tab) => (
                 <button
                   key={tab.val}
                   onClick={() => setSelectedDeptFilter(tab.val)}
-                  className={`px-2.5 py-1 rounded-[4px] text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-[6px] text-xs font-medium transition-colors flex items-center gap-1.5 ${
                     selectedDeptFilter === tab.val
                       ? 'bg-purple-600 text-white font-semibold shadow-xs'
                       : 'bg-token-card border border-token-border text-token-text-secondary hover:bg-token-muted'
                   }`}
                 >
-                  {tab.label}
+                  <span>{tab.label}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    selectedDeptFilter === tab.val ? 'bg-white/20 text-white' : 'bg-token-secondary text-token-text-muted'
+                  }`}>
+                    {tab.count}
+                  </span>
                 </button>
               ))}
             </div>
 
-            <form onSubmit={handleSearchSubmit} className="w-full sm:w-72">
+            {/* Search Input */}
+            <form onSubmit={handleSearchSubmit} className="w-full md:w-64">
               <Input
-                placeholder="Search by ID, title, customer, or agent..."
+                placeholder="Search tickets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 icon={Search}
@@ -923,12 +861,13 @@ export default function DashboardPage() {
             </form>
           </div>
 
+          {/* Clean Ticket Table */}
           <Table
             columns={adminColumns}
             data={tickets}
             loading={loading}
             keyField="id"
-            emptyMessage="No tickets found."
+            emptyMessage="No tickets found matching the selected filter."
           />
         </div>
       </div>
@@ -937,12 +876,12 @@ export default function DashboardPage() {
       <Modal
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        title={`Administrative Override: Edit Ticket ${editingTicket?.ticket_number || ''}`}
+        title={`Edit Ticket ${editingTicket?.ticket_number || ''}`}
         size="md"
       >
         <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
           <Input
-            label="Ticket Title / Subject"
+            label="Ticket Subject"
             value={editForm.title}
             onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
             required
@@ -987,7 +926,7 @@ export default function DashboardPage() {
               ]}
             />
             <Dropdown
-              label="Ticket Status"
+              label="Status"
               value={editForm.status}
               onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
               options={[
@@ -1004,44 +943,7 @@ export default function DashboardPage() {
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={savingEdit}>
-              Save Overrides
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Re-route Modal */}
-      <Modal
-        isOpen={forwardModalOpen}
-        onClose={() => setForwardModalOpen(false)}
-        title={`Re-route Ticket ${selectedTicketForForward?.ticket_number || ''}`}
-        size="md"
-      >
-        <form onSubmit={handleForwardSubmit} className="space-y-4 text-xs">
-          <Dropdown
-            label="Select Destination Department"
-            value={forwardDept}
-            onChange={(e) => setForwardDept(e.target.value)}
-            options={[
-              { label: 'Technical Support', value: 'Technical Support' },
-              { label: 'Finance & Billing', value: 'Finance & Billing' },
-              { label: 'Identity & Access', value: 'Identity & Access' },
-              { label: 'API Platform Team', value: 'API Platform Team' },
-            ]}
-          />
-          <Textarea
-            label="Transfer Reason / Audit Note"
-            placeholder="Document rationale for departmental re-routing..."
-            rows={3}
-            value={forwardComments}
-            onChange={(e) => setForwardComments(e.target.value)}
-          />
-          <div className="flex justify-end gap-2 pt-2 border-t border-token-border">
-            <Button variant="secondary" onClick={() => setForwardModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" loading={forwarding}>
-              Confirm Re-routing
+              Save Changes
             </Button>
           </div>
         </form>
