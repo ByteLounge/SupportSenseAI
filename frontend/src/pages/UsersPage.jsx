@@ -1,7 +1,7 @@
 /**
  * Page: UsersPage.jsx
- * Enterprise User Roster & Role-Based Access Control (RBAC) Management.
- * Exclusive to Administrators.
+ * User Directory & Role-Based Access Control (RBAC).
+ * Clean, fast, and simple user management for administrators.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -16,13 +16,22 @@ import Input from '../components/common/Input';
 import { getUsersApi, updateUserRoleApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Plus, UserCheck, Shield, Users, Mail, Building2, Check } from 'lucide-react';
+import {
+  Plus,
+  UserCheck,
+  Shield,
+  Users,
+  Building2,
+  Search,
+} from 'lucide-react';
 
 export default function UsersPage() {
-  const { user, isAdmin, switchPersona } = useAuth();
+  const { user } = useAuth();
   const { addToast } = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [provisionModalOpen, setProvisionModalOpen] = useState(false);
   const [newUser, setNewUser] = useState({
     name: '',
@@ -69,24 +78,38 @@ export default function UsersPage() {
       last_login: 'Just now',
     };
     setUsers([...users, created]);
-    addToast(`User ${newUser.name} provisioned successfully with role ${newUser.role}`, 'success');
+    addToast(`User ${newUser.name} created as ${newUser.role}`, 'success');
     setProvisionModalOpen(false);
     setNewUser({ name: '', email: '', role: 'AGENT', department: 'Technical Support' });
   };
 
   const breadcrumbs = [
-    { label: 'Admin Command Center', path: '/' },
-    { label: 'User & Access Control (RBAC)' },
+    { label: 'Admin Overview', path: '/' },
+    { label: 'Team & Users' },
   ];
+
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch =
+      !search ||
+      u.name?.toLowerCase().includes(search.toLowerCase()) ||
+      u.email?.toLowerCase().includes(search.toLowerCase()) ||
+      u.department?.toLowerCase().includes(search.toLowerCase());
+    const matchesRole = !roleFilter || u.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  const customerCount = users.filter((u) => u.role === 'CUSTOMER').length;
+  const agentCount = users.filter((u) => u.role === 'AGENT').length;
+  const adminCount = users.filter((u) => u.role === 'ADMIN').length;
 
   const columns = [
     {
       key: 'name',
-      label: 'User Name & Email',
+      label: 'User',
       render: (val, row) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0">
-            {val ? val.split(' ').map(n => n[0]).join('').slice(0, 2) : 'U'}
+          <div className="w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-xs shrink-0">
+            {val ? val.split(' ').map((n) => n[0]).join('').slice(0, 2) : 'U'}
           </div>
           <div>
             <div className="font-semibold text-token-text-primary text-xs">{val}</div>
@@ -97,8 +120,8 @@ export default function UsersPage() {
     },
     {
       key: 'role',
-      label: 'Current RBAC Role',
-      width: '170px',
+      label: 'Role',
+      width: '150px',
       render: (val, row) => (
         <Dropdown
           value={val}
@@ -114,7 +137,7 @@ export default function UsersPage() {
     },
     {
       key: 'department',
-      label: 'Assigned Department / Org',
+      label: 'Department / Organization',
       render: (val) => (
         <span className="text-xs font-medium text-token-text-primary flex items-center gap-1.5">
           <Building2 className="w-3.5 h-3.5 text-token-text-muted" />
@@ -125,111 +148,146 @@ export default function UsersPage() {
     {
       key: 'status',
       label: 'Status',
-      width: '100px',
-      render: (val) => <Badge variant="success">{val || 'Active'}</Badge>,
+      width: '90px',
+      render: (val) => <Badge variant="success" size="sm">{val || 'Active'}</Badge>,
     },
     {
       key: 'last_login',
       label: 'Last Active',
-      width: '130px',
-      render: (val) => <span className="font-mono text-xs text-token-text-secondary">{val}</span>,
+      width: '120px',
+      render: (val) => <span className="text-xs text-token-text-secondary">{val || 'Today'}</span>,
     },
   ];
 
   return (
     <MainLayout
       breadcrumbs={breadcrumbs}
-      title="User & Access Governance (RBAC)"
-      subtitle="Configure enterprise user permissions, assign departmental access, and govern Customer, Agent, and Admin roles."
+      title="User Directory & Access Control"
+      subtitle="Manage team members, roles, and departmental permissions."
       actions={
         <Button variant="primary" icon={Plus} onClick={() => setProvisionModalOpen(true)}>
-          Provision User
+          Add User
         </Button>
       }
     >
       <div className="space-y-5">
-        {/* RBAC Overview Summary Cards */}
+        {/* 3 Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 bg-token-card border border-emerald-500/30 rounded-[8px] flex items-center justify-between">
+          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-emerald-500">
             <div>
-              <div className="text-xs font-semibold text-emerald-600">Customers (Minimal Access)</div>
-              <div className="text-2xl font-bold text-token-text-primary mt-1">
-                {users.filter(u => u.role === 'CUSTOMER').length} Accounts
-              </div>
-              <div className="text-[11px] text-token-text-secondary mt-0.5">Can only view own queries & FAQs</div>
+              <div className="text-xs font-medium text-token-text-secondary">Customers</div>
+              <div className="text-2xl font-bold text-token-text-primary mt-1">{customerCount} Accounts</div>
+              <div className="text-[11px] text-token-text-muted mt-0.5">Submit & track queries</div>
             </div>
-            <div className="p-2.5 bg-emerald-500/10 rounded-full text-emerald-600">
+            <div className="p-2.5 bg-emerald-500/10 rounded-[6px] text-emerald-600">
               <UserCheck className="w-5 h-5" />
             </div>
-          </div>
+          </Card>
 
-          <div className="p-4 bg-token-card border border-blue-500/30 rounded-[8px] flex items-center justify-between">
+          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-blue-500">
             <div>
-              <div className="text-xs font-semibold text-blue-600">Agents (Elevated Access)</div>
-              <div className="text-2xl font-bold text-token-text-primary mt-1">
-                {users.filter(u => u.role === 'AGENT').length} Staff
-              </div>
-              <div className="text-[11px] text-token-text-secondary mt-0.5">All tickets, AI triage, department routing</div>
+              <div className="text-xs font-medium text-token-text-secondary">Support Agents</div>
+              <div className="text-2xl font-bold text-blue-600 mt-1">{agentCount} Staff</div>
+              <div className="text-[11px] text-token-text-muted mt-0.5">Handle queue & AI triage</div>
             </div>
-            <div className="p-2.5 bg-blue-500/10 rounded-full text-blue-600">
+            <div className="p-2.5 bg-blue-500/10 rounded-[6px] text-blue-600">
               <Users className="w-5 h-5" />
             </div>
-          </div>
+          </Card>
 
-          <div className="p-4 bg-token-card border border-purple-500/30 rounded-[8px] flex items-center justify-between">
+          <Card noPadding className="p-4 flex items-center justify-between border-l-4 border-l-purple-500">
             <div>
-              <div className="text-xs font-semibold text-purple-600">Administrators (Full Access)</div>
-              <div className="text-2xl font-bold text-token-text-primary mt-1">
-                {users.filter(u => u.role === 'ADMIN').length} Superusers
-              </div>
-              <div className="text-[11px] text-token-text-secondary mt-0.5">Master overrides, RBAC, SLA policies</div>
+              <div className="text-xs font-medium text-token-text-secondary">Administrators</div>
+              <div className="text-2xl font-bold text-purple-600 mt-1">{adminCount} Admins</div>
+              <div className="text-[11px] text-token-text-muted mt-0.5">Full governance & policies</div>
             </div>
-            <div className="p-2.5 bg-purple-500/10 rounded-full text-purple-600">
+            <div className="p-2.5 bg-purple-500/10 rounded-[6px] text-purple-600">
               <Shield className="w-5 h-5" />
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* User Roster Table */}
-        <Table columns={columns} data={users} loading={loading} keyField="id" />
+        {/* Filter Bar & User Table */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { label: 'All Users', val: '', count: users.length },
+                { label: 'Agents', val: 'AGENT', count: agentCount },
+                { label: 'Admins', val: 'ADMIN', count: adminCount },
+                { label: 'Customers', val: 'CUSTOMER', count: customerCount },
+              ].map((tab) => (
+                <button
+                  key={tab.val}
+                  onClick={() => setRoleFilter(tab.val)}
+                  className={`px-3 py-1.5 rounded-[6px] text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    roleFilter === tab.val
+                      ? 'bg-purple-600 text-white font-semibold shadow-xs'
+                      : 'bg-token-card border border-token-border text-token-text-secondary hover:bg-token-muted'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    roleFilter === tab.val ? 'bg-white/20 text-white' : 'bg-token-secondary text-token-text-muted'
+                  }`}>
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="w-full sm:w-64">
+              <Input
+                placeholder="Search users..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                icon={Search}
+              />
+            </div>
+          </div>
+
+          <Table columns={columns} data={filteredUsers} loading={loading} keyField="id" />
+        </div>
       </div>
 
       {/* Provision User Modal */}
       <Modal
         isOpen={provisionModalOpen}
         onClose={() => setProvisionModalOpen(false)}
-        title="Provision New Enterprise User"
+        title="Add New User"
         size="md"
       >
         <form onSubmit={handleCreateUser} className="space-y-4 text-xs">
           <Input
             label="Full Name"
-            placeholder="e.g., Jordan Hayes"
+            placeholder="e.g. Jane Doe"
             value={newUser.name}
             onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
             required
           />
+
           <Input
             label="Email Address"
-            placeholder="e.g., jordan.hayes@company.com"
+            type="email"
+            placeholder="jane@company.com"
             value={newUser.email}
             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-            type="email"
             required
           />
+
           <div className="grid grid-cols-2 gap-3">
             <Dropdown
-              label="Assigned RBAC Role"
+              label="Role"
               value={newUser.role}
               onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
               options={[
-                { label: 'Customer (Minimal)', value: 'CUSTOMER' },
-                { label: 'Agent (Elevated)', value: 'AGENT' },
-                { label: 'Admin (Full)', value: 'ADMIN' },
+                { label: 'AGENT', value: 'AGENT' },
+                { label: 'ADMIN', value: 'ADMIN' },
+                { label: 'CUSTOMER', value: 'CUSTOMER' },
               ]}
             />
             <Dropdown
-              label="Assigned Department"
+              label="Department"
               value={newUser.department}
               onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
               options={[
@@ -237,7 +295,6 @@ export default function UsersPage() {
                 { label: 'Finance & Billing', value: 'Finance & Billing' },
                 { label: 'Identity & Access', value: 'Identity & Access' },
                 { label: 'API Platform Team', value: 'API Platform Team' },
-                { label: 'Acme Corp (Client)', value: 'Acme Corp' },
               ]}
             />
           </div>
@@ -246,8 +303,8 @@ export default function UsersPage() {
             <Button variant="secondary" onClick={() => setProvisionModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" variant="primary" icon={Plus}>
-              Create User Account
+            <Button type="submit" variant="primary">
+              Create User
             </Button>
           </div>
         </form>
@@ -255,4 +312,3 @@ export default function UsersPage() {
     </MainLayout>
   );
 }
-
