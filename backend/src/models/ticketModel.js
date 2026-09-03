@@ -10,9 +10,11 @@ const db = require('../config/db');
  * Generate unique ticket number (e.g. T-1001)
  */
 async function generateTicketNumber() {
-  const result = await db.query("SELECT COUNT(*) FROM tickets;");
-  const count = parseInt(result.rows[0].count, 10) + 1001;
-  return `T-${count}`;
+  const result = await db.query(
+    "SELECT nextval('ticket_number_seq') AS ticket_number;"
+  );
+
+  return `T-${result.rows[0].ticket_number}`;
 }
 
 /**

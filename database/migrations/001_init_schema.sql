@@ -98,6 +98,13 @@ CREATE TABLE IF NOT EXISTS weekly_insights (
     generated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ----------------------------------------------------------------------------
+-- TICKET NUMBER SEQUENCE
+-- Generates unique ticket numbers for concurrent ticket creation.
+-- ----------------------------------------------------------------------------
+CREATE SEQUENCE IF NOT EXISTS ticket_number_seq
+    START WITH 1001
+    INCREMENT BY 1;
 -- ============================================================================
 -- HIGH PERFORMANCE INDEXES
 -- ============================================================================
