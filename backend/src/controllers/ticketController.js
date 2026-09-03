@@ -10,6 +10,12 @@ const aiMetadataModel = require('../models/aiMetadataModel');
 const aiService = require('../services/aiService');
 const { sendSuccess, sendError } = require('../utils/responseFormatter');
 
+const ALLOWED_STATUS_TRANSITIONS = {
+  OPEN: ['IN_PROGRESS'],
+  IN_PROGRESS: ['RESOLVED'],
+  RESOLVED: ['OPEN', 'CLOSED'],
+  CLOSED: []
+};
 /**
  * Create a new ticket & trigger AI Triage + Department Auto-Reply evaluation.
  * POST /api/v1/tickets
@@ -141,12 +147,25 @@ async function updateStatus(req, res, next) {
     const ticketId = req.params.id;
     const { status, assignedAgentId } = req.body;
 
-    const currentTicket = await ticketModel.getTicketById(ticketId);
-    if (!currentTicket) {
-      return sendError(res, 404, 'Ticket not found.');
-    }
+const currentTicket = await ticketModel.getTicketById(ticketId);
+if (!currentTicket) {
+  return sendError(res, 404, 'Ticket not found.');
+}
 
-    const updatedTicket = await ticketModel.updateTicketStatus(ticketId, {
+if (status) {
+  const allowedTransitions =
+    ALLOWED_STATUS_TRANSITIONS[currentTicket.status] || [];
+
+  if (!allowedTransitions.includes(status)) {
+    return sendError(
+      res,
+      400,
+      `Invalid status transition from ${currentTicket.status} to ${status}.`
+    );
+  }
+}
+
+const updatedTicket = await ticketModel.updateTicketStatus(ticketId, {
       status,
       assignedAgentId
     });
