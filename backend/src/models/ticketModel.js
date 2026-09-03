@@ -30,6 +30,75 @@ async function createTicket({ customerId, title, description, category = 'Genera
   const result = await db.query(sql, [ticketNumber, customerId, title, description, category, priority]);
   return result.rows[0];
 }
+/**
+ * Create a ticket and its initial customer message atomically.
+ */
+async function createTicketWithInitialMessage({
+  customerId,
+  title,
+  description,
+  category = 'General',
+  priority = 'MEDIUM'
+}) {
+  const client = await db.pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Generate ticket number inside the same transaction
+    const numberResult = await client.query(
+      "SELECT nextval('ticket_number_seq') AS ticket_number;"
+    );
+    const ticketNumber = `T-${numberResult.rows[0].ticket_number}`;
+
+    // Create ticket
+    const ticketResult = await client.query(
+      `
+        INSERT INTO tickets (
+          ticket_number,
+          customer_id,
+          title,
+          description,
+          category,
+          priority,
+          status
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, 'OPEN')
+        RETURNING *;
+      `,
+      [ticketNumber, customerId, title, description, category, priority]
+    );
+
+    const ticket = ticketResult.rows[0];
+
+    // Create initial customer message
+    const messageResult = await client.query(
+      `
+        INSERT INTO ticket_messages (
+          ticket_id,
+          sender_id,
+          message_body,
+          is_internal_note
+        )
+        VALUES ($1, $2, $3, $4)
+        RETURNING *;
+      `,
+      [ticket.id, customerId, description, false]
+    );
+
+    await client.query('COMMIT');
+
+    return {
+      ticket,
+      initialMessage: messageResult.rows[0]
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
 
 /**
  * Fetch list of tickets with optional status, priority, and role filtering.
@@ -215,6 +284,7 @@ async function toggleChecklistItem(itemId, isCompleted) {
 
 module.exports = {
   createTicket,
+  createTicketWithInitialMessage,
   getAllTickets,
   getTicketById,
   updateTicketStatus,
