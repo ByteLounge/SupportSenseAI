@@ -60,3 +60,22 @@ INSERT INTO weekly_insights (id, week_identifier, top_issues, common_mistakes, k
  '[{"gap": "Lack of clear self-serve refund portal documentation for customers"}]'::jsonb,
  '[{"question": "How long do credit card refunds take to reflect in my bank account?", "suggested_answer": "Refunds typically process within 3-5 business days depending on your financial institution."}]'::jsonb)
 ON CONFLICT (week_identifier) DO NOTHING;
+
+-- ----------------------------------------------------------------------------
+-- 7. SYNCHRONIZE TICKET NUMBER SEQUENCE
+-- Ensures generated ticket numbers continue after seeded tickets.
+-- ----------------------------------------------------------------------------
+SELECT setval(
+    'ticket_number_seq',
+    COALESCE(
+        (
+            SELECT MAX(
+                CAST(SUBSTRING(ticket_number FROM 3) AS INTEGER)
+            )
+            FROM tickets
+            WHERE ticket_number LIKE 'T-%'
+        ),
+        1000
+    ),
+    true
+);

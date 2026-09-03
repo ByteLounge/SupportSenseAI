@@ -10,16 +10,45 @@ jobs:
   backend-tests:
     name: Backend Unit & Integration Tests
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: supportsense_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d supportsense_db"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
+
+      - name: Initialize Database
+        run: |
+          docker exec $(docker ps -q --filter "ancestor=postgres:15-alpine") \
+            psql -U postgres -d supportsense_db \
+            -f /dev/stdin < database/migrations/001_init_schema.sql
+
+          docker exec $(docker ps -q --filter "ancestor=postgres:15-alpine") \
+            psql -U postgres -d supportsense_db \
+            -f /dev/stdin < database/seeds/001_seed_data.sql
+
       - name: Install Dependencies
         run: cd backend && npm ci
+
       - name: Run Jest Test Suite
         run: cd backend && npm test
 
