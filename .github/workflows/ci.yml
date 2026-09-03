@@ -11,6 +11,15 @@ jobs:
     name: Backend Unit & Integration Tests
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/supportsense_db
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: supportsense_db
+      DB_USER: postgres
+      DB_PASSWORD: postgrespassword
+      NODE_ENV: test
+
     services:
       postgres:
         image: postgres:15-alpine
@@ -33,18 +42,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: backend/package-lock.json
 
       - name: Initialize Database
         run: |
-          docker exec $(docker ps -q --filter "ancestor=postgres:15-alpine") \
-            psql -U postgres -d supportsense_db \
-            -f /dev/stdin < database/migrations/001_init_schema.sql
-
-          docker exec $(docker ps -q --filter "ancestor=postgres:15-alpine") \
-            psql -U postgres -d supportsense_db \
-            -f /dev/stdin < database/seeds/001_seed_data.sql
+          CONTAINER=$(docker ps -q --filter "ancestor=postgres:15-alpine")
+          docker exec -i "$CONTAINER" psql -U postgres -d supportsense_db < database/migrations/001_init_schema.sql
+          docker exec -i "$CONTAINER" psql -U postgres -d supportsense_db < database/seeds/001_seed_data.sql
 
       - name: Install Dependencies
         run: cd backend && npm ci
