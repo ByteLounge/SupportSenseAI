@@ -24,6 +24,8 @@ import { formatDate } from '../../utils/formatters';
  */
 function parseBullets(summaryText) {
   if (!summaryText) return [];
+  if (Array.isArray(summaryText)) return summaryText.map(String).filter(Boolean);
+  if (typeof summaryText !== 'string') return [];
   return summaryText
     .replace(/\\n/g, '\n') // turn literal "\n" text into real newlines
     .split(/\n|(?=•)/) // split on real newlines, and also before any "•" that starts mid-line

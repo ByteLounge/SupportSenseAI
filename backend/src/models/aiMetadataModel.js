@@ -67,12 +67,14 @@ async function saveAgentChecklist(ticketId, itemsArray) {
  */
 async function updateTimelineSummary(ticketId, timelineSummary) {
   const sql = `
-    UPDATE ai_metadata
-    SET timeline_summary = $1, analyzed_at = CURRENT_TIMESTAMP
-    WHERE ticket_id = $2
+    INSERT INTO ai_metadata (ticket_id, timeline_summary, analyzed_at)
+    VALUES ($1, $2, CURRENT_TIMESTAMP)
+    ON CONFLICT (ticket_id) DO UPDATE SET
+      timeline_summary = EXCLUDED.timeline_summary,
+      analyzed_at = CURRENT_TIMESTAMP
     RETURNING *;
   `;
-  const result = await db.query(sql, [timelineSummary, ticketId]);
+  const result = await db.query(sql, [ticketId, timelineSummary]);
   return result.rows[0];
 }
 

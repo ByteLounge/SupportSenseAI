@@ -129,7 +129,7 @@ async function summarizeTimeline(messagesHistory) {
     const response = await fetch(`${env.AI_SERVICE_URL}/api/v1/ai/summarize-timeline`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: messagesHistory }),
+      body: JSON.stringify({ messages: Array.isArray(messagesHistory) ? messagesHistory : [] }),
       signal: AbortSignal.timeout(5000)
     });
 
@@ -138,7 +138,7 @@ async function summarizeTimeline(messagesHistory) {
     }
 
     const json = await response.json();
-    return json.data.timeline_summary;
+    return json?.data?.timeline_summary || '• Ticket history summary currently unavailable. Please review thread messages.';
   } catch (error) {
     logger.error('Failed to summarize timeline:', error.message);
     return '• Ticket history summary currently unavailable. Please review thread messages.';
