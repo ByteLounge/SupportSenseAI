@@ -722,7 +722,6 @@ export default function TicketDetailPage() {
             </Card>
           )}
         </div>
-        </div>
       </div>
 
       {/* Forward Modal */}
