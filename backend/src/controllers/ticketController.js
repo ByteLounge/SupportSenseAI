@@ -8,6 +8,7 @@
 const ticketModel = require('../models/ticketModel');
 const aiMetadataModel = require('../models/aiMetadataModel');
 const aiService = require('../services/aiService');
+const logger = require('../utils/logger');
 const { sendSuccess, sendError } = require('../utils/responseFormatter');
 
 /**
@@ -133,6 +134,21 @@ async function getTicketById(req, res, next) {
 }
 
 /**
+ * Fire-and-forget worker: summarizes the ticket's message history via the AI
+ * microservice and persists it to ai_metadata.timeline_summary once ready.
+ * Runs after the HTTP response has already been sent, so a slow/failed
+ * Gemini call never delays or breaks the status transition.
+ */
+async function triggerReopenedTimelineSummary(ticketId, messages) {
+  try {
+    const summaryText = await aiService.summarizeTimeline(messages);
+    await aiMetadataModel.updateTimelineSummary(ticketId, summaryText);
+    logger.info('Reopened ticket timeline summary generated', { ticketId });
+  } catch (error) {
+    logger.error('Async timeline summarization failed', { ticketId, error: error.message });
+  }
+}
+/**
  * Update ticket status or assigned agent. Reopening triggers AI summary update.
  * PATCH /api/v1/tickets/:id/status
  */
@@ -150,11 +166,17 @@ async function updateStatus(req, res, next) {
       status,
       assignedAgentId
     });
+    logger.info('Timeline summary check', {
+      ticketId,
+      oldStatus: currentTicket.status,
+      newStatus: status
+    });
 
-    // If ticket is being REOPENED or reassigned, generate AI timeline summary
+        // If ticket is being REOPENED (RESOLVED -> OPEN), asynchronously trigger the
+    // AI timeline summarizer. This is fire-and-forget on purpose: the status
+    // update response must not be blocked waiting on Gemini.
     if (status === 'OPEN' && currentTicket.status === 'RESOLVED') {
-      const summaryText = await aiService.summarizeTimeline(currentTicket.messages);
-      await aiMetadataModel.updateTimelineSummary(ticketId, summaryText);
+      triggerReopenedTimelineSummary(ticketId, currentTicket.messages);
     }
 
     return sendSuccess(res, 200, 'Ticket status updated successfully', updatedTicket);
