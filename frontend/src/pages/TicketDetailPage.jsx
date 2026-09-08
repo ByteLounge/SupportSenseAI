@@ -26,6 +26,8 @@ import {
   modifyTicketApi,
   deleteTicketApi,
   toggleChecklistApi,
+  polishToneApi,
+  summarizeTimelineApi,
 } from '../services/api';
 import { formatDate } from '../utils/formatters';
 import {
@@ -76,6 +78,62 @@ export default function TicketDetailPage() {
     assigned_department: '',
   });
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // AI Tone Polishing State
+  const [isPolishingTone, setIsPolishingTone] = useState(false);
+  const [activePolishedTone, setActivePolishedTone] = useState(null);
+
+  // AI Reopened/Timeline Summary State
+  const [timelineSummary, setTimelineSummary] = useState(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [showSummaryBanner, setShowSummaryBanner] = useState(false);
+
+  const handlePolishTone = async (tone) => {
+    if (!replyText.trim()) {
+      addToast('Type or paste a draft response first to polish tone', 'info');
+      return;
+    }
+    setIsPolishingTone(true);
+    try {
+      const res = await polishToneApi({ draft: replyText, tone });
+      const data = res.data || res;
+      if (data && data.polished_text) {
+        setReplyText(data.polished_text);
+        setActivePolishedTone(tone);
+        addToast(`Refined tone to ${tone.toUpperCase()}: ${data.rationale || 'Enhanced clarity'}`, 'success');
+      }
+    } catch (err) {
+      console.error('Failed to polish tone:', err);
+      addToast('Tone polishing unavailable right now', 'error');
+    } finally {
+      setIsPolishingTone(false);
+    }
+  };
+
+  const handleToggleSummary = async () => {
+    if (showSummaryBanner) {
+      setShowSummaryBanner(false);
+      return;
+    }
+
+    if (timelineSummary) {
+      setShowSummaryBanner(true);
+      return;
+    }
+
+    setLoadingSummary(true);
+    try {
+      const res = await summarizeTimelineApi(messages);
+      const data = res.data || res;
+      setTimelineSummary(data.timeline_summary || '• No summary available.');
+      setShowSummaryBanner(true);
+    } catch (err) {
+      console.error('Failed to summarize thread:', err);
+      addToast('Could not generate TL;DR summary', 'error');
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
 
   const fetchTicket = async () => {
     try {
@@ -327,7 +385,42 @@ export default function TicketDetailPage() {
           </Card>
 
           {/* Conversation Thread */}
-          <Card title={`Conversation (${messages.length})`}>
+          <Card
+            title={`Conversation (${messages.length})`}
+            actions={
+              messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  icon={Sparkles}
+                  loading={loadingSummary}
+                  onClick={handleToggleSummary}
+                >
+                  {showSummaryBanner ? 'Hide TL;DR' : '✨ Executive TL;DR'}
+                </Button>
+              )
+            }
+          >
+            {showSummaryBanner && timelineSummary && (
+              <div className="mb-4 p-3.5 bg-gradient-to-r from-moonrow-primary/10 via-amber-500/10 to-token-card border border-moonrow-primary/30 rounded-2xl text-xs space-y-2 animate-in fade-in">
+                <div className="flex items-center justify-between font-bold text-token-text-primary text-xs">
+                  <span className="flex items-center gap-1.5 text-moonrow-primary">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Chronological Executive Summary (TL;DR)
+                  </span>
+                  <button
+                    onClick={() => setShowSummaryBanner(false)}
+                    className="text-token-text-muted hover:text-token-text-primary text-[11px]"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="text-token-text-secondary whitespace-pre-line leading-relaxed font-mono text-[11px] bg-token-card/80 p-2.5 rounded-xl border border-token-border/50">
+                  {timelineSummary}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3.5">
               {messages.length === 0 ? (
                 <div className="text-xs text-token-text-secondary italic text-center py-6">
@@ -393,6 +486,39 @@ export default function TicketDetailPage() {
                       <span>Use AI Draft</span>
                     </button>
                   )}
+                </div>
+              )}
+
+              {/* AI 1-Click Tone Refiner Bar for Agents */}
+              {!isCustomer && (
+                <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-token-secondary/60 border border-token-border text-[11px]">
+                  <span className="text-token-text-muted flex items-center gap-1 font-medium">
+                    <Sparkles className="w-3 h-3 text-moonrow-primary" />
+                    <span>AI 1-Click Tone Polisher:</span>
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {[
+                      { key: 'empathetic', label: 'Empathetic', icon: '❤️' },
+                      { key: 'concise', label: 'Concise TL;DR', icon: '⚡' },
+                      { key: 'formal', label: 'Formal Enterprise', icon: '👔' },
+                      { key: 'technical', label: 'Deep Technical', icon: '🛠️' },
+                    ].map((t) => (
+                      <button
+                        key={t.key}
+                        type="button"
+                        onClick={() => handlePolishTone(t.key)}
+                        disabled={isPolishingTone || !replyText.trim()}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all flex items-center gap-1 ${
+                          activePolishedTone === t.key
+                            ? 'bg-moonrow-primary text-white border-moonrow-primary shadow-xs'
+                            : 'bg-token-card text-token-text-secondary hover:text-moonrow-primary hover:border-moonrow-primary/50 border-token-border'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        <span>{t.icon}</span>
+                        <span>{t.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 

@@ -870,6 +870,198 @@ export const getBenchmarksApi = () =>
     }
   );
 
+// AI Concierge Chatbot & Conversational Ticket Crafter
+export const chatConciergeApi = (payload) =>
+  safeApiCall(
+    () => API.post('/ai/concierge', payload),
+    () => {
+      const msg = (payload.message || '').toLowerCase();
+      const name = payload.customerName || 'Alex Rivera';
+
+      if (['hi', 'hello', 'hey', 'help'].includes(msg.trim())) {
+        return {
+          reply: `Hello ${name}! 👋 I'm your SupportSense AI Concierge. Describe your issue or question in simple, everyday words, and I'll immediately analyze it, offer quick diagnostics, and construct a formal support ticket for our engineering or finance specialists.`,
+          ticket_draft: null,
+          suggested_quick_actions: [
+            'Duplicate charge on credit card',
+            'API Webhook 401 Unauthorized error',
+            'Cannot receive Okta MFA push challenge',
+            'Database connection timeout under load'
+          ],
+          confidence_score: 0.98
+        };
+      }
+
+      let category = 'Technical';
+      let dept = 'Technical Support';
+      let priority = 'MEDIUM';
+      let title = `[Support] ${payload.message.slice(0, 55)}...`;
+      let summary = `Inquiry submitted by ${name}.`;
+      let checklist = [
+        'Review customer account logs',
+        'Verify reproduction steps',
+        'Follow up with status update'
+      ];
+      let diagnostics = 'Standard intake triage. Awaiting agent assignment.';
+
+      if (/charge|refund|card|bill|invoice|payment|stripe|subscription|\$/i.test(msg)) {
+        category = 'Billing';
+        dept = 'Finance & Billing';
+        priority = /twice|duplicate|emergency|asap|urgent|locked/i.test(msg) ? 'URGENT' : 'HIGH';
+        title = `[Billing] Duplicate Payment Discrepancy & Gateway Audit - ${name}`;
+        summary = `Customer reports payment discrepancies or duplicate charges on active payment card.`;
+        checklist = [
+          'Inspect Stripe / Adyen transaction settlement logs',
+          'Verify duplicate charge ID vs pending authorization hold',
+          'Process refund or credit adjustment via merchant ledger',
+          'Send customer confirmation with bank settlement window (3-5 business days)'
+        ];
+        diagnostics = 'High confidence payment ledger query. Pre-authorized for automated transaction lookup.';
+      } else if (/login|password|mfa|2fa|sso|okta|saml|locked/i.test(msg)) {
+        category = 'Account';
+        dept = 'Identity & Access';
+        priority = 'HIGH';
+        title = `[Access] SSO Authentication & MFA Challenge Obstacle - ${name}`;
+        summary = `User authentication blocked by multi-factor challenge failure or directory sync error.`;
+        checklist = [
+          'Verify Okta / Auth0 directory status and active session tokens',
+          'Check for rate-limiting lockouts on customer IP range',
+          'Trigger secure one-time verification link to verified contact email',
+          'Validate successful token re-issuance'
+        ];
+        diagnostics = 'Identity provider session barrier. Directory sync check advised.';
+      } else if (/webhook|api|401|403|404|500|502|504|endpoint|rate limit/i.test(msg)) {
+        category = 'Technical';
+        dept = 'API Platform Team';
+        priority = /outage|down|broken|urgent|asap/i.test(msg) ? 'URGENT' : 'HIGH';
+        title = `[API Platform] Webhook Dispatch Failure (HTTP 401/500) - ${name}`;
+        summary = `API endpoint integration experiencing authentication rejections or ingress dropped events.`;
+        checklist = [
+          'Verify webhook HMAC signing secret in customer API configuration',
+          'Inspect ingress reverse proxy access logs for status code clusters',
+          'Validate tenant rate limit token bucket capacity',
+          'Trigger synthetic test webhook payload to confirm resolution'
+        ];
+        diagnostics = 'Authentication handshake failure on incoming webhook event receiver.';
+      } else if (/bug|crash|error|exception|slow|latency|lag/i.test(msg)) {
+        category = 'Bug';
+        dept = 'Technical Support';
+        priority = 'HIGH';
+        title = `[Bug] System Performance Degraded & Runtime Exception - ${name}`;
+        summary = `Customer reports reproducible application anomaly or elevated latency.`;
+        checklist = [
+          'Capture client browser agent and environment details',
+          'Inspect application error traces in Sentry telemetry',
+          'Attempt reproduction in isolated staging sandbox',
+          'Tag engineering sprint sub-task if confirmed defect'
+        ];
+        diagnostics = 'Application runtime exception detected in customer session.';
+      }
+
+      const formalDescription = `### 1. Executive Summary
+${summary}
+
+### 2. Customer Statement & Observed Symptoms
+"${payload.message}"
+
+### 3. Business & Operational Impact
+Issue interrupts standard user workflow and requires departmental investigation.
+
+### 4. Steps to Reproduce / User Journey
+1. Customer initiated workflow in SupportSense client.
+2. System exhibited failure or unexpected behavior as outlined above.
+3. Customer engaged SupportSense AI Concierge for formal ticket creation.
+
+### 5. Initial AI Diagnostic Assessment
+${diagnostics}
+`;
+
+      return {
+        reply: `I understand how urgent this is, ${name}. I've synthesized your request into a formal enterprise support ticket, classified it under **${category}**, routed it to **${dept}**, and prepared a diagnostic verification checklist. Review the ticket specification below and click **Dispatch Ticket** to launch it!`,
+        ticket_draft: {
+          title,
+          category,
+          priority,
+          target_department: dept,
+          executive_summary: summary,
+          formal_description: formalDescription,
+          checklist,
+          customer_mood: /angry|upset|frustrated|broken|fail|emergency|asap/i.test(msg) ? 'FRUSTRATED' : 'NEUTRAL',
+          patience_score: priority === 'URGENT' ? 'CRITICAL' : 'CONCERNED',
+          predicted_resolution_time: priority === 'URGENT' ? '2-4 hours' : '1-2 business days',
+          urgency_reasoning: `Derived from reported ${category.toLowerCase()} operational friction.`,
+          is_ready_for_ticket: true
+        },
+        suggested_quick_actions: [
+          `Confirm & Dispatch to ${dept}`,
+          'Add error code or screenshot details',
+          'Check system status page'
+        ],
+        confidence_score: 0.94
+      };
+    }
+  );
+
+// 1-Click AI Response Tone Polisher
+export const polishToneApi = (payload) =>
+  safeApiCall(
+    () => API.post('/ai/polish-tone', payload),
+    () => {
+      const { draft = '', tone = 'empathetic' } = payload;
+      const cleanDraft = draft.trim();
+      let polished = cleanDraft;
+      let rationale = '';
+
+      if (tone === 'empathetic') {
+        polished = `Hello! Thank you for your patience while we investigate this. I completely understand how frustrating this disruption is for you and your team. ${cleanDraft} Please rest assured we are actively prioritizing your case and I will provide you with another update shortly.`;
+        rationale = 'Added compassionate acknowledgement of user frustration and reassurance.';
+      } else if (tone === 'concise') {
+        polished = `Update:\n• Status: In progress\n• Action taken: ${cleanDraft}\n• Next update: Within 2 hours.`;
+        rationale = 'Converted into high-clarity bullet points removing conversational filler.';
+      } else if (tone === 'formal') {
+        polished = `Dear Client,\n\nThank you for contacting SupportSense Enterprise Support. With regards to your recent inquiry: ${cleanDraft}\n\nOur team continues to address the issue in strict adherence to our standard Service Level Agreement. We appreciate your valued patience.\n\nSincerely,\nSupportSense Enterprise Support`;
+        rationale = 'Structured as formal enterprise correspondence with professional salutation.';
+      } else if (tone === 'technical') {
+        polished = `Diagnostic Status Report:\n${cleanDraft}\nTelemetry Check: Verifying API gateway latency metrics, TLS handshakes, and database replica synchronization logs. Sandbox reproduction underway.`;
+        rationale = 'Enhanced technical precision with diagnostic telemetry references.';
+      }
+
+      return {
+        polished_text: polished,
+        tone,
+        rationale,
+        confidence_score: 0.96
+      };
+    }
+  );
+
+// AI Reopened / Conversation Timeline Summarizer (TL;DR)
+export const summarizeTimelineApi = (messages) =>
+  safeApiCall(
+    () => API.post('/ai/summarize-timeline', { messages }),
+    () => {
+      if (!messages || messages.length === 0) {
+        return {
+          timeline_summary: '• No historical messages recorded on this ticket thread yet.',
+          confidence_score: 0.5
+        };
+      }
+
+      const bullets = messages.map((m, idx) => {
+        const role = m.sender_role || 'USER';
+        const sender = m.sender_name || 'Participant';
+        const snippet = (m.message_body || '').replace(/[\r\n]+/g, ' ').slice(0, 90);
+        return `• [Step ${idx + 1} - ${role} (${sender})]: ${snippet}...`;
+      });
+
+      return {
+        timeline_summary: bullets.slice(0, 6).join('\n'),
+        confidence_score: 0.94
+      };
+    }
+  );
+
 export default API;
+
 
 

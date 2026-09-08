@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/common/Sidebar';
 import Navbar from '../components/common/Navbar';
 import Breadcrumbs from '../components/common/Breadcrumbs';
+import AIConciergeWidget from '../components/ai/AIConciergeWidget';
 
 export default function MainLayout({
   children,
@@ -74,6 +75,9 @@ export default function MainLayout({
           </div>
         </main>
       </div>
+
+      {/* Global Floating AI Concierge Chatbot */}
+      <AIConciergeWidget />
     </div>
   );
 }

@@ -128,10 +128,62 @@ async function getBenchmarks(req, res, next) {
   }
 }
 
+/**
+ * Interactive AI Concierge Chatbot & Formal Ticket formulation.
+ * POST /api/v1/ai/concierge
+ */
+async function chatConcierge(req, res, next) {
+  try {
+    const { message, history } = req.body;
+    if (!message || !message.trim()) {
+      return sendError(res, 400, 'Message body is required.');
+    }
+
+    const customerName = req.user?.name || req.body.customerName;
+    const customerEmail = req.user?.email || req.body.customerEmail;
+
+    const result = await aiService.chatConcierge({
+      message,
+      history,
+      customerName,
+      customerEmail
+    });
+
+    return sendSuccess(res, 200, 'AI Concierge response generated successfully', result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * 1-Click AI Response Tone Polishing.
+ * POST /api/v1/ai/polish-tone
+ */
+async function polishTone(req, res, next) {
+  try {
+    const { draft, tone } = req.body;
+    if (!draft || !draft.trim()) {
+      return sendError(res, 400, 'Draft message text is required.');
+    }
+
+    const result = await aiService.polishAgentTone({
+      draft,
+      tone: tone || 'empathetic'
+    });
+
+    return sendSuccess(res, 200, 'Agent response tone polished', result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   verifyResponse,
   getWeeklyInsights,
   evaluateAutoReply,
   getDepartmentRules,
-  getBenchmarks
+  getBenchmarks,
+  chatConcierge,
+  polishTone
 };
+
