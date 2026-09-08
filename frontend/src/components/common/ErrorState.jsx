@@ -1,6 +1,6 @@
 /**
  * Enterprise Reusable Component: ErrorState.jsx
- * Clean error container with retry action.
+ * Clean error container with retry action and dark mode support.
  */
 
 import React from 'react';
@@ -14,8 +14,8 @@ export default function ErrorState({
   className = '',
 }) {
   return (
-    <div className={`p-8 text-center bg-[#FEF2F2] border border-[#FCA5A5] rounded-[6px] text-[#991B1B] space-y-3 ${className}`}>
-      <AlertCircle className="w-8 h-8 mx-auto text-[#DC2626]" />
+    <div className={`p-8 text-center bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-xl text-rose-800 dark:text-rose-200 space-y-3 ${className}`}>
+      <AlertCircle className="w-8 h-8 mx-auto text-rose-600 dark:text-rose-400" />
       <div>
         <h4 className="text-sm font-semibold">{title}</h4>
         <p className="text-xs opacity-90 mt-1 max-w-md mx-auto">{message}</p>

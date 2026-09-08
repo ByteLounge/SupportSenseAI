@@ -155,7 +155,7 @@ export default function DepartmentsPage() {
               const ticketPct = (dept.open_tickets / maxScale) * 100;
 
               return (
-                <div key={dept.id} className="p-3 bg-token-secondary/40 rounded-[6px] border border-token-border/60 space-y-2">
+                <div key={dept.id} className="p-3 bg-token-secondary/40 rounded-xl border border-token-border/60 space-y-2">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
                     <div className="font-semibold text-token-text-primary flex items-center gap-2">
                       <Building2 className="w-4 h-4 text-token-accent" />
@@ -193,7 +193,7 @@ export default function DepartmentsPage() {
             <Card key={dept.id} className="border-token-border hover:border-token-accent/40 transition-colors">
               <div className="flex items-start justify-between mb-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-[6px] bg-blue-500/10 text-token-accent">
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-token-accent">
                     <Building2 className="w-4 h-4" />
                   </div>
                   <div>
@@ -288,7 +288,7 @@ export default function DepartmentsPage() {
 
           {/* Test Result Display */}
           {testResult && (
-            <div className="mt-3 p-3.5 rounded-[6px] bg-token-secondary border border-token-border space-y-2">
+            <div className="mt-3 p-3.5 rounded-xl bg-token-secondary border border-token-border space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-token-text-primary text-xs flex items-center gap-1.5">
                   <Bot className="w-4 h-4 text-token-accent" />

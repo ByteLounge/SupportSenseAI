@@ -1,7 +1,6 @@
 /**
  * Component: AIMoodBadge.jsx
- * Lead Engineer: Member 1 (Frontend Lead)
- * Description: Renders AI Mood Indicator (🙂/😐/😠) with color-coded badges and confidence scores.
+ * Clean, subtle customer sentiment indicator without visual clutter.
  */
 
 import React from 'react';
@@ -11,19 +10,19 @@ export default function AIMoodBadge({ mood, confidence }) {
 
   const moodConfig = {
     HAPPY: {
-      emoji: '🙂',
-      label: 'Happy',
-      style: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+      dot: 'bg-emerald-500',
+      label: 'Positive',
+      style: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
     },
     NEUTRAL: {
-      emoji: '😐',
+      dot: 'bg-slate-400',
       label: 'Neutral',
-      style: 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800'
+      style: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20'
     },
     FRUSTRATED: {
-      emoji: '😠',
+      dot: 'bg-rose-500',
       label: 'Frustrated',
-      style: 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+      style: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20'
     }
   };
 
@@ -31,13 +30,12 @@ export default function AIMoodBadge({ mood, confidence }) {
   const confidencePct = confidence ? Math.round(confidence * 100) : 85;
 
   return (
-    <div
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${config.style}`}
-      aria-label={`Customer Mood: ${config.label}, Confidence ${confidencePct} percent`}
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-medium ${config.style}`}
+      title={`Customer Sentiment: ${config.label} (${confidencePct}% confidence)`}
     >
-      <span>{config.emoji}</span>
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
       <span>{config.label}</span>
-      <span className="opacity-65 text-[10px]">({confidencePct}%)</span>
-    </div>
+    </span>
   );
 }

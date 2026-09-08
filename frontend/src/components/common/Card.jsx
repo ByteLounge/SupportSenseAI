@@ -1,6 +1,6 @@
 /**
  * Enterprise Reusable Component: Card.jsx
- * Responsive Card container using CSS design tokens.
+ * Clean, modern card container with subtle borders and rounded-xl corners.
  */
 
 import React from 'react';
@@ -11,13 +11,13 @@ export default function Card({
   actions,
   children,
   className = '',
-  bodyClassName = 'p-3.5 sm:p-4',
+  bodyClassName = 'p-4 sm:p-5',
   noPadding = false,
 }) {
   return (
-    <div className={`bg-token-card border border-token-border rounded-[6px] shadow-subtle text-token-text-primary ${className}`}>
+    <div className={`bg-token-card border border-token-border rounded-xl shadow-xs text-token-text-primary ${className}`}>
       {(title || subtitle || actions) && (
-        <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 sm:px-4 py-3 border-b border-token-border bg-token-card">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-3.5 border-b border-token-border bg-token-card rounded-t-xl">
           <div>
             {title && <h3 className="text-sm font-semibold text-token-text-primary">{title}</h3>}
             {subtitle && <p className="text-xs text-token-text-secondary mt-0.5">{subtitle}</p>}

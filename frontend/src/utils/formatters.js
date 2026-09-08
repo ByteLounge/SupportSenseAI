@@ -49,22 +49,22 @@ export function getStatusBadgeStyle(status) {
     case 'RESOLVED':
     case 'CLOSED':
       return {
-        bg: 'bg-green-50 text-green-700 border-green-200',
-        dot: 'bg-green-600',
+        bg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+        dot: 'bg-emerald-500',
         label: 'Resolved'
       };
     case 'IN_PROGRESS':
     case 'PENDING':
       return {
-        bg: 'bg-amber-50 text-amber-700 border-amber-200',
-        dot: 'bg-amber-600',
+        bg: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+        dot: 'bg-amber-500',
         label: 'In Progress'
       };
     case 'OPEN':
     default:
       return {
-        bg: 'bg-blue-50 text-blue-700 border-blue-200',
-        dot: 'bg-blue-600',
+        bg: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
+        dot: 'bg-blue-500',
         label: 'Open'
       };
   }
@@ -78,14 +78,14 @@ export function getPriorityBadgeStyle(priority) {
   switch (normalized) {
     case 'URGENT':
     case 'CRITICAL':
-      return 'bg-red-50 text-red-700 border-red-200 font-semibold';
+      return 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20 font-semibold';
     case 'HIGH':
-      return 'bg-amber-50 text-amber-700 border-amber-200 font-medium';
+      return 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 font-medium';
     case 'MEDIUM':
-      return 'bg-blue-50 text-blue-700 border-blue-200 font-medium';
+      return 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20 font-medium';
     case 'LOW':
     default:
-      return 'bg-gray-100 text-gray-600 border-gray-200 font-normal';
+      return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20 font-normal';
   }
 }
 

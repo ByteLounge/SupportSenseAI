@@ -92,7 +92,7 @@ export default function CreateTicketPage() {
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Customer Self-Serve FAQ Banner */}
         {isCustomer && (
-          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-[6px] text-xs flex items-center justify-between text-emerald-800 dark:text-emerald-300">
+          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs flex items-center justify-between text-emerald-800 dark:text-emerald-300">
             <span className="flex items-center gap-2">
               <HelpCircle className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Tip: Before submitting, check if your answer is in our Knowledge Base!</span>

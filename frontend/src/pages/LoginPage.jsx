@@ -1,7 +1,6 @@
 /**
  * Page: LoginPage.jsx
- * Enterprise User Sign-In Page.
- * Multi-role quick login selectors for Customer, Agent, and Admin personas.
+ * Clean, modern user sign-in page with 1-click persona selectors.
  */
 
 import React, { useState } from 'react';
@@ -10,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import Alert from '../components/common/Alert';
-import { Mail, Lock, ArrowRight, User, Briefcase, Shield, Sparkles } from 'lucide-react';
+import { Mail, Lock, ArrowRight, User, Shield, Headphones } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('agent.sarah@supportsense.ai');
@@ -36,27 +35,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-token-primary flex items-center justify-center p-4 text-token-text-primary">
-      <div className="w-full max-w-md bg-token-card border border-token-border rounded-[8px] shadow-subtle p-6 space-y-5">
-        {/* Header */}
-        <div className="text-center space-y-1">
-          <div className="w-10 h-10 bg-token-accent text-white rounded-[6px] font-bold flex items-center justify-center text-sm mx-auto shadow-xs">
+    <div className="min-h-screen bg-token-secondary flex items-center justify-center p-4 text-token-text-primary">
+      <div className="w-full max-w-md bg-token-card border border-token-border rounded-xl shadow-xs p-6 sm:p-8 space-y-6">
+        {/* Brand Header */}
+        <div className="text-center space-y-1.5">
+          <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl font-bold flex items-center justify-center text-sm mx-auto shadow-xs">
             SS
           </div>
-          <h2 className="text-lg font-bold text-token-text-primary">SupportSense AI</h2>
-          <p className="text-xs text-token-text-secondary">Enterprise Multi-Tier AI Support & Triage Platform</p>
+          <h2 className="text-xl font-bold text-token-text-primary tracking-tight">SupportSense</h2>
+          <p className="text-xs text-token-text-secondary">Sign in to your support workspace</p>
         </div>
 
         {error && <Alert type="error">{error}</Alert>}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Email Address"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            placeholder="user@supportsense.ai"
+            placeholder="you@company.com"
             icon={Mail}
           />
 
@@ -76,75 +76,45 @@ export default function LoginPage() {
             className="w-full"
             icon={ArrowRight}
           >
-            Sign In to Workspace
+            Sign In
           </Button>
         </form>
 
-        {/* Multi-Persona Quick Sign-In Selection */}
-        <div className="pt-3 border-t border-token-border space-y-2.5">
-          <div className="text-[11px] text-center text-token-text-muted font-semibold uppercase tracking-wider">
-            Quick Persona 1-Click Launch
+        {/* 1-Click Persona Selection */}
+        <div className="pt-4 border-t border-token-border space-y-3">
+          <div className="text-center text-[11px] font-medium text-token-text-muted uppercase tracking-wider">
+            Or quick demo sign in
           </div>
 
-          <div className="space-y-2 text-xs">
-            {/* Persona 1: Customer */}
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => handleQuickPersona('customer')}
-              className="w-full p-2.5 bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/30 rounded-[6px] text-left flex items-center justify-between transition-colors"
+              className="p-2.5 rounded-lg border border-token-border bg-token-secondary/60 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/30 transition-all text-center group"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
-                  AR
-                </div>
-                <div>
-                  <div className="font-semibold text-token-text-primary">Alex Rivera (Customer)</div>
-                  <div className="text-[10px] text-token-text-secondary">Acme Corp • Minimal Access (Own Tickets & FAQs)</div>
-                </div>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold">
-                Customer
-              </span>
+              <User className="w-4 h-4 mx-auto text-emerald-600 mb-1" />
+              <div className="text-xs font-semibold text-token-text-primary">Customer</div>
+              <div className="text-[10px] text-token-text-muted">Alex Rivera</div>
             </button>
 
-            {/* Persona 2: Support Agent */}
             <button
               type="button"
               onClick={() => handleQuickPersona('agent')}
-              className="w-full p-2.5 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/30 rounded-[6px] text-left flex items-center justify-between transition-colors"
+              className="p-2.5 rounded-lg border border-token-border bg-token-secondary/60 hover:bg-indigo-50 hover:border-indigo-300 dark:hover:bg-indigo-950/30 transition-all text-center group"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
-                  SA
-                </div>
-                <div>
-                  <div className="font-semibold text-token-text-primary">Sarah Agent (Support Agent)</div>
-                  <div className="text-[10px] text-token-text-secondary">AI Triage Cockpit • Department Routing & Notes</div>
-                </div>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-semibold">
-                Agent
-              </span>
+              <Headphones className="w-4 h-4 mx-auto text-indigo-600 mb-1" />
+              <div className="text-xs font-semibold text-token-text-primary">Agent</div>
+              <div className="text-[10px] text-token-text-muted">Sarah Agent</div>
             </button>
 
-            {/* Persona 3: Admin */}
             <button
               type="button"
               onClick={() => handleQuickPersona('admin')}
-              className="w-full p-2.5 bg-purple-500/5 hover:bg-purple-500/10 border border-purple-500/30 rounded-[6px] text-left flex items-center justify-between transition-colors"
+              className="p-2.5 rounded-lg border border-token-border bg-token-secondary/60 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950/30 transition-all text-center group"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">
-                  AD
-                </div>
-                <div>
-                  <div className="font-semibold text-token-text-primary">Admin User (Administrator)</div>
-                  <div className="text-[10px] text-token-text-secondary">Full System Control • Master Overrides & RBAC</div>
-                </div>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 font-semibold">
-                Admin
-              </span>
+              <Shield className="w-4 h-4 mx-auto text-purple-600 mb-1" />
+              <div className="text-xs font-semibold text-token-text-primary">Admin</div>
+              <div className="text-[10px] text-token-text-muted">Admin User</div>
             </button>
           </div>
         </div>
@@ -152,4 +122,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

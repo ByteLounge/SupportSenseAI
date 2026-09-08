@@ -179,7 +179,7 @@ export default function UsersPage() {
               <div className="text-2xl font-bold text-token-text-primary mt-1">{customerCount} Accounts</div>
               <div className="text-[11px] text-token-text-muted mt-0.5">Submit & track queries</div>
             </div>
-            <div className="p-2.5 bg-emerald-500/10 rounded-[6px] text-emerald-600">
+            <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-600">
               <UserCheck className="w-5 h-5" />
             </div>
           </Card>
@@ -190,7 +190,7 @@ export default function UsersPage() {
               <div className="text-2xl font-bold text-blue-600 mt-1">{agentCount} Staff</div>
               <div className="text-[11px] text-token-text-muted mt-0.5">Handle queue & AI triage</div>
             </div>
-            <div className="p-2.5 bg-blue-500/10 rounded-[6px] text-blue-600">
+            <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-600">
               <Users className="w-5 h-5" />
             </div>
           </Card>
@@ -201,7 +201,7 @@ export default function UsersPage() {
               <div className="text-2xl font-bold text-purple-600 mt-1">{adminCount} Admins</div>
               <div className="text-[11px] text-token-text-muted mt-0.5">Full governance & policies</div>
             </div>
-            <div className="p-2.5 bg-purple-500/10 rounded-[6px] text-purple-600">
+            <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-600">
               <Shield className="w-5 h-5" />
             </div>
           </Card>
@@ -220,7 +220,7 @@ export default function UsersPage() {
                 <button
                   key={tab.val}
                   onClick={() => setRoleFilter(tab.val)}
-                  className={`px-3 py-1.5 rounded-[6px] text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 ${
                     roleFilter === tab.val
                       ? 'bg-purple-600 text-white font-semibold shadow-xs'
                       : 'bg-token-card border border-token-border text-token-text-secondary hover:bg-token-muted'
