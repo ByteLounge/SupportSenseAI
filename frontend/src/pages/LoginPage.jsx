@@ -10,6 +10,7 @@ import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import Alert from '../components/common/Alert';
 import { Mail, Lock, ArrowRight, User, Shield, Headphones } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('agent.sarah@supportsense.ai');
@@ -37,17 +38,19 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-token-secondary flex items-center justify-center p-4 text-token-text-primary">
       <div className="w-full max-w-md bg-token-card border border-token-border rounded-2xl shadow-card p-6 sm:p-8 space-y-6">
-        {/* MoonRow Brand Header */}
+        {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-[#FD451B] text-white rounded-2xl font-extrabold flex items-center justify-center text-base mx-auto shadow-xs tracking-tight">
-            MR
-          </div>
+          <img
+            src={logoImg}
+            alt="SupportSense Logo"
+            className="w-14 h-14 rounded-2xl mx-auto object-cover shadow-xs"
+          />
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-token-text-primary tracking-tight">
-              MoonRow
+              SupportSense
             </h2>
             <p className="text-xs text-token-text-secondary mt-0.5">
-              Ticket Sales & Support Analytics Platform
+              Enterprise AI Support & Triage Platform
             </p>
           </div>
         </div>

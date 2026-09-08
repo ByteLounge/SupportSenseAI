@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import logoImg from '../../assets/logo.png';
 
 export default function Sidebar({
   isCollapsed = false,
@@ -78,16 +79,18 @@ export default function Sidebar({
         {/* MoonRow Brand Header */}
         <div className="h-16 px-4 flex items-center justify-between border-b border-token-border bg-token-card">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-[#FD451B] flex items-center justify-center font-extrabold text-white text-sm shadow-xs shrink-0 tracking-tight">
-              MR
-            </div>
+            <img
+              src={logoImg}
+              alt="SupportSense Logo"
+              className="w-9 h-9 rounded-xl object-cover shadow-xs shrink-0 bg-token-muted"
+            />
             {!isCollapsed && (
               <div className="truncate">
                 <div className="font-bold text-sm text-token-text-primary leading-tight tracking-tight flex items-center gap-1.5">
-                  <span>MoonRow</span>
+                  <span>SupportSense</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FD451B]" />
                 </div>
-                <div className="text-[11px] text-token-text-secondary font-medium">Ticket Analytics</div>
+                <div className="text-[11px] text-token-text-secondary font-medium">AI Support System</div>
               </div>
             )}
           </div>
