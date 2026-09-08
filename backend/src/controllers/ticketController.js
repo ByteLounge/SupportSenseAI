@@ -11,6 +11,12 @@ const aiService = require('../services/aiService');
 const logger = require('../utils/logger');
 const { sendSuccess, sendError } = require('../utils/responseFormatter');
 
+const ALLOWED_STATUS_TRANSITIONS = {
+  OPEN: ['IN_PROGRESS'],
+  IN_PROGRESS: ['RESOLVED'],
+  RESOLVED: ['OPEN', 'CLOSED'],
+  CLOSED: []
+};
 /**
  * Create a new ticket & trigger AI Triage + Department Auto-Reply evaluation.
  * POST /api/v1/tickets
@@ -23,8 +29,8 @@ async function createTicket(req, res, next) {
       return sendError(res, 400, 'Ticket title and description are required.');
     }
 
-    // 1. Create ticket record in database
-    const newTicket = await ticketModel.createTicket({
+    // 1. Create ticket and initial customer message atomically
+    const transactionResult = await ticketModel.createTicketWithInitialMessage({
       customerId: req.user.id,
       title,
       description,
@@ -32,14 +38,7 @@ async function createTicket(req, res, next) {
       priority
     });
 
-    // 2. Insert initial customer message into thread
-    await ticketModel.createMessage({
-      ticketId: newTicket.id,
-      senderId: req.user.id,
-      messageBody: description,
-      isInternalNote: false
-    });
-
+    const newTicket = transactionResult.ticket;
     // 3. Trigger AI Triage microservice with role-based prompting & dataset benchmarks
     const aiResult = await aiService.performAITriage(title, description);
 
@@ -157,12 +156,25 @@ async function updateStatus(req, res, next) {
     const ticketId = req.params.id;
     const { status, assignedAgentId } = req.body;
 
-    const currentTicket = await ticketModel.getTicketById(ticketId);
-    if (!currentTicket) {
-      return sendError(res, 404, 'Ticket not found.');
-    }
+const currentTicket = await ticketModel.getTicketById(ticketId);
+if (!currentTicket) {
+  return sendError(res, 404, 'Ticket not found.');
+}
 
-    const updatedTicket = await ticketModel.updateTicketStatus(ticketId, {
+if (status) {
+  const allowedTransitions =
+    ALLOWED_STATUS_TRANSITIONS[currentTicket.status] || [];
+
+  if (!allowedTransitions.includes(status)) {
+    return sendError(
+      res,
+      400,
+      `Invalid status transition from ${currentTicket.status} to ${status}.`
+    );
+  }
+}
+
+const updatedTicket = await ticketModel.updateTicketStatus(ticketId, {
       status,
       assignedAgentId
     });

@@ -1,6 +1,6 @@
 /**
  * Enterprise Reusable Component: EmptyState.jsx
- * Clean, subtle empty placeholder view.
+ * Clean, subtle empty placeholder view with design tokens.
  */
 
 import React from 'react';
@@ -16,13 +16,13 @@ export default function EmptyState({
   className = '',
 }) {
   return (
-    <div className={`p-10 text-center flex flex-col items-center justify-center space-y-3 bg-white border border-[#E5E7EB] rounded-[6px] ${className}`}>
-      <div className="p-3 bg-[#F8F9FA] border border-[#E5E7EB] rounded-[6px] text-[#6B7280]">
-        <Icon className="w-6 h-6" />
+    <div className={`p-10 text-center flex flex-col items-center justify-center space-y-3 bg-token-card border border-token-border rounded-xl ${className}`}>
+      <div className="p-3 bg-token-secondary border border-token-border rounded-xl text-token-text-muted">
+        <Icon className="w-5 h-5" />
       </div>
       <div>
-        <h4 className="text-sm font-semibold text-[#111827]">{title}</h4>
-        <p className="text-xs text-[#6B7280] mt-1 max-w-sm">{description}</p>
+        <h4 className="text-sm font-semibold text-token-text-primary">{title}</h4>
+        <p className="text-xs text-token-text-secondary mt-1 max-w-sm">{description}</p>
       </div>
       {actionLabel && onAction && (
         <div className="pt-2">

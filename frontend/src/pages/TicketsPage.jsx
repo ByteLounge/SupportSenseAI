@@ -1,9 +1,7 @@
 /**
  * Page: TicketsPage.jsx
- * Role-adaptive Ticket Queue & Management Interface.
- * - Customer: Limited to personal tickets with friendly tracking.
- * - Agent: Global queue, AI triage categorization, department forwarding with comments.
- * - Admin: Master grid, full modification powers, re-routing, and deletion control.
+ * MoonRow styled Ticket Queue & Management Interface.
+ * Symmetrical layout, rounded-2xl table container, and vermilion accents.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,10 +11,9 @@ import Pagination from '../components/common/Pagination';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Dropdown from '../components/common/Dropdown';
-import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
 import Textarea from '../components/common/Textarea';
-import Badge, { StatusBadge, PriorityBadge } from '../components/common/Badge';
+import { StatusBadge, PriorityBadge } from '../components/common/Badge';
 import AIMoodBadge from '../components/ai/AIMoodBadge';
 import {
   getTicketsApi,
@@ -34,14 +31,8 @@ import {
   ArrowRightLeft,
   Edit,
   Trash2,
-  CheckCircle2,
-  Clock,
-  Building2,
   Send,
-  HelpCircle,
-  Sparkles,
-  Shield,
-  Layers,
+  Building2,
 } from 'lucide-react';
 
 export default function TicketsPage() {
@@ -58,7 +49,7 @@ export default function TicketsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Agent / Admin Forward Modal State
+  // Forward Modal State
   const [forwardModalOpen, setForwardModalOpen] = useState(false);
   const [selectedTicketForForward, setSelectedTicketForForward] = useState(null);
   const [forwardDept, setForwardDept] = useState('Technical Support');
@@ -116,7 +107,7 @@ export default function TicketsPage() {
         targetDepartment: forwardDept,
         comments: forwardComments,
       });
-      addToast(`Ticket ${selectedTicketForForward.ticket_number} forwarded to ${forwardDept}`, 'success');
+      addToast(`Forwarded to ${forwardDept}`, 'success');
       setForwardModalOpen(false);
       fetchTickets();
     } catch (err) {
@@ -132,7 +123,7 @@ export default function TicketsPage() {
     setSavingEdit(true);
     try {
       await modifyTicketApi(editingTicket.id, editForm);
-      addToast(`Ticket ${editingTicket.ticket_number} updated`, 'success');
+      addToast('Ticket updated', 'success');
       setEditModalOpen(false);
       fetchTickets();
     } catch (err) {
@@ -143,12 +134,10 @@ export default function TicketsPage() {
   };
 
   const handleDeleteTicket = async (ticket) => {
-    if (!window.confirm(`Are you sure you want to delete / archive ticket ${ticket.ticket_number}?`)) {
-      return;
-    }
+    if (!window.confirm(`Delete ticket ${ticket.ticket_number}?`)) return;
     try {
       await deleteTicketApi(ticket.id);
-      addToast(`Ticket ${ticket.ticket_number} deleted`, 'info');
+      addToast('Ticket deleted', 'info');
       fetchTickets();
     } catch (err) {
       addToast('Failed to delete ticket', 'error');
@@ -161,345 +150,223 @@ export default function TicketsPage() {
     currentPage * pageSize
   );
 
-  // -----------------------------------------------------------------
-  // COLUMNS: CUSTOMER VIEW (Clean, No Internal Telemetry)
-  // -----------------------------------------------------------------
-  const customerColumns = [
-    {
-      key: 'ticket_number',
-      label: 'Query ID',
-      width: '110px',
-      render: (val, row) => (
-        <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-          {val || row.id}
-        </span>
-      ),
-    },
-    {
-      key: 'title',
-      label: 'Subject / Question',
-      render: (val, row) => (
-        <div>
-          <Link
-            to={`/tickets/${row.id}`}
-            className="font-semibold text-token-text-primary hover:text-emerald-600 transition-colors text-xs"
-          >
-            {val}
-          </Link>
-          <div className="text-[11px] text-token-text-secondary mt-0.5">
-            Category: <span className="font-medium text-token-text-primary">{row.category}</span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'assigned_department',
-      label: 'Handling Team',
-      width: '160px',
-      render: (val) => (
-        <span className="text-xs font-medium text-token-text-primary flex items-center gap-1.5">
-          <Building2 className="w-3.5 h-3.5 text-token-text-muted" />
-          {val || 'General Support'}
-        </span>
-      ),
-    },
-    {
-      key: 'status',
-      label: 'Current Status',
-      width: '130px',
-      render: (val) => <StatusBadge status={val} />,
-    },
-    {
-      key: 'created_at',
-      label: 'Submitted Date',
-      width: '140px',
-      render: (val) => <span className="text-xs text-token-text-secondary">{formatDate(val)}</span>,
-    },
-    {
-      key: 'actions',
-      label: '',
-      width: '110px',
-      align: 'right',
-      render: (_, row) => (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => navigate(`/tickets/${row.id}`)}
-        >
-          View Conversation
-        </Button>
-      ),
-    },
-  ];
+  const getColumns = () => {
+    if (isCustomer) {
+      return [
+        {
+          key: 'ticket_number',
+          label: 'Ticket ID',
+          width: '100px',
+          render: (val, row) => (
+            <span className="font-mono text-xs font-bold text-token-text-primary px-2 py-0.5 rounded-lg bg-token-muted border border-token-border">
+              {val || row.id}
+            </span>
+          ),
+        },
+        {
+          key: 'title',
+          label: 'Inquiry Subject',
+          render: (val, row) => (
+            <div>
+              <Link
+                to={`/tickets/${row.id}`}
+                className="font-bold text-token-text-primary hover:text-[#FD451B] transition-colors text-xs sm:text-sm tracking-tight"
+              >
+                {val}
+              </Link>
+              <div className="text-[11px] text-token-text-secondary mt-0.5">
+                Category: <span className="font-semibold text-token-text-primary">{row.category}</span>
+              </div>
+            </div>
+          ),
+        },
+        {
+          key: 'assigned_department',
+          label: 'Team',
+          width: '160px',
+          render: (val) => (
+            <span className="text-xs text-token-text-secondary flex items-center gap-1.5 font-medium">
+              <Building2 className="w-3.5 h-3.5 text-token-text-muted" />
+              {val || 'General Support'}
+            </span>
+          ),
+        },
+        {
+          key: 'status',
+          label: 'Status',
+          width: '120px',
+          render: (val) => <StatusBadge status={val} />,
+        },
+        {
+          key: 'created_at',
+          label: 'Date',
+          width: '120px',
+          render: (val) => <span className="text-xs text-token-text-secondary font-medium">{formatDate(val)}</span>,
+        },
+        {
+          key: 'actions',
+          label: '',
+          width: '80px',
+          align: 'right',
+          render: (_, row) => (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/tickets/${row.id}`)}
+            >
+              View
+            </Button>
+          ),
+        },
+      ];
+    }
 
-  // -----------------------------------------------------------------
-  // COLUMNS: AGENT VIEW (AI Triage, Routing & Queue)
-  // -----------------------------------------------------------------
-  const agentColumns = [
-    {
-      key: 'ticket_number',
-      label: 'ID',
-      width: '95px',
-      render: (val, row) => (
-        <span className="font-mono text-xs font-semibold text-token-accent">
-          {val || row.id}
-        </span>
-      ),
-    },
-    {
-      key: 'title',
-      label: 'Customer Inquiry',
-      render: (val, row) => (
-        <div>
-          <Link
-            to={`/tickets/${row.id}`}
-            className="font-medium text-token-text-primary hover:text-token-accent transition-colors"
-          >
-            {val}
-          </Link>
-          <div className="text-xs text-token-text-secondary mt-0.5 flex items-center gap-2">
-            <span>Customer: <strong>{row.customer_name}</strong></span>
-            <span>•</span>
-            <span className="text-token-accent font-medium">{row.assigned_department}</span>
+    return [
+      {
+        key: 'ticket_number',
+        label: 'Ticket ID',
+        width: '100px',
+        render: (val, row) => (
+          <span className="font-mono text-xs font-bold text-[#FD451B] px-2 py-0.5 rounded-lg bg-[#FD451B]/10 border border-[#FD451B]/20">
+            {val || row.id}
+          </span>
+        ),
+      },
+      {
+        key: 'title',
+        label: 'Inquiry',
+        render: (val, row) => (
+          <div>
+            <Link
+              to={`/tickets/${row.id}`}
+              className="font-bold text-token-text-primary hover:text-[#FD451B] transition-colors text-xs sm:text-sm tracking-tight"
+            >
+              {val}
+            </Link>
+            <div className="text-[11px] text-token-text-secondary mt-0.5 flex items-center gap-2">
+              <span className="font-semibold text-token-text-primary">{row.customer_name}</span>
+              <span>•</span>
+              <span className="text-token-text-muted font-medium">{row.assigned_department}</span>
+            </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: 'customer_mood',
-      label: 'AI Mood',
-      width: '130px',
-      render: (_, row) => (
-        <AIMoodBadge
-          mood={row.customer_mood || 'NEUTRAL'}
-          confidence={row.mood_confidence || 0.88}
-        />
-      ),
-    },
-    {
-      key: 'priority',
-      label: 'Priority',
-      width: '90px',
-      render: (val) => <PriorityBadge priority={val} />,
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      width: '110px',
-      render: (val) => <StatusBadge status={val} />,
-    },
-    {
-      key: 'created_at',
-      label: 'Date',
-      width: '130px',
-      render: (val) => <span className="text-xs text-token-text-secondary">{formatDate(val)}</span>,
-    },
-    {
-      key: 'actions',
-      label: '',
-      width: '140px',
-      align: 'right',
-      render: (_, row) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={ArrowRightLeft}
-            onClick={() => {
-              setSelectedTicketForForward(row);
-              setForwardDept(row.ai_suggested_department || row.assigned_department || 'Technical Support');
-              setForwardComments('');
-              setForwardModalOpen(true);
-            }}
-            title="Forward to Department"
-          >
-            Route
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate(`/tickets/${row.id}`)}
-          >
-            Triage
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
-  // -----------------------------------------------------------------
-  // COLUMNS: ADMIN VIEW (Full Controls, Edit, Delete, Override)
-  // -----------------------------------------------------------------
-  const adminColumns = [
-    {
-      key: 'ticket_number',
-      label: 'ID',
-      width: '95px',
-      render: (val, row) => (
-        <span className="font-mono text-xs font-semibold text-purple-600 dark:text-purple-400">
-          {val || row.id}
-        </span>
-      ),
-    },
-    {
-      key: 'title',
-      label: 'Subject / Title',
-      render: (val, row) => (
-        <div>
-          <Link
-            to={`/tickets/${row.id}`}
-            className="font-medium text-token-text-primary hover:text-purple-600 transition-colors"
-          >
-            {val}
-          </Link>
-          <div className="text-xs text-token-text-secondary mt-0.5 flex items-center gap-2">
-            <span>Customer: <strong>{row.customer_name}</strong></span>
-            <span>•</span>
-            <span className="text-purple-600 font-medium">Dept: {row.assigned_department}</span>
+        ),
+      },
+      {
+        key: 'customer_mood',
+        label: 'Sentiment',
+        width: '120px',
+        render: (_, row) => (
+          <AIMoodBadge
+            mood={row.customer_mood || 'NEUTRAL'}
+            confidence={row.mood_confidence || 0.88}
+          />
+        ),
+      },
+      {
+        key: 'priority',
+        label: 'Priority',
+        width: '90px',
+        render: (val) => <PriorityBadge priority={val} />,
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        width: '110px',
+        render: (val) => <StatusBadge status={val} />,
+      },
+      {
+        key: 'created_at',
+        label: 'Date',
+        width: '110px',
+        render: (val) => <span className="text-xs text-token-text-secondary font-medium">{formatDate(val)}</span>,
+      },
+      {
+        key: 'actions',
+        label: '',
+        width: '150px',
+        align: 'right',
+        render: (_, row) => (
+          <div className="flex items-center justify-end gap-1.5">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={ArrowRightLeft}
+              onClick={() => {
+                setSelectedTicketForForward(row);
+                setForwardDept(row.ai_suggested_department || row.assigned_department || 'Technical Support');
+                setForwardComments('');
+                setForwardModalOpen(true);
+              }}
+            >
+              Route
+            </Button>
+            {isAdmin && (
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Edit}
+                onClick={() => {
+                  setEditingTicket(row);
+                  setEditForm({
+                    title: row.title,
+                    category: row.category,
+                    priority: row.priority,
+                    status: row.status,
+                    assigned_department: row.assigned_department,
+                  });
+                  setEditModalOpen(true);
+                }}
+              >
+                Edit
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate(`/tickets/${row.id}`)}
+            >
+              Open
+            </Button>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: 'category',
-      label: 'Category',
-      width: '110px',
-      render: (val) => <span className="font-medium text-xs text-token-text-primary">{val}</span>,
-    },
-    {
-      key: 'priority',
-      label: 'Priority',
-      width: '90px',
-      render: (val) => <PriorityBadge priority={val} />,
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      width: '110px',
-      render: (val) => <StatusBadge status={val} />,
-    },
-    {
-      key: 'created_at',
-      label: 'Created',
-      width: '130px',
-      render: (val) => <span className="text-xs text-token-text-secondary">{formatDate(val)}</span>,
-    },
-    {
-      key: 'actions',
-      label: 'Admin Actions',
-      width: '200px',
-      align: 'right',
-      render: (_, row) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={Edit}
-            onClick={() => {
-              setEditingTicket(row);
-              setEditForm({
-                title: row.title,
-                category: row.category,
-                priority: row.priority,
-                status: row.status,
-                assigned_department: row.assigned_department,
-              });
-              setEditModalOpen(true);
-            }}
-            title="Modify Ticket"
-          >
-            Edit
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={ArrowRightLeft}
-            onClick={() => {
-              setSelectedTicketForForward(row);
-              setForwardDept(row.assigned_department || 'Technical Support');
-              setForwardComments('');
-              setForwardModalOpen(true);
-            }}
-            title="Re-route Department"
-          >
-            Route
-          </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            icon={Trash2}
-            onClick={() => handleDeleteTicket(row)}
-            title="Delete Ticket"
-          >
-            Del
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
-  const breadcrumbs = [
-    { label: isCustomer ? 'Customer Portal' : 'Dashboard', path: '/' },
-    { label: isCustomer ? 'My Support Requests' : isAdmin ? 'Master Ticket List' : 'Ticket Queue' },
-  ];
+        ),
+      },
+    ];
+  };
 
   return (
     <MainLayout
-      breadcrumbs={breadcrumbs}
-      title={
-        isCustomer
-          ? 'My Support Requests'
-          : isAdmin
-          ? 'Enterprise Ticket Master List & Overrides'
-          : 'Support Ticket Queue & Department Routing'
-      }
+      title={isCustomer ? 'My Support Requests' : 'Ticket Queue'}
       subtitle={
         isCustomer
-          ? 'View and track all queries and tickets submitted by your account.'
-          : isAdmin
-          ? 'Complete unrestricted access to inspect, modify, re-route, or remove any ticket across all departments.'
-          : 'Manage incoming customer requests, review AI triage recommendations, and forward to specialized departments.'
+          ? 'Track all your submitted queries and resolutions'
+          : 'Unified ticket directory with real-time triage and department routing'
       }
       actions={
-        <Button variant="primary" icon={Plus} onClick={() => navigate('/tickets/new')}>
-          {isCustomer ? 'Submit New Query' : 'New Ticket'}
+        <Button
+          variant="primary"
+          icon={Plus}
+          onClick={() => navigate('/tickets/new')}
+        >
+          {isCustomer ? 'Submit Query' : 'New Ticket'}
         </Button>
       }
     >
       <div className="space-y-4">
-        {/* Customer Self-Serve Header Notice */}
-        {isCustomer && (
-          <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-[6px] text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Looking for quick answers? Check our FAQ repository before submitting a query.</span>
-            </span>
-            <Link to="/knowledge-base" className="font-semibold underline hover:no-underline shrink-0">
-              Browse FAQs &rarr;
-            </Link>
-          </div>
-        )}
-
-        {/* Filter & Search Bar */}
-        <Card noPadding className="p-3">
+        {/* Filter Bar in rounded-2xl MoonRow Card */}
+        <div className="p-4 bg-token-card border border-token-border rounded-2xl shadow-card">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3">
             {/* Search Input */}
             <form onSubmit={handleSearchSubmit} className="w-full md:w-80">
               <Input
-                placeholder={
-                  isCustomer
-                    ? 'Search my tickets...'
-                    : 'Search by ID, subject, customer, or department...'
-                }
+                placeholder="Search by ID, keyword, or customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 icon={Search}
               />
             </form>
 
-            {/* Dropdown Filters */}
+            {/* Filter Dropdowns */}
             <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
-              {/* Department Filter for Agent & Admin */}
               {!isCustomer && (
                 <Dropdown
                   value={departmentFilter}
@@ -515,7 +382,6 @@ export default function TicketsPage() {
                 />
               )}
 
-              {/* Status Filter */}
               <Dropdown
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -529,7 +395,6 @@ export default function TicketsPage() {
                 size="sm"
               />
 
-              {/* Priority Filter for Agent & Admin */}
               {!isCustomer && (
                 <Dropdown
                   value={priorityFilter}
@@ -546,19 +411,15 @@ export default function TicketsPage() {
               )}
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Tickets Table */}
         <Table
-          columns={isCustomer ? customerColumns : isAdmin ? adminColumns : agentColumns}
+          columns={getColumns()}
           data={paginatedTickets}
           loading={loading}
           keyField="id"
-          emptyMessage={
-            isCustomer
-              ? 'No support queries found. Click "Submit New Query" to get help.'
-              : 'No tickets matched your filter criteria.'
-          }
+          emptyMessage="No tickets found matching your criteria"
         />
 
         {/* Pagination */}
@@ -575,17 +436,19 @@ export default function TicketsPage() {
         />
       </div>
 
-      {/* Forward Ticket Modal (Agent & Admin) */}
+      {/* Forward Modal */}
       <Modal
         isOpen={forwardModalOpen}
         onClose={() => setForwardModalOpen(false)}
-        title={`Forward Ticket ${selectedTicketForForward?.ticket_number || ''} to Department`}
+        title="Route Ticket"
         size="md"
       >
         <form onSubmit={handleForwardSubmit} className="space-y-4 text-xs">
-          <div className="p-3 bg-token-secondary rounded-[6px] border border-token-border space-y-1">
-            <div className="font-semibold text-token-text-primary">{selectedTicketForForward?.title}</div>
-            <div className="text-token-text-secondary">Customer: {selectedTicketForForward?.customer_name} ({selectedTicketForForward?.customer_email})</div>
+          <div className="p-3.5 bg-token-muted rounded-xl border border-token-border">
+            <div className="font-bold text-token-text-primary text-sm">{selectedTicketForForward?.title}</div>
+            <div className="text-token-text-secondary text-xs mt-0.5">
+              Customer: {selectedTicketForForward?.customer_name}
+            </div>
           </div>
 
           <Dropdown
@@ -598,12 +461,11 @@ export default function TicketsPage() {
               { label: 'Identity & Access', value: 'Identity & Access' },
               { label: 'API Platform Team', value: 'API Platform Team' },
             ]}
-            required
           />
 
           <Textarea
-            label="Handover Comments / Notes (Internal)"
-            placeholder="Add internal details for the receiving department specialist..."
+            label="Handover Notes (Internal)"
+            placeholder="Optional context for the assigned team..."
             rows={3}
             value={forwardComments}
             onChange={(e) => setForwardComments(e.target.value)}
@@ -614,22 +476,22 @@ export default function TicketsPage() {
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={forwarding} icon={Send}>
-              Forward & Notify Department
+              Route
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* Admin Quick Modify Ticket Modal */}
+      {/* Admin Edit Modal */}
       <Modal
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        title={`Modify Ticket Attributes: ${editingTicket?.ticket_number || ''}`}
+        title="Edit Ticket"
         size="md"
       >
         <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
           <Input
-            label="Ticket Subject / Title"
+            label="Subject"
             value={editForm.title}
             onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
             required
@@ -637,7 +499,7 @@ export default function TicketsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Dropdown
-              label="Assigned Department"
+              label="Department"
               value={editForm.assigned_department}
               onChange={(e) => setEditForm({ ...editForm, assigned_department: e.target.value })}
               options={[
@@ -647,21 +509,6 @@ export default function TicketsPage() {
                 { label: 'API Platform Team', value: 'API Platform Team' },
               ]}
             />
-            <Dropdown
-              label="Category"
-              value={editForm.category}
-              onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-              options={[
-                { label: 'Technical', value: 'Technical' },
-                { label: 'Billing', value: 'Billing' },
-                { label: 'Security', value: 'Security' },
-                { label: 'Feature Request', value: 'Feature Request' },
-                { label: 'Bug', value: 'Bug' },
-              ]}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
             <Dropdown
               label="Priority"
               value={editForm.priority}
@@ -673,25 +520,26 @@ export default function TicketsPage() {
                 { label: 'URGENT', value: 'URGENT' },
               ]}
             />
-            <Dropdown
-              label="Status"
-              value={editForm.status}
-              onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-              options={[
-                { label: 'OPEN', value: 'OPEN' },
-                { label: 'IN_PROGRESS', value: 'IN_PROGRESS' },
-                { label: 'RESOLVED', value: 'RESOLVED' },
-                { label: 'CLOSED', value: 'CLOSED' },
-              ]}
-            />
           </div>
+
+          <Dropdown
+            label="Status"
+            value={editForm.status}
+            onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+            options={[
+              { label: 'OPEN', value: 'OPEN' },
+              { label: 'IN_PROGRESS', value: 'IN_PROGRESS' },
+              { label: 'RESOLVED', value: 'RESOLVED' },
+              { label: 'CLOSED', value: 'CLOSED' },
+            ]}
+          />
 
           <div className="flex justify-end gap-2 pt-2 border-t border-token-border">
             <Button variant="secondary" onClick={() => setEditModalOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={savingEdit}>
-              Save Changes
+              Save
             </Button>
           </div>
         </form>
@@ -699,4 +547,3 @@ export default function TicketsPage() {
     </MainLayout>
   );
 }
-

@@ -1,6 +1,7 @@
 /**
  * Component: Sidebar.jsx
- * Role-adaptive enterprise navigation sidebar with customized menus and permission badges.
+ * MoonRow styled minimalist navigation sidebar.
+ * Clean typography, rounded-xl navigation pills, and signature vermilion active state.
  */
 
 import React from 'react';
@@ -14,16 +15,12 @@ import {
   HelpCircle,
   Users,
   BarChart3,
-  Lightbulb,
   ChevronLeft,
   ChevronRight,
   X,
-  Shield,
-  Briefcase,
-  Sparkles,
-  Zap,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import logoImg from '../../assets/logo.png';
 
 export default function Sidebar({
   isCollapsed = false,
@@ -38,74 +35,62 @@ export default function Sidebar({
       return [
         { label: 'My Tickets', path: '/tickets', icon: Ticket },
         { label: 'Submit Query', path: '/tickets/new', icon: PlusCircle },
-        { label: 'Help Center & FAQs', path: '/knowledge-base', icon: HelpCircle },
-        { label: 'My Profile', path: '/profile', icon: User },
+        { label: 'Help & FAQs', path: '/knowledge-base', icon: HelpCircle },
+        { label: 'Profile', path: '/profile', icon: User },
       ];
     }
 
     if (isAgent) {
       return [
-        { label: 'Triage Dashboard', path: '/', icon: LayoutDashboard },
-        { label: 'All Tickets Queue', path: '/tickets', icon: Ticket },
+        { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+        { label: 'Ticket Queue', path: '/tickets', icon: Ticket },
         { label: 'New Ticket', path: '/tickets/new', icon: PlusCircle },
-        { label: 'Department Routing', path: '/departments', icon: Building2 },
+        { label: 'Departments', path: '/departments', icon: Building2 },
         { label: 'Knowledge Base', path: '/knowledge-base', icon: HelpCircle },
-        { label: 'My Profile', path: '/profile', icon: User },
+        { label: 'Profile', path: '/profile', icon: User },
       ];
     }
 
     // Admin Navigation Items
     return [
-      { label: 'Command Center', path: '/', icon: LayoutDashboard },
-      { label: 'Ticket Master List', path: '/tickets', icon: Ticket },
-      { label: 'Create Ticket', path: '/tickets/new', icon: PlusCircle },
-      { label: 'Department Policies', path: '/departments', icon: Building2 },
-      { label: 'User & Access (RBAC)', path: '/users', icon: Users },
-      { label: 'SLA Analytics', path: '/analytics', icon: BarChart3 },
-      { label: 'Learning Insights', path: '/insights', icon: Lightbulb },
-      { label: 'System Profile', path: '/profile', icon: User },
+      { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+      { label: 'All Tickets', path: '/tickets', icon: Ticket },
+      { label: 'New Ticket', path: '/tickets/new', icon: PlusCircle },
+      { label: 'Departments', path: '/departments', icon: Building2 },
+      { label: 'Team & RBAC', path: '/users', icon: Users },
+      { label: 'Analytics', path: '/analytics', icon: BarChart3 },
+      { label: 'Profile', path: '/profile', icon: User },
     ];
   };
 
   const navigationItems = getNavigationItems();
 
-  const getRoleHeaderInfo = () => {
-    if (isCustomer) {
-      return {
-        badgeText: 'Client Portal',
-        subText: 'Customer Self-Serve',
-        logoBg: 'bg-emerald-600',
-      };
-    }
-    if (isAgent) {
-      return {
-        badgeText: 'Agent Cockpit',
-        subText: 'AI Triage & Forwarding',
-        logoBg: 'bg-blue-600',
-      };
-    }
-    return {
-      badgeText: 'Admin Suite',
-      subText: 'Full System Control',
-      logoBg: 'bg-purple-600',
-    };
+  const getRoleBadge = () => {
+    if (isCustomer) return { label: 'Customer', color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300' };
+    if (isAgent) return { label: 'Agent', color: 'bg-[#FD451B]/10 text-[#FD451B] dark:bg-[#FD451B]/20 dark:text-[#FD451B]' };
+    return { label: 'Admin', color: 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300' };
   };
 
-  const roleHeader = getRoleHeaderInfo();
+  const roleBadge = getRoleBadge();
 
   const sidebarContent = (
     <div className="flex flex-col justify-between h-full bg-token-sidebar border-r border-token-border text-token-text-primary">
       <div>
-        {/* Brand Header */}
-        <div className="h-14 px-4 flex items-center justify-between border-b border-token-border bg-token-card">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className={`w-7 h-7 ${roleHeader.logoBg} text-white rounded-[6px] flex items-center justify-center font-bold text-xs shrink-0 shadow-xs`}>
-              SS
-            </div>
+        {/* MoonRow Brand Header */}
+        <div className="h-16 px-4 flex items-center justify-between border-b border-token-border bg-token-card">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <img
+              src={logoImg}
+              alt="SupportSense Logo"
+              className="w-9 h-9 rounded-xl object-cover shadow-xs shrink-0 bg-token-muted"
+            />
             {!isCollapsed && (
               <div className="truncate">
-                <div className="font-semibold text-xs text-token-text-primary leading-none">SupportSense AI</div>
-                <div className="text-[10px] text-token-text-secondary leading-tight mt-0.5">{roleHeader.subText}</div>
+                <div className="font-bold text-sm text-token-text-primary leading-tight tracking-tight flex items-center gap-1.5">
+                  <span>SupportSense</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FD451B]" />
+                </div>
+                <div className="text-[11px] text-token-text-secondary font-medium">AI Support System</div>
               </div>
             )}
           </div>
@@ -114,7 +99,7 @@ export default function Sidebar({
           {onToggleCollapse && (
             <button
               onClick={onToggleCollapse}
-              className="hidden lg:flex items-center justify-center w-6 h-6 text-token-text-secondary hover:text-token-text-primary hover:bg-token-muted rounded-[4px] transition-colors"
+              className="hidden lg:flex items-center justify-center w-7 h-7 text-token-text-secondary hover:text-token-text-primary hover:bg-token-muted rounded-lg transition-colors"
               title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
               aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
             >
@@ -126,16 +111,16 @@ export default function Sidebar({
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="lg:hidden p-1 text-token-text-secondary hover:text-token-text-primary hover:bg-token-muted rounded-[4px]"
-              aria-label="Close Navigation Drawer"
+              className="lg:hidden p-1.5 text-token-text-secondary hover:text-token-text-primary hover:bg-token-muted rounded-lg"
+              aria-label="Close Sidebar"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
         {/* Navigation List */}
-        <nav className="p-2 space-y-1" aria-label="Main Navigation">
+        <nav className="p-3 space-y-1" aria-label="Main Navigation">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -145,14 +130,10 @@ export default function Sidebar({
                 end={item.path === '/' || item.path === '/tickets'}
                 onClick={() => onCloseMobile && onCloseMobile()}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-xs font-medium transition-colors min-h-[40px] ${
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm transition-all duration-150 ${
                     isActive
-                      ? isCustomer
-                        ? 'bg-emerald-600 text-white font-semibold shadow-xs'
-                        : isAgent
-                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                        : 'bg-purple-600 text-white font-semibold shadow-xs'
-                      : 'text-token-text-primary hover:bg-token-muted'
+                      ? 'bg-[#FD451B]/10 text-[#FD451B] font-bold dark:bg-[#FD451B]/20 dark:text-[#FD451B]'
+                      : 'font-medium text-token-text-secondary hover:text-token-text-primary hover:bg-token-muted'
                   } ${isCollapsed ? 'justify-center px-0' : ''}`
                 }
                 title={isCollapsed ? item.label : undefined}
@@ -165,30 +146,30 @@ export default function Sidebar({
         </nav>
       </div>
 
-      {/* Role-Specific Footer User Badge */}
-      {user && !isCollapsed && (
-        <div className="p-3 m-2 bg-token-card border border-token-border rounded-[6px] text-xs space-y-1.5 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-token-text-primary truncate">{user.name}</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
-                isCustomer
-                  ? 'bg-emerald-500/10 text-emerald-600'
-                  : isAgent
-                  ? 'bg-blue-500/10 text-blue-600'
-                  : 'bg-purple-500/10 text-purple-600'
-              }`}
-            >
-              {user.role}
-            </span>
-          </div>
-          <div className="text-[11px] text-token-text-secondary truncate">
-            {user.department || (isCustomer ? 'Acme Corp' : 'Support Specialist')}
-          </div>
-          <div className="pt-1 border-t border-token-border text-[10px] text-token-text-muted flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-token-accent" />
-            <span>{isCustomer ? 'Customer View' : isAgent ? 'Agent AI Assist Active' : 'Admin Master Override'}</span>
-          </div>
+      {/* MoonRow User Footer Card */}
+      {user && (
+        <div className="p-3 border-t border-token-border">
+          {isCollapsed ? (
+            <div className="flex justify-center">
+              <div className="w-8 h-8 rounded-full bg-[#FD451B]/10 text-[#FD451B] flex items-center justify-center font-bold text-xs border border-[#FD451B]/20">
+                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-token-muted border border-token-border">
+              <div className="w-8 h-8 rounded-full bg-[#FD451B] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-token-text-primary truncate">{user.name}</div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className={`text-[10px] px-2 py-0.2 rounded-full font-semibold uppercase tracking-wider ${roleBadge.color}`}>
+                    {roleBadge.label}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -199,21 +180,21 @@ export default function Sidebar({
       {/* Desktop Sidebar */}
       <aside
         className={`hidden lg:block shrink-0 transition-all duration-200 ${
-          isCollapsed ? 'w-16' : 'w-56'
+          isCollapsed ? 'w-16' : 'w-60'
         }`}
       >
         {sidebarContent}
       </aside>
 
-      {/* Mobile Slide-Out Drawer Overlay */}
+      {/* Mobile Slide-Out Drawer */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-black/50 transition-opacity"
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
             aria-hidden="true"
           />
-          <div className="relative w-64 max-w-[80vw] h-full bg-token-sidebar shadow-lg z-10 animate-slide-in">
+          <div className="relative w-64 max-w-[80vw] h-full bg-token-sidebar shadow-xl z-10 animate-slide-in">
             {sidebarContent}
           </div>
         </div>
@@ -221,4 +202,3 @@ export default function Sidebar({
     </>
   );
 }
-

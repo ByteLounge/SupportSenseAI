@@ -13,13 +13,16 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Textarea from '../components/common/Textarea';
 import Dropdown from '../components/common/Dropdown';
+import AIConciergeChatbot from '../components/ai/AIConciergeChatbot';
 import { createTicketApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { ArrowLeft, Send, HelpCircle, Sparkles, Building2, User, Mail } from 'lucide-react';
+import { ArrowLeft, Send, HelpCircle, Sparkles, Building2, User, Mail, MessageSquare, FileEdit } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 export default function CreateTicketPage() {
   const { user, isCustomer, isAgent, isAdmin } = useAuth();
+  const [creationMode, setCreationMode] = useState('ai'); // 'ai' | 'manual'
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Technical');
@@ -89,21 +92,74 @@ export default function CreateTicketPage() {
         </Button>
       }
     >
-      <div className="max-w-2xl mx-auto space-y-4">
-        {/* Customer Self-Serve FAQ Banner */}
-        {isCustomer && (
-          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-[6px] text-xs flex items-center justify-between text-emerald-800 dark:text-emerald-300">
-            <span className="flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Tip: Before submitting, check if your answer is in our Knowledge Base!</span>
-            </span>
-            <Link to="/knowledge-base" className="font-semibold underline hover:no-underline shrink-0">
-              Browse FAQs &rarr;
-            </Link>
-          </div>
-        )}
+      <div className="max-w-3xl mx-auto space-y-4">
+        {/* Creation Mode Switcher */}
+        <div className="flex items-center justify-between p-1.5 bg-token-card border border-token-border rounded-2xl shadow-xs">
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setCreationMode('ai')}
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                creationMode === 'ai'
+                  ? 'bg-moonrow-primary text-white shadow-sm'
+                  : 'text-token-text-secondary hover:text-token-text-primary hover:bg-token-secondary'
+              }`}
+            >
+              <img
+                src={logoImg}
+                alt="SupportSense AI"
+                className="w-4 h-4 rounded-md object-contain bg-white p-0.5 shrink-0"
+              />
+              <span>AI Concierge (Chat in simple words)</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${creationMode === 'ai' ? 'bg-white/20 text-white' : 'bg-moonrow-primary/10 text-moonrow-primary'}`}>
+                Recommended
+              </span>
+            </button>
 
-        <Card title={isCustomer ? 'Your Support Request Details' : 'New Ticket Intake Form'}>
+            <button
+              type="button"
+              onClick={() => setCreationMode('manual')}
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                creationMode === 'manual'
+                  ? 'bg-token-secondary text-token-text-primary border border-token-border shadow-xs'
+                  : 'text-token-text-secondary hover:text-token-text-primary hover:bg-token-secondary'
+              }`}
+            >
+              <FileEdit className="w-3.5 h-3.5" />
+              <span>Classic Manual Form</span>
+            </button>
+          </div>
+
+          <div className="hidden sm:block text-[11px] text-token-text-muted pr-3">
+            {creationMode === 'ai' ? 'AI crafts formal ticket & checklist' : 'Standard field intake'}
+          </div>
+        </div>
+
+        {/* Tab 1: AI Concierge View */}
+        {creationMode === 'ai' ? (
+          <AIConciergeChatbot
+            embedded={true}
+            onTicketCreated={(newTicket) => {
+              addToast(`Ticket ${newTicket.ticket_number || newTicket.id} created successfully!`, 'success');
+              navigate(`/tickets/${newTicket.id}`);
+            }}
+          />
+        ) : (
+          <>
+            {/* Customer Self-Serve FAQ Banner */}
+            {isCustomer && (
+              <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs flex items-center justify-between text-emerald-800 dark:text-emerald-300">
+                <span className="flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Tip: Before submitting, check if your answer is in our Knowledge Base!</span>
+                </span>
+                <Link to="/knowledge-base" className="font-semibold underline hover:no-underline shrink-0">
+                  Browse FAQs &rarr;
+                </Link>
+              </div>
+            )}
+
+            <Card title={isCustomer ? 'Your Support Request Details' : 'New Ticket Intake Form'}>
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <Input
               label={isCustomer ? 'What do you need help with? (Subject)' : 'Ticket Subject / Title'}
@@ -217,8 +273,10 @@ export default function CreateTicketPage() {
             </div>
           </form>
         </Card>
-      </div>
-    </MainLayout>
+      </>
+    )}
+  </div>
+</MainLayout>
   );
 }
 

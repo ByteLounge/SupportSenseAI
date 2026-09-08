@@ -1,6 +1,6 @@
 /**
  * Enterprise Reusable Component: Card.jsx
- * Responsive Card container using CSS design tokens.
+ * MoonRow styled card container with rounded-2xl corners and subtle border.
  */
 
 import React from 'react';
@@ -11,15 +11,15 @@ export default function Card({
   actions,
   children,
   className = '',
-  bodyClassName = 'p-3.5 sm:p-4',
+  bodyClassName = 'p-5 sm:p-6',
   noPadding = false,
 }) {
   return (
-    <div className={`bg-token-card border border-token-border rounded-[6px] shadow-subtle text-token-text-primary ${className}`}>
+    <div className={`bg-token-card border border-token-border rounded-2xl shadow-card text-token-text-primary ${className}`}>
       {(title || subtitle || actions) && (
-        <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 sm:px-4 py-3 border-b border-token-border bg-token-card">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-5 sm:px-6 py-4 border-b border-token-border bg-token-card rounded-t-2xl">
           <div>
-            {title && <h3 className="text-sm font-semibold text-token-text-primary">{title}</h3>}
+            {title && <h3 className="text-sm sm:text-base font-bold text-token-text-primary tracking-tight">{title}</h3>}
             {subtitle && <p className="text-xs text-token-text-secondary mt-0.5">{subtitle}</p>}
           </div>
           {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}

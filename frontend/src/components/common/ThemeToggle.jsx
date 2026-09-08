@@ -36,18 +36,18 @@ export default function ThemeToggle() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-token-text-secondary hover:text-token-text-primary hover:bg-token-muted rounded-[6px] border border-token-border transition-colors min-h-[38px]"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-token-text-secondary hover:text-token-text-primary hover:bg-token-muted rounded-lg border border-token-border transition-colors min-h-[34px]"
         title="Switch theme mode"
         aria-label="Theme mode selector"
         aria-expanded={isOpen}
       >
-        <CurrentIcon className="w-4 h-4 text-token-accent shrink-0" />
+        <CurrentIcon className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
         <span className="hidden sm:inline capitalize">{currentOption.label}</span>
         <ChevronDown className="w-3 h-3 text-token-text-muted shrink-0" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1 w-36 bg-token-card border border-token-border rounded-[6px] shadow-sm py-1 z-50 text-xs">
+        <div className="absolute right-0 mt-1.5 w-32 bg-token-card border border-token-border rounded-xl shadow-lg p-1 z-50 text-xs">
           {options.map((opt) => {
             const Icon = opt.icon;
             const isSelected = themeMode === opt.mode;
@@ -59,13 +59,13 @@ export default function ThemeToggle() {
                   setThemeMode(opt.mode);
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-left font-medium transition-colors ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left font-medium transition-colors ${
                   isSelected
-                    ? 'bg-token-accent text-white font-semibold'
-                    : 'text-token-text-primary hover:bg-token-secondary'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold'
+                    : 'text-token-text-primary hover:bg-token-muted'
                 }`}
               >
-                <Icon className="w-4 h-4 shrink-0" />
+                <Icon className="w-3.5 h-3.5 shrink-0" />
                 <span>{opt.label}</span>
               </button>
             );

@@ -1,6 +1,6 @@
 /**
  * Enterprise Reusable Component: Table.jsx
- * Responsive Data Table component that renders as a full table on Desktop/Tablet and automatically switches or adapts on Mobile screens.
+ * Responsive Data Table component that renders as a clean table on Desktop/Tablet and modern cards on Mobile.
  */
 
 import React from 'react';
@@ -40,22 +40,22 @@ export default function Table({
 
   return (
     <div className="space-y-3">
-      {/* Mobile Card View (visible on small mobile screens below sm breakpoint) */}
+      {/* Mobile Card View (visible on small mobile screens below md breakpoint) */}
       <div className="block md:hidden space-y-2.5">
         {data.map((row, index) => (
           <div
             key={row[keyField] || index}
             onClick={() => onRowClick && onRowClick(row)}
-            className={`p-3.5 bg-token-card border border-token-border rounded-[6px] space-y-2 text-xs transition-colors ${
+            className={`p-4 bg-token-card border border-token-border rounded-xl space-y-2 text-xs transition-colors shadow-2xs ${
               onRowClick ? 'cursor-pointer hover:bg-token-secondary' : ''
             }`}
           >
             {columns.map((col) => (
-              <div key={col.key} className="flex items-center justify-between gap-2 border-b border-token-border/50 pb-1.5 last:border-b-0 last:pb-0">
-                <span className="font-semibold text-token-text-secondary uppercase tracking-wider text-[10px]">
+              <div key={col.key} className="flex items-center justify-between gap-2 border-b border-token-border/40 pb-2 last:border-b-0 last:pb-0">
+                <span className="font-medium text-token-text-secondary uppercase tracking-wider text-[10px]">
                   {col.label}:
                 </span>
-                <div className="text-right">
+                <div className="text-right font-medium">
                   {col.render ? col.render(row[col.key], row) : row[col.key]}
                 </div>
               </div>
@@ -64,7 +64,7 @@ export default function Table({
         ))}
       </div>
 
-      {/* Desktop / Tablet Full Table View (visible on md screens and larger) */}
+      {/* Desktop / Tablet Full Table View */}
       <div className="hidden md:block ent-table-container">
         <table className="ent-table">
           <thead>
@@ -106,7 +106,7 @@ export default function Table({
               <tr
                 key={row[keyField] || index}
                 onClick={() => onRowClick && onRowClick(row)}
-                className={onRowClick ? 'cursor-pointer transition-colors hover:bg-token-secondary' : ''}
+                className={onRowClick ? 'cursor-pointer transition-colors hover:bg-token-secondary/60' : ''}
               >
                 {columns.map((col) => (
                   <td

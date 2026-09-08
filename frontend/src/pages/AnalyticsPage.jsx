@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
       title="Performance Analytics & SLA Monitoring"
       subtitle="Visual insights into ticket volumes, team resolution speed, and customer satisfaction."
       actions={
-        <div className="flex items-center gap-1.5 bg-token-card border border-token-border p-1 rounded-[6px]">
+        <div className="flex items-center gap-1.5 bg-token-card border border-token-border p-1 rounded-xl">
           {[
             { id: '24h', label: '24h' },
             { id: '7d', label: 'Last 7 Days' },
@@ -111,7 +111,7 @@ export default function AnalyticsPage() {
             <button
               key={tab.id}
               onClick={() => setTimeRange(tab.id)}
-              className={`px-2.5 py-1 rounded-[4px] text-xs font-medium transition-colors ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
                 timeRange === tab.id
                   ? 'bg-token-accent text-white font-semibold shadow-xs'
                   : 'text-token-text-secondary hover:text-token-text-primary'
@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
                 <ArrowUpRight className="w-3 h-3" /> +2.1% this week
               </div>
             </div>
-            <div className="p-2.5 bg-emerald-500/10 rounded-[6px] text-emerald-600">
+            <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-600">
               <Zap className="w-5 h-5" />
             </div>
           </Card>
@@ -145,7 +145,7 @@ export default function AnalyticsPage() {
               <div className="text-2xl font-bold text-blue-600 mt-1">1.8 Hours</div>
               <div className="text-[11px] text-token-text-muted mt-0.5">Target: &lt; 4.0h</div>
             </div>
-            <div className="p-2.5 bg-blue-500/10 rounded-[6px] text-blue-600">
+            <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-600">
               <Clock className="w-5 h-5" />
             </div>
           </Card>
@@ -156,7 +156,7 @@ export default function AnalyticsPage() {
               <div className="text-2xl font-bold text-purple-600 mt-1">4.85 / 5.0</div>
               <div className="text-[11px] text-purple-600 font-medium mt-0.5">97% Positive Feedback</div>
             </div>
-            <div className="p-2.5 bg-purple-500/10 rounded-[6px] text-purple-600">
+            <div className="p-2.5 bg-purple-500/10 rounded-xl text-purple-600">
               <Smile className="w-5 h-5" />
             </div>
           </Card>
@@ -167,7 +167,7 @@ export default function AnalyticsPage() {
               <div className="text-2xl font-bold text-amber-600 mt-1">94.2%</div>
               <div className="text-[11px] text-amber-600 font-medium mt-0.5">Gemini Decision Accuracy</div>
             </div>
-            <div className="p-2.5 bg-amber-500/10 rounded-[6px] text-amber-600">
+            <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-600">
               <Bot className="w-5 h-5" />
             </div>
           </Card>
@@ -337,7 +337,7 @@ export default function AnalyticsPage() {
           >
             <div className="space-y-3.5 pt-1">
               {slaMetrics.map((sla) => (
-                <div key={sla.metric} className="p-3 bg-token-secondary/50 rounded-[6px] border border-token-border/60 flex items-center justify-between gap-3 text-xs">
+                <div key={sla.metric} className="p-3 bg-token-secondary/50 rounded-xl border border-token-border/60 flex items-center justify-between gap-3 text-xs">
                   <div className="space-y-0.5">
                     <div className="font-semibold text-token-text-primary">{sla.metric}</div>
                     <div className="text-token-text-secondary text-[11px]">

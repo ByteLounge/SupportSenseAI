@@ -26,4 +26,10 @@ router.get('/departments', authorizeRoles('AGENT', 'ADMIN'), aiProxyController.g
 // Dataset Benchmarks
 router.get('/benchmarks', authorizeRoles('AGENT', 'ADMIN'), aiProxyController.getBenchmarks);
 
+// AI Concierge Chatbot & Formal Ticket Crafter (Accessible to all roles)
+router.post('/concierge', aiProxyController.chatConcierge);
+
+// 1-Click AI Response Tone Polishing
+router.post('/polish-tone', authorizeRoles('AGENT', 'ADMIN'), aiProxyController.polishTone);
+
 module.exports = router;

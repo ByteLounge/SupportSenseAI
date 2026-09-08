@@ -10,17 +10,29 @@ export default function Toast({ toast, onClose }) {
   const { message, type = 'info' } = toast;
 
   const config = {
-    success: { bg: 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]', icon: CheckCircle2 },
-    error: { bg: 'bg-[#FEF2F2] border-[#FCA5A5] text-[#991B1B]', icon: AlertCircle },
-    warning: { bg: 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]', icon: AlertTriangle },
-    info: { bg: 'bg-[#EFF6FF] border-[#BFDBFE] text-[#1E40AF]', icon: Info },
+    success: {
+      bg: 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/80 dark:border-emerald-800/80 dark:text-emerald-200',
+      icon: CheckCircle2,
+    },
+    error: {
+      bg: 'bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/80 dark:border-rose-800/80 dark:text-rose-200',
+      icon: AlertCircle,
+    },
+    warning: {
+      bg: 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/80 dark:border-amber-800/80 dark:text-amber-200',
+      icon: AlertTriangle,
+    },
+    info: {
+      bg: 'bg-indigo-50 border-indigo-200 text-indigo-800 dark:bg-indigo-950/80 dark:border-indigo-800/80 dark:text-indigo-200',
+      icon: Info,
+    },
   };
 
   const style = config[type] || config.info;
   const Icon = style.icon;
 
   return (
-    <div className={`pointer-events-auto flex items-center justify-between p-3 border rounded-[6px] shadow-sm text-xs ${style.bg}`}>
+    <div className={`pointer-events-auto flex items-center justify-between p-3 border rounded-xl shadow-lg text-xs backdrop-blur-xs ${style.bg}`}>
       <div className="flex items-center gap-2.5">
         <Icon className="w-4 h-4 shrink-0" />
         <span className="font-medium">{message}</span>

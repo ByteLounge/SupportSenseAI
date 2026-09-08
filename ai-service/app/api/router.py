@@ -11,7 +11,15 @@ from app.models.schemas import (
     QualityCheckRequest,
     TimelineSummaryRequest,
     WeeklyInsightsResponse,
-    DepartmentAutoReplyRequest
+    DepartmentAutoReplyRequest,
+    ConciergeChatRequest,
+    ConciergeChatResponse,
+    TonePolishRequest,
+    TonePolishResponse
+)
+from app.services.concierge_service import (
+    process_concierge_chat_async,
+    process_tone_polish_async
 )
 from app.services.triage_service import (
     process_ticket_triage,
@@ -137,3 +145,35 @@ async def department_definitions_endpoint():
         return {"success": True, "message": "Department definitions retrieved", "data": depts}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/ai/concierge/chat", response_model=dict)
+async def concierge_chat_endpoint(request: ConciergeChatRequest):
+    """
+    Interactive AI Concierge: Accepts user query in simple words, converses empathetically,
+    and synthesizes an enterprise-grade formal ticket draft ready for immediate dispatch.
+    """
+    try:
+        result = await process_concierge_chat_async(
+            message=request.message,
+            history=request.history,
+            customer_name=request.customer_name,
+            customer_email=request.customer_email
+        )
+        return {"success": True, "message": "Concierge response generated", "data": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/ai/polish-tone", response_model=dict)
+async def polish_tone_endpoint(request: TonePolishRequest):
+    """
+    1-Click AI Response Tone Polishing: Rewrites draft reply into empathetic, concise,
+    formal, or technical styles.
+    """
+    try:
+        result = await process_tone_polish_async(draft=request.draft, tone=request.tone)
+        return {"success": True, "message": f"Response polished with {request.tone} tone", "data": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

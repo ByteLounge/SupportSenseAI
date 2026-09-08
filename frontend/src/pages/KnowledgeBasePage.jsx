@@ -165,7 +165,7 @@ export default function KnowledgeBasePage() {
                 return (
                   <div
                     key={faq.id}
-                    className="border border-token-border rounded-[6px] overflow-hidden bg-token-secondary/30 transition-colors"
+                    className="border border-token-border rounded-xl overflow-hidden bg-token-secondary/30 transition-colors"
                   >
                     <button
                       type="button"
@@ -224,7 +224,7 @@ export default function KnowledgeBasePage() {
             >
               <div className="space-y-4">
                 {recommendedFaqs.map((faq, idx) => (
-                  <div key={idx} className="p-3.5 bg-token-secondary border border-token-border rounded-[6px] space-y-2 text-xs">
+                  <div key={idx} className="p-3.5 bg-token-secondary border border-token-border rounded-xl space-y-2 text-xs">
                     <div className="font-semibold text-token-text-primary flex items-center justify-between">
                       <span className="flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-token-accent" />
