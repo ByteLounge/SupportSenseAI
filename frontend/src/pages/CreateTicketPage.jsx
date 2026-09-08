@@ -18,6 +18,7 @@ import { createTicketApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { ArrowLeft, Send, HelpCircle, Sparkles, Building2, User, Mail, MessageSquare, FileEdit } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 export default function CreateTicketPage() {
   const { user, isCustomer, isAgent, isAdmin } = useAuth();
@@ -104,8 +105,12 @@ export default function CreateTicketPage() {
                   : 'text-token-text-secondary hover:text-token-text-primary hover:bg-token-secondary'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>✨ AI Assistant (Chat in simple words)</span>
+              <img
+                src={logoImg}
+                alt="SupportSense AI"
+                className="w-4 h-4 rounded-md object-contain bg-white p-0.5 shrink-0"
+              />
+              <span>AI Concierge (Chat in simple words)</span>
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${creationMode === 'ai' ? 'bg-white/20 text-white' : 'bg-moonrow-primary/10 text-moonrow-primary'}`}>
                 Recommended
               </span>

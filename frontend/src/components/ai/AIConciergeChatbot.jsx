@@ -32,6 +32,7 @@ import Badge from '../common/Badge';
 import { chatConciergeApi, createTicketApi } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import logoImg from '../../assets/logo.png';
 
 export default function AIConciergeChatbot({ embedded = false, onClose, onTicketCreated }) {
   const { user, isCustomer } = useAuth();
@@ -207,8 +208,13 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
       {/* Concierge Header */}
       <div className="p-3.5 sm:p-4 border-b border-token-border flex items-center justify-between bg-gradient-to-r from-moonrow-canvas via-token-card to-moonrow-primary/5 rounded-t-2xl">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-moonrow-primary/15 text-moonrow-primary flex items-center justify-center shadow-inner">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+          <div className="relative w-9 h-9 rounded-xl bg-white border border-token-border shadow-xs shrink-0 flex items-center justify-center p-1">
+            <img
+              src={logoImg}
+              alt="SupportSense AI Logo"
+              className="w-full h-full object-contain rounded-lg"
+            />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-token-card animate-pulse"></span>
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -256,13 +262,21 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
           >
             {/* Avatar */}
             <div
-              className={`w-7 h-7 rounded-xl shrink-0 flex items-center justify-center text-xs ${
+              className={`w-7 h-7 rounded-xl shrink-0 flex items-center justify-center text-xs overflow-hidden ${
                 msg.role === 'user'
                   ? 'bg-token-border text-token-text-primary'
-                  : 'bg-moonrow-primary text-white shadow-sm'
+                  : 'bg-white border border-token-border p-0.5 shadow-xs'
               }`}
             >
-              {msg.role === 'user' ? <User className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
+              {msg.role === 'user' ? (
+                <User className="w-3.5 h-3.5" />
+              ) : (
+                <img
+                  src={logoImg}
+                  alt="SupportSense Bot"
+                  className="w-full h-full object-contain rounded-lg"
+                />
+              )}
             </div>
 
             {/* Bubble Content */}
@@ -308,8 +322,12 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
         {/* Loading Indicator */}
         {isLoading && (
           <div className="flex gap-2.5 mr-auto max-w-[80%] items-center">
-            <div className="w-7 h-7 rounded-xl bg-moonrow-primary text-white flex items-center justify-center shrink-0">
-              <Sparkles className="w-3.5 h-3.5 animate-spin" />
+            <div className="w-7 h-7 rounded-xl bg-white border border-token-border p-0.5 flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+              <img
+                src={logoImg}
+                alt="AI Thinking"
+                className="w-full h-full object-contain animate-pulse rounded-lg"
+              />
             </div>
             <div className="p-3 bg-token-secondary/80 border border-token-border rounded-2xl rounded-tl-none text-xs text-token-text-secondary flex items-center gap-2">
               <span className="flex gap-1">

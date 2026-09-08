@@ -18,6 +18,7 @@ import AIMoodBadge from '../components/ai/AIMoodBadge';
 import Skeleton from '../components/common/Skeleton';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import logoImg from '../assets/logo.png';
 import {
   getTicketByIdApi,
   postMessageApi,
@@ -600,8 +601,12 @@ export default function TicketDetailPage() {
               title="AI Assistant"
               actions={
                 <div className="flex items-center gap-1.5 text-xs text-[#FD451B] font-bold">
-                  <Bot className="w-4 h-4 text-[#FD451B]" />
-                  <span>Gemini</span>
+                  <img
+                    src={logoImg}
+                    alt="SupportSense AI"
+                    className="w-4 h-4 rounded object-contain bg-white p-0.5 border border-token-border shadow-2xs"
+                  />
+                  <span>SupportSense AI</span>
                 </div>
               }
             >
