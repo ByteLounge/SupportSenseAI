@@ -15,6 +15,7 @@ import Dropdown from '../components/common/Dropdown';
 import Modal from '../components/common/Modal';
 import { StatusBadge, PriorityBadge } from '../components/common/Badge';
 import AIMoodBadge from '../components/ai/AIMoodBadge';
+import TimelineSummaryBanner from '../components/ai/TimelineSummaryBanner';
 import Skeleton from '../components/common/Skeleton';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -50,6 +51,7 @@ import {
   User,
   Mail,
 } from 'lucide-react';
+
 
 export default function TicketDetailPage() {
   const { id } = useParams();
@@ -331,6 +333,13 @@ export default function TicketDetailPage() {
         </div>
       }
     >
+      {!isCustomer && (
+        <div className="mb-4">
+          {/* Reopened Ticket Timeline Summary Banner (SCRUM-116) */}
+          <TimelineSummaryBanner ticket={ticket} />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left Column (65%): Inquiry Details, Thread, Composer */}
         <div className="lg:col-span-2 space-y-4">
