@@ -1,6 +1,6 @@
 /**
  * Page: LoginPage.jsx
- * Clean, modern user sign-in page with 1-click persona selectors.
+ * MoonRow styled Sign-in page with 1-click demo persona quick-launch.
  */
 
 import React, { useState } from 'react';
@@ -36,14 +36,20 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-token-secondary flex items-center justify-center p-4 text-token-text-primary">
-      <div className="w-full max-w-md bg-token-card border border-token-border rounded-xl shadow-xs p-6 sm:p-8 space-y-6">
-        {/* Brand Header */}
-        <div className="text-center space-y-1.5">
-          <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl font-bold flex items-center justify-center text-sm mx-auto shadow-xs">
-            SS
+      <div className="w-full max-w-md bg-token-card border border-token-border rounded-2xl shadow-card p-6 sm:p-8 space-y-6">
+        {/* MoonRow Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 bg-[#FD451B] text-white rounded-2xl font-extrabold flex items-center justify-center text-base mx-auto shadow-xs tracking-tight">
+            MR
           </div>
-          <h2 className="text-xl font-bold text-token-text-primary tracking-tight">SupportSense</h2>
-          <p className="text-xs text-token-text-secondary">Sign in to your support workspace</p>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-token-text-primary tracking-tight">
+              MoonRow
+            </h2>
+            <p className="text-xs text-token-text-secondary mt-0.5">
+              Ticket Sales & Support Analytics Platform
+            </p>
+          </div>
         </div>
 
         {error && <Alert type="error">{error}</Alert>}
@@ -76,44 +82,44 @@ export default function LoginPage() {
             className="w-full"
             icon={ArrowRight}
           >
-            Sign In
+            Sign In to Workspace
           </Button>
         </form>
 
         {/* 1-Click Persona Selection */}
         <div className="pt-4 border-t border-token-border space-y-3">
-          <div className="text-center text-[11px] font-medium text-token-text-muted uppercase tracking-wider">
-            Or quick demo sign in
+          <div className="text-center text-[10px] font-bold text-token-text-muted uppercase tracking-wider">
+            Quick Persona Demo Sign-in
           </div>
 
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => handleQuickPersona('customer')}
-              className="p-2.5 rounded-lg border border-token-border bg-token-secondary/60 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/30 transition-all text-center group"
+              className="p-3 rounded-xl border border-token-border bg-token-muted/50 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/30 transition-all text-center group"
             >
               <User className="w-4 h-4 mx-auto text-emerald-600 mb-1" />
-              <div className="text-xs font-semibold text-token-text-primary">Customer</div>
+              <div className="text-xs font-bold text-token-text-primary">Customer</div>
               <div className="text-[10px] text-token-text-muted">Alex Rivera</div>
             </button>
 
             <button
               type="button"
               onClick={() => handleQuickPersona('agent')}
-              className="p-2.5 rounded-lg border border-token-border bg-token-secondary/60 hover:bg-indigo-50 hover:border-indigo-300 dark:hover:bg-indigo-950/30 transition-all text-center group"
+              className="p-3 rounded-xl border border-token-border bg-token-muted/50 hover:bg-[#FD451B]/10 hover:border-[#FD451B]/30 dark:hover:bg-[#FD451B]/20 transition-all text-center group"
             >
-              <Headphones className="w-4 h-4 mx-auto text-indigo-600 mb-1" />
-              <div className="text-xs font-semibold text-token-text-primary">Agent</div>
+              <Headphones className="w-4 h-4 mx-auto text-[#FD451B] mb-1" />
+              <div className="text-xs font-bold text-token-text-primary">Agent</div>
               <div className="text-[10px] text-token-text-muted">Sarah Agent</div>
             </button>
 
             <button
               type="button"
               onClick={() => handleQuickPersona('admin')}
-              className="p-2.5 rounded-lg border border-token-border bg-token-secondary/60 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950/30 transition-all text-center group"
+              className="p-3 rounded-xl border border-token-border bg-token-muted/50 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950/30 transition-all text-center group"
             >
               <Shield className="w-4 h-4 mx-auto text-purple-600 mb-1" />
-              <div className="text-xs font-semibold text-token-text-primary">Admin</div>
+              <div className="text-xs font-bold text-token-text-primary">Admin</div>
               <div className="text-[10px] text-token-text-muted">Admin User</div>
             </button>
           </div>

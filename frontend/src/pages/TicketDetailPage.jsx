@@ -1,7 +1,7 @@
 /**
  * Page: TicketDetailPage.jsx
- * Clean, modern ticket workspace with 2-column layout.
- * Streamlined conversation thread, actionable AI assistant, and unified properties.
+ * MoonRow styled Ticket Detail & Triage Workspace.
+ * 2-column modular architecture, clean conversation bubbles, and vermilion accents.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -211,7 +211,7 @@ export default function TicketDetailPage() {
   if (!ticket) {
     return (
       <MainLayout title="Ticket Details">
-        <div className="p-8 bg-token-card border border-token-border rounded-xl text-center text-token-text-secondary">
+        <div className="p-8 bg-token-card border border-token-border rounded-2xl text-center text-token-text-secondary">
           Ticket not found or you do not have permission to view it.
         </div>
       </MainLayout>
@@ -277,8 +277,8 @@ export default function TicketDetailPage() {
         <div className="lg:col-span-2 space-y-4">
           {/* Customer Progress Bar (for Customers) */}
           {isCustomer && (
-            <div className="p-4 bg-token-card border border-token-border rounded-xl space-y-3">
-              <div className="flex items-center justify-between text-xs font-semibold text-token-text-primary">
+            <div className="p-5 bg-token-card border border-token-border rounded-2xl shadow-card space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold text-token-text-primary tracking-tight">
                 <span>Resolution Progress</span>
                 <StatusBadge status={ticket.status} />
               </div>
@@ -297,10 +297,10 @@ export default function TicketDetailPage() {
                   return (
                     <div
                       key={s.step}
-                      className={`py-1.5 px-2 rounded-lg text-[11px] font-medium transition-colors ${
+                      className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-colors ${
                         isDone
-                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-semibold'
-                          : 'bg-token-secondary text-token-text-muted'
+                          ? 'bg-[#FD451B]/10 text-[#FD451B] border border-[#FD451B]/20'
+                          : 'bg-token-muted text-token-text-muted'
                       }`}
                     >
                       {s.label}
@@ -321,17 +321,17 @@ export default function TicketDetailPage() {
               </div>
             }
           >
-            <div className="text-xs sm:text-sm text-token-text-primary leading-relaxed whitespace-pre-line p-3.5 bg-token-secondary/60 border border-token-border rounded-lg">
+            <div className="text-xs sm:text-sm text-token-text-primary leading-relaxed whitespace-pre-line p-4 bg-token-muted/60 border border-token-border rounded-xl font-medium">
               {ticket.description}
             </div>
           </Card>
 
           {/* Conversation Thread */}
           <Card title={`Conversation (${messages.length})`}>
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               {messages.length === 0 ? (
-                <div className="text-xs text-token-text-secondary italic text-center py-4">
-                  No messages yet. Reply below to continue the conversation.
+                <div className="text-xs text-token-text-secondary italic text-center py-6">
+                  No messages yet. Send a response below to update the customer.
                 </div>
               ) : (
                 messages.map((msg) => {
@@ -340,25 +340,25 @@ export default function TicketDetailPage() {
                   return (
                     <div
                       key={msg.id}
-                      className={`p-3.5 rounded-xl border text-xs space-y-1.5 transition-all ${
+                      className={`p-4 rounded-2xl border text-xs space-y-2 transition-all ${
                         isInternal
-                          ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200'
+                          ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40 text-amber-950 dark:text-amber-200'
                           : isUser
-                          ? 'bg-token-card border-token-border text-token-text-primary'
-                          : 'bg-indigo-50/50 dark:bg-indigo-950/20 border-indigo-200/60 dark:border-indigo-800/40 text-token-text-primary'
+                          ? 'bg-token-card border-token-border text-token-text-primary shadow-2xs'
+                          : 'bg-[#FD451B]/5 border-[#FD451B]/20 text-token-text-primary'
                       }`}
                     >
-                      <div className="flex items-center justify-between text-[11px] pb-1 border-b border-current/10">
-                        <div className="flex items-center gap-1.5 font-semibold">
-                          {isInternal && <Lock className="w-3 h-3 text-amber-600 shrink-0" />}
+                      <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-current/10">
+                        <div className="flex items-center gap-2 font-bold">
+                          {isInternal && <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
                           <span>{msg.sender_name}</span>
-                          <span className="font-normal opacity-70">
+                          <span className="font-medium opacity-60">
                             ({isInternal ? 'Internal Note' : msg.sender_role === 'CUSTOMER' ? 'Customer' : 'Support Specialist'})
                           </span>
                         </div>
-                        <span className="opacity-60">{formatDate(msg.created_at)}</span>
+                        <span className="opacity-60 font-medium">{formatDate(msg.created_at)}</span>
                       </div>
-                      <p className="leading-relaxed whitespace-pre-line font-sans text-xs">
+                      <p className="leading-relaxed whitespace-pre-line text-xs font-normal">
                         {msg.message_body}
                       </p>
                     </div>
@@ -370,15 +370,15 @@ export default function TicketDetailPage() {
 
           {/* Response Composer */}
           <Card title="Reply">
-            <form onSubmit={handleSendMessage} className="space-y-3">
+            <form onSubmit={handleSendMessage} className="space-y-3.5">
               {!isCustomer && (
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 font-medium cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 font-semibold cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={isInternalNote}
                       onChange={(e) => setIsInternalNote(e.target.checked)}
-                      className="rounded border-token-border text-amber-600 focus:ring-amber-500"
+                      className="rounded border-token-border text-[#FD451B] focus:ring-[#FD451B]"
                     />
                     <span>Internal Note (Hidden from customer)</span>
                   </label>
@@ -387,7 +387,7 @@ export default function TicketDetailPage() {
                     <button
                       type="button"
                       onClick={() => setReplyText(ticket.ai_suggested_reply)}
-                      className="text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:underline flex items-center gap-1"
+                      className="text-xs text-[#FD451B] font-bold hover:underline flex items-center gap-1.5"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>Use AI Draft</span>
@@ -402,8 +402,8 @@ export default function TicketDetailPage() {
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder={
                   isInternalNote
-                    ? 'Write an internal note for your team...'
-                    : 'Write a response...'
+                    ? 'Write an internal handover or technical note for your team...'
+                    : 'Write a public response to the customer...'
                 }
               />
 
@@ -415,7 +415,7 @@ export default function TicketDetailPage() {
                   disabled={!replyText.trim()}
                   icon={Send}
                 >
-                  {isInternalNote ? 'Save Note' : 'Send'}
+                  {isInternalNote ? 'Save Note' : 'Send Reply'}
                 </Button>
               </div>
             </form>
@@ -429,7 +429,7 @@ export default function TicketDetailPage() {
             <div className="space-y-3 text-xs">
               {!isCustomer && (
                 <div>
-                  <span className="text-[11px] text-token-text-secondary block mb-1">Status</span>
+                  <span className="text-[11px] font-bold text-token-text-secondary block mb-1">Status</span>
                   <Dropdown
                     value={ticket.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
@@ -444,21 +444,21 @@ export default function TicketDetailPage() {
                 </div>
               )}
 
-              <div className="p-3 bg-token-secondary/60 border border-token-border rounded-lg space-y-2">
+              <div className="p-4 bg-token-muted/60 border border-token-border rounded-xl space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-token-text-secondary">Department</span>
-                  <span className="font-semibold text-token-text-primary">{ticket.assigned_department}</span>
+                  <span className="text-token-text-secondary font-medium">Department</span>
+                  <span className="font-bold text-token-text-primary">{ticket.assigned_department}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-token-text-secondary">Category</span>
-                  <span className="font-medium text-token-text-primary">{ticket.category}</span>
+                  <span className="text-token-text-secondary font-medium">Category</span>
+                  <span className="font-semibold text-token-text-primary">{ticket.category}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-token-text-secondary">Requester</span>
-                  <span className="font-medium text-token-text-primary">{ticket.customer_name}</span>
+                  <span className="text-token-text-secondary font-medium">Requester</span>
+                  <span className="font-semibold text-token-text-primary">{ticket.customer_name}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-token-text-secondary">Sentiment</span>
+                  <span className="text-token-text-secondary font-medium">Sentiment</span>
                   <AIMoodBadge
                     mood={ticket.customer_mood || 'NEUTRAL'}
                     confidence={ticket.mood_confidence || 0.88}
@@ -468,30 +468,32 @@ export default function TicketDetailPage() {
             </div>
           </Card>
 
-          {/* AI Copilot & Routing (for Agent & Admin) */}
+          {/* AI Copilot & Routing (Agent & Admin) */}
           {!isCustomer && (
             <Card
               title="AI Assistant"
               actions={
-                <div className="flex items-center gap-1 text-xs text-token-text-muted">
-                  <Bot className="w-3.5 h-3.5 text-indigo-500" />
+                <div className="flex items-center gap-1.5 text-xs text-[#FD451B] font-bold">
+                  <Bot className="w-4 h-4 text-[#FD451B]" />
                   <span>Gemini</span>
                 </div>
               }
             >
-              <div className="space-y-3.5 text-xs">
+              <div className="space-y-4 text-xs">
                 {/* AI Department Recommendation */}
-                <div className="p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/60 dark:border-indigo-800/40 rounded-lg space-y-2">
+                <div className="p-4 bg-[#FD451B]/5 border border-[#FD451B]/20 rounded-xl space-y-2.5">
                   <div>
-                    <span className="text-[11px] text-token-text-secondary block">Suggested Department</span>
-                    <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                    <span className="text-[11px] font-bold text-token-text-secondary uppercase tracking-wider block">
+                      Recommended Department
+                    </span>
+                    <span className="font-extrabold text-[#FD451B] text-sm mt-0.5 block">
                       {ticket.ai_suggested_department || 'Technical Support'}
                     </span>
                   </div>
 
                   {!ticket.ai_routing_approved ? (
                     <Button
-                      variant="success"
+                      variant="primary"
                       size="sm"
                       className="w-full"
                       icon={Check}
@@ -500,8 +502,8 @@ export default function TicketDetailPage() {
                       Approve Routing
                     </Button>
                   ) : (
-                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" />
                       <span>Routing Verified</span>
                     </div>
                   )}
@@ -509,10 +511,10 @@ export default function TicketDetailPage() {
 
                 {/* Resolution Checklist */}
                 {checklists.length > 0 && (
-                  <div className="space-y-2 pt-1">
-                    <div className="flex items-center justify-between font-medium text-token-text-secondary">
+                  <div className="space-y-2.5 pt-1">
+                    <div className="flex items-center justify-between font-bold text-token-text-primary">
                       <span>Resolution Steps</span>
-                      <span className="text-[11px]">{completedChecklists}/{checklists.length}</span>
+                      <span className="text-xs text-[#FD451B] font-extrabold">{completedChecklists}/{checklists.length}</span>
                     </div>
 
                     <div className="space-y-1.5">
@@ -521,10 +523,10 @@ export default function TicketDetailPage() {
                           key={item.id}
                           type="button"
                           onClick={() => handleToggleChecklist(item.id, item.is_completed)}
-                          className={`w-full p-2 rounded-lg border text-left flex items-start gap-2 text-xs transition-colors ${
+                          className={`w-full p-2.5 rounded-xl border text-left flex items-start gap-2.5 text-xs transition-colors ${
                             item.is_completed
-                              ? 'bg-emerald-50/60 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300 border-emerald-200 line-through'
-                              : 'bg-token-secondary/40 border-token-border text-token-text-primary hover:bg-token-muted'
+                              ? 'bg-emerald-50/60 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300 border-emerald-200 line-through font-medium'
+                              : 'bg-token-muted border-token-border text-token-text-primary hover:bg-token-card'
                           }`}
                         >
                           {item.is_completed ? (
@@ -542,12 +544,12 @@ export default function TicketDetailPage() {
                 {/* Handover History */}
                 {forwardHistory.length > 0 && (
                   <div className="space-y-2 pt-2 border-t border-token-border">
-                    <span className="text-[11px] font-semibold text-token-text-secondary uppercase tracking-wider block">
+                    <span className="text-[11px] font-bold text-token-text-secondary uppercase tracking-wider block">
                       Handover History
                     </span>
                     {forwardHistory.map((item, idx) => (
-                      <div key={idx} className="p-2 bg-token-secondary/50 rounded-lg text-[11px] space-y-0.5">
-                        <div className="font-semibold text-token-text-primary">
+                      <div key={idx} className="p-2.5 bg-token-muted rounded-xl text-[11px] space-y-1">
+                        <div className="font-bold text-token-text-primary">
                           To: {item.forwarded_to}
                         </div>
                         {item.comments && (
@@ -566,7 +568,7 @@ export default function TicketDetailPage() {
           {isCustomer && (
             <Card title="Need Help?">
               <p className="text-xs text-token-text-secondary leading-relaxed mb-3">
-                Check our knowledge base for answers to common questions and guides.
+                Check our Knowledge Base articles for fast self-service resolutions.
               </p>
               <Button
                 variant="secondary"
@@ -613,7 +615,7 @@ export default function TicketDetailPage() {
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={forwarding} icon={Send}>
-              Route
+              Confirm Route
             </Button>
           </div>
         </form>

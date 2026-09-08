@@ -1,7 +1,7 @@
 /**
  * Page: TicketsPage.jsx
- * Clean, modern ticket directory and queue management.
- * Unified layout, streamlined filters, and crisp status tracking.
+ * MoonRow styled Ticket Queue & Management Interface.
+ * Symmetrical layout, rounded-2xl table container, and vermilion accents.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -11,7 +11,6 @@ import Pagination from '../components/common/Pagination';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Dropdown from '../components/common/Dropdown';
-import Card from '../components/common/Card';
 import Modal from '../components/common/Modal';
 import Textarea from '../components/common/Textarea';
 import { StatusBadge, PriorityBadge } from '../components/common/Badge';
@@ -156,27 +155,27 @@ export default function TicketsPage() {
       return [
         {
           key: 'ticket_number',
-          label: 'ID',
-          width: '90px',
+          label: 'Ticket ID',
+          width: '100px',
           render: (val, row) => (
-            <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-xs font-bold text-token-text-primary px-2 py-0.5 rounded-lg bg-token-muted border border-token-border">
               {val || row.id}
             </span>
           ),
         },
         {
           key: 'title',
-          label: 'Subject',
+          label: 'Inquiry Subject',
           render: (val, row) => (
             <div>
               <Link
                 to={`/tickets/${row.id}`}
-                className="font-medium text-token-text-primary hover:text-indigo-600 transition-colors"
+                className="font-bold text-token-text-primary hover:text-[#FD451B] transition-colors text-xs sm:text-sm tracking-tight"
               >
                 {val}
               </Link>
               <div className="text-[11px] text-token-text-secondary mt-0.5">
-                Category: {row.category}
+                Category: <span className="font-semibold text-token-text-primary">{row.category}</span>
               </div>
             </div>
           ),
@@ -186,7 +185,7 @@ export default function TicketsPage() {
           label: 'Team',
           width: '160px',
           render: (val) => (
-            <span className="text-xs text-token-text-secondary flex items-center gap-1.5">
+            <span className="text-xs text-token-text-secondary flex items-center gap-1.5 font-medium">
               <Building2 className="w-3.5 h-3.5 text-token-text-muted" />
               {val || 'General Support'}
             </span>
@@ -202,7 +201,7 @@ export default function TicketsPage() {
           key: 'created_at',
           label: 'Date',
           width: '120px',
-          render: (val) => <span className="text-xs text-token-text-secondary">{formatDate(val)}</span>,
+          render: (val) => <span className="text-xs text-token-text-secondary font-medium">{formatDate(val)}</span>,
         },
         {
           key: 'actions',
@@ -225,10 +224,10 @@ export default function TicketsPage() {
     return [
       {
         key: 'ticket_number',
-        label: 'ID',
-        width: '90px',
+        label: 'Ticket ID',
+        width: '100px',
         render: (val, row) => (
-          <span className="font-mono text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+          <span className="font-mono text-xs font-bold text-[#FD451B] px-2 py-0.5 rounded-lg bg-[#FD451B]/10 border border-[#FD451B]/20">
             {val || row.id}
           </span>
         ),
@@ -240,14 +239,14 @@ export default function TicketsPage() {
           <div>
             <Link
               to={`/tickets/${row.id}`}
-              className="font-medium text-token-text-primary hover:text-indigo-600 transition-colors"
+              className="font-bold text-token-text-primary hover:text-[#FD451B] transition-colors text-xs sm:text-sm tracking-tight"
             >
               {val}
             </Link>
             <div className="text-[11px] text-token-text-secondary mt-0.5 flex items-center gap-2">
-              <span>{row.customer_name}</span>
+              <span className="font-semibold text-token-text-primary">{row.customer_name}</span>
               <span>•</span>
-              <span className="text-token-text-muted">{row.assigned_department}</span>
+              <span className="text-token-text-muted font-medium">{row.assigned_department}</span>
             </div>
           </div>
         ),
@@ -279,7 +278,7 @@ export default function TicketsPage() {
         key: 'created_at',
         label: 'Date',
         width: '110px',
-        render: (val) => <span className="text-xs text-token-text-secondary">{formatDate(val)}</span>,
+        render: (val) => <span className="text-xs text-token-text-secondary font-medium">{formatDate(val)}</span>,
       },
       {
         key: 'actions',
@@ -336,11 +335,11 @@ export default function TicketsPage() {
 
   return (
     <MainLayout
-      title={isCustomer ? 'My Support Requests' : 'Tickets'}
+      title={isCustomer ? 'My Support Requests' : 'Ticket Queue'}
       subtitle={
         isCustomer
-          ? 'Manage and follow up on your submitted inquiries'
-          : 'Complete ticket queue with triage, routing, and filters'
+          ? 'Track all your submitted queries and resolutions'
+          : 'Unified ticket directory with real-time triage and department routing'
       }
       actions={
         <Button
@@ -353,13 +352,13 @@ export default function TicketsPage() {
       }
     >
       <div className="space-y-4">
-        {/* Filter Bar */}
-        <div className="p-3 bg-token-card border border-token-border rounded-xl shadow-xs">
+        {/* Filter Bar in rounded-2xl MoonRow Card */}
+        <div className="p-4 bg-token-card border border-token-border rounded-2xl shadow-card">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3">
             {/* Search Input */}
-            <form onSubmit={handleSearchSubmit} className="w-full md:w-72">
+            <form onSubmit={handleSearchSubmit} className="w-full md:w-80">
               <Input
-                placeholder="Search tickets..."
+                placeholder="Search by ID, keyword, or customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 icon={Search}
@@ -445,9 +444,9 @@ export default function TicketsPage() {
         size="md"
       >
         <form onSubmit={handleForwardSubmit} className="space-y-4 text-xs">
-          <div className="p-3 bg-token-secondary rounded-lg border border-token-border">
-            <div className="font-semibold text-token-text-primary">{selectedTicketForForward?.title}</div>
-            <div className="text-token-text-secondary text-[11px] mt-0.5">
+          <div className="p-3.5 bg-token-muted rounded-xl border border-token-border">
+            <div className="font-bold text-token-text-primary text-sm">{selectedTicketForForward?.title}</div>
+            <div className="text-token-text-secondary text-xs mt-0.5">
               Customer: {selectedTicketForForward?.customer_name}
             </div>
           </div>

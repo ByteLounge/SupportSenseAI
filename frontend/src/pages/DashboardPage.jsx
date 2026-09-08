@@ -1,7 +1,7 @@
 /**
  * Page: DashboardPage.jsx
- * Clean, modern, uncluttered role-adaptive dashboard.
- * Focuses on clarity, essential metrics, and 1-click workflows.
+ * MoonRow styled Ticket & Support Analytics Dashboard.
+ * Symmetrical modular layout, high-contrast KPI cards, and signature vermilion accents.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -34,7 +34,9 @@ import {
   Ticket,
   Clock,
   CheckCircle2,
-  AlertCircle,
+  TrendingUp,
+  Zap,
+  ArrowUpRight,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -172,27 +174,27 @@ export default function DashboardPage() {
       return [
         {
           key: 'ticket_number',
-          label: 'ID',
-          width: '90px',
+          label: 'Ticket ID',
+          width: '100px',
           render: (val, row) => (
-            <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-xs font-bold text-token-text-primary px-2 py-0.5 rounded-lg bg-token-muted border border-token-border">
               {val || row.id}
             </span>
           ),
         },
         {
           key: 'title',
-          label: 'Subject',
+          label: 'Inquiry Subject',
           render: (val, row) => (
             <div>
               <Link
                 to={`/tickets/${row.id}`}
-                className="font-medium text-token-text-primary hover:text-indigo-600 transition-colors"
+                className="font-bold text-token-text-primary hover:text-[#FD451B] transition-colors text-xs sm:text-sm tracking-tight"
               >
                 {val}
               </Link>
               <div className="text-[11px] text-token-text-secondary mt-0.5">
-                Category: {row.category}
+                Category: <span className="font-semibold text-token-text-primary">{row.category}</span>
               </div>
             </div>
           ),
@@ -206,8 +208,8 @@ export default function DashboardPage() {
         {
           key: 'created_at',
           label: 'Submitted',
-          width: '120px',
-          render: (val) => <span className="text-xs text-token-text-secondary">{formatDate(val)}</span>,
+          width: '130px',
+          render: (val) => <span className="text-xs text-token-text-secondary font-medium">{formatDate(val)}</span>,
         },
         {
           key: 'actions',
@@ -230,10 +232,10 @@ export default function DashboardPage() {
     return [
       {
         key: 'ticket_number',
-        label: 'ID',
-        width: '90px',
+        label: 'Ticket ID',
+        width: '100px',
         render: (val, row) => (
-          <span className="font-mono text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+          <span className="font-mono text-xs font-bold text-[#FD451B] px-2 py-0.5 rounded-lg bg-[#FD451B]/10 border border-[#FD451B]/20">
             {val || row.id}
           </span>
         ),
@@ -245,12 +247,12 @@ export default function DashboardPage() {
           <div>
             <Link
               to={`/tickets/${row.id}`}
-              className="font-medium text-token-text-primary hover:text-indigo-600 transition-colors"
+              className="font-bold text-token-text-primary hover:text-[#FD451B] transition-colors text-xs sm:text-sm tracking-tight"
             >
               {val}
             </Link>
             <div className="text-[11px] text-token-text-secondary mt-0.5 flex items-center gap-2">
-              <span>{row.customer_name}</span>
+              <span className="font-semibold text-token-text-primary">{row.customer_name}</span>
               <span>•</span>
               <span className="font-medium text-token-text-muted">{row.assigned_department}</span>
             </div>
@@ -283,7 +285,7 @@ export default function DashboardPage() {
       {
         key: 'actions',
         label: '',
-        width: '130px',
+        width: '140px',
         align: 'right',
         render: (_, row) => (
           <div className="flex items-center justify-end gap-1.5">
@@ -335,22 +337,22 @@ export default function DashboardPage() {
   };
 
   const departments = [
-    { label: 'All', value: '' },
-    { label: 'Technical Support', value: 'Technical Support' },
-    { label: 'Finance & Billing', value: 'Finance & Billing' },
-    { label: 'Identity & Access', value: 'Identity & Access' },
+    { label: 'All Queues', value: '' },
+    { label: 'Technical', value: 'Technical Support' },
+    { label: 'Billing', value: 'Finance & Billing' },
+    { label: 'Identity', value: 'Identity & Access' },
     { label: 'API Platform', value: 'API Platform Team' },
   ];
 
   return (
     <MainLayout
-      title={`Hello, ${user?.name ? user.name.split(' ')[0] : 'there'}`}
+      title={`Overview`}
       subtitle={
         isCustomer
-          ? 'Track your queries and find quick answers'
+          ? 'Track your tickets and explore self-service resources'
           : isAdmin
-          ? 'System overview and ticket operations'
-          : 'Triage incoming requests and resolve customer issues'
+          ? 'Real-time support operations, triage status, and team workload'
+          : 'Live queue analytics, automated triage routing, and customer inquiries'
       }
       actions={
         <Button
@@ -363,80 +365,127 @@ export default function DashboardPage() {
       }
     >
       <div className="space-y-6">
-        {/* Metric Cards */}
-        <div className={`grid grid-cols-2 ${isCustomer ? 'sm:grid-cols-3' : 'sm:grid-cols-4'} gap-3 sm:gap-4`}>
-          <div className="p-4 bg-token-card border border-token-border rounded-xl shadow-xs">
+        {/* MoonRow KPI Metrics Grid */}
+        <div className={`grid grid-cols-2 ${isCustomer ? 'sm:grid-cols-3' : 'sm:grid-cols-4'} gap-4`}>
+          {/* Card 1: Total Volume */}
+          <div className="p-5 bg-token-card border border-token-border rounded-2xl shadow-card transition-all hover:shadow-elevated">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-token-text-secondary">
-                {isCustomer ? 'Active' : 'Open'}
+              <span className="text-xs font-semibold text-token-text-secondary uppercase tracking-wider">
+                {isCustomer ? 'Active Queries' : 'Open Inquiries'}
               </span>
-              <Ticket className="w-4 h-4 text-indigo-500" />
-            </div>
-            <div className="text-2xl font-bold text-token-text-primary mt-2">{openCount}</div>
-          </div>
-
-          <div className="p-4 bg-token-card border border-token-border rounded-xl shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-token-text-secondary">In Progress</span>
-              <Clock className="w-4 h-4 text-amber-500" />
-            </div>
-            <div className="text-2xl font-bold text-token-text-primary mt-2">{inProgressCount}</div>
-          </div>
-
-          {!isCustomer && (
-            <div className="p-4 bg-token-card border border-token-border rounded-xl shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-token-text-secondary">AI Review</span>
-                <Bot className="w-4 h-4 text-rose-500" />
+              <div className="p-2 rounded-xl bg-[#FD451B]/10 text-[#FD451B]">
+                <Ticket className="w-4 h-4" />
               </div>
-              <div className="text-2xl font-bold text-token-text-primary mt-2">{unapprovedAiTickets.length}</div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-token-text-primary mt-2 tracking-tight">
+              {openCount}
+            </div>
+            <div className="flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <ArrowUpRight className="w-3.5 h-3.5" />
+              <span>+12.4% vs last week</span>
+            </div>
+          </div>
+
+          {/* Card 2: In Progress */}
+          <div className="p-5 bg-token-card border border-token-border rounded-2xl shadow-card transition-all hover:shadow-elevated">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-token-text-secondary uppercase tracking-wider">
+                In Progress
+              </span>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
+                <Clock className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-token-text-primary mt-2 tracking-tight">
+              {inProgressCount}
+            </div>
+            <div className="flex items-center gap-1.5 mt-2 text-[11px] font-medium text-token-text-muted">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span>Active specialists</span>
+            </div>
+          </div>
+
+          {/* Card 3: AI Review (Agent/Admin) */}
+          {!isCustomer && (
+            <div className="p-5 bg-token-card border border-token-border rounded-2xl shadow-card transition-all hover:shadow-elevated">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-token-text-secondary uppercase tracking-wider">
+                  AI Triage
+                </span>
+                <div className="p-2 rounded-xl bg-[#FD451B]/10 text-[#FD451B]">
+                  <Bot className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#FD451B] mt-2 tracking-tight">
+                {unapprovedAiTickets.length}
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-[#FD451B]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FD451B]" />
+                <span>Pending routing review</span>
+              </div>
             </div>
           )}
 
-          <div className="p-4 bg-token-card border border-token-border rounded-xl shadow-xs">
+          {/* Card 4: Resolved */}
+          <div className="p-5 bg-token-card border border-token-border rounded-2xl shadow-card transition-all hover:shadow-elevated">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-token-text-secondary">Resolved</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-semibold text-token-text-secondary uppercase tracking-wider">
+                Resolved
+              </span>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-2xl font-bold text-token-text-primary mt-2">{resolvedCount}</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 tracking-tight">
+              {resolvedCount}
+            </div>
+            <div className="flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <ArrowUpRight className="w-3.5 h-3.5" />
+              <span>98.4% SLA resolution</span>
+            </div>
           </div>
         </div>
 
-        {/* AI Triage Banner (for Agents when tickets need routing review) */}
+        {/* AI Triage Spotlight Banner (MoonRow Vermilion Accent) */}
         {!isCustomer && unapprovedAiTickets.length > 0 && (
-          <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-3">
+          <div className="p-5 bg-[#FD451B]/5 border border-[#FD451B]/20 rounded-2xl space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-xs font-semibold text-amber-800 dark:text-amber-300">
-                  AI Routing Recommendations ({unapprovedAiTickets.length} Awaiting Approval)
+                <div className="w-6 h-6 rounded-lg bg-[#FD451B] text-white flex items-center justify-center font-bold text-xs">
+                  AI
+                </div>
+                <span className="text-xs font-bold text-token-text-primary tracking-tight">
+                  Gemini Automated Triage ({unapprovedAiTickets.length} Pending Approval)
                 </span>
               </div>
+              <span className="text-[11px] font-semibold text-[#FD451B]">
+                1-Click Verification
+              </span>
             </div>
 
             <div className="space-y-2">
               {unapprovedAiTickets.slice(0, 3).map((t) => (
                 <div
                   key={t.id}
-                  className="p-3 bg-token-card border border-token-border rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
+                  className="p-3.5 bg-token-card border border-token-border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
                 >
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="font-mono text-xs font-bold text-[#FD451B] px-1.5 py-0.2 rounded bg-[#FD451B]/10">
                         {t.ticket_number}
                       </span>
-                      <span className="font-medium text-token-text-primary text-xs truncate max-w-sm">
+                      <span className="font-bold text-token-text-primary text-xs truncate max-w-sm">
                         {t.title}
                       </span>
                     </div>
                     <div className="text-[11px] text-token-text-secondary">
-                      Suggested: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{t.ai_suggested_department}</span>
+                      Suggested Department: <span className="font-bold text-token-text-primary">{t.ai_suggested_department}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
-                      variant="success"
+                      variant="primary"
                       size="sm"
                       icon={Check}
                       onClick={() => handleApproveRouting(t)}
@@ -454,7 +503,7 @@ export default function DashboardPage() {
                         setForwardModalOpen(true);
                       }}
                     >
-                      Route
+                      Re-route
                     </Button>
                   </div>
                 </div>
@@ -463,11 +512,11 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Customer Quick FAQ Accordion */}
+        {/* Customer FAQ Accordion */}
         {isCustomer && (
           <Card
-            title="Frequently Asked Questions"
-            subtitle="Instant answers without opening a ticket"
+            title="Instant Knowledge Base"
+            subtitle="Search common answers to resolve queries immediately"
           >
             <div className="space-y-3">
               <Input
@@ -483,22 +532,22 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={faq.id}
-                      className="border border-token-border rounded-lg overflow-hidden bg-token-secondary/30 transition-colors"
+                      className="border border-token-border rounded-xl overflow-hidden bg-token-muted/40 transition-colors"
                     >
                       <button
                         type="button"
                         onClick={() => setExpandedFaq(isOpen ? null : faq.id)}
-                        className="w-full p-3 text-left text-xs font-semibold text-token-text-primary flex items-center justify-between hover:bg-token-muted"
+                        className="w-full p-3.5 text-left text-xs font-bold text-token-text-primary flex items-center justify-between hover:bg-token-muted"
                       >
-                        <span className="flex items-center gap-2">
-                          <HelpCircle className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                        <span className="flex items-center gap-2.5">
+                          <HelpCircle className="w-4 h-4 text-[#FD451B] shrink-0" />
                           <span>{faq.question}</span>
                         </span>
-                        {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-token-text-muted" /> : <ChevronDown className="w-3.5 h-3.5 text-token-text-muted" />}
+                        {isOpen ? <ChevronUp className="w-4 h-4 text-token-text-muted" /> : <ChevronDown className="w-4 h-4 text-token-text-muted" />}
                       </button>
                       {isOpen && (
-                        <div className="p-3 pt-0 text-xs text-token-text-secondary leading-relaxed border-t border-token-border/40 bg-token-card">
-                          <p className="mt-2">{faq.answer}</p>
+                        <div className="p-4 pt-1 text-xs text-token-text-secondary leading-relaxed border-t border-token-border/40 bg-token-card">
+                          <p className="mt-1">{faq.answer}</p>
                         </div>
                       )}
                     </div>
@@ -509,9 +558,9 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* Tickets Section */}
+        {/* MoonRow Tickets Section */}
         <div className="space-y-3">
-          {/* Department Pills & Search */}
+          {/* Segmented Controls & Search Toolbar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {!isCustomer ? (
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -519,9 +568,9 @@ export default function DashboardPage() {
                   <button
                     key={dept.value}
                     onClick={() => setSelectedDeptFilter(dept.value)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
                       selectedDeptFilter === dept.value
-                        ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                        ? 'bg-[#040811] text-white dark:bg-[#FD451B] dark:text-white shadow-xs'
                         : 'bg-token-card border border-token-border text-token-text-secondary hover:bg-token-muted hover:text-token-text-primary'
                     }`}
                   >
@@ -530,14 +579,14 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <h3 className="text-sm font-semibold text-token-text-primary">
-                My Recent Queries
+              <h3 className="text-base font-bold text-token-text-primary tracking-tight">
+                My Inquiries
               </h3>
             )}
 
-            <form onSubmit={handleSearchSubmit} className="w-full sm:w-60">
+            <form onSubmit={handleSearchSubmit} className="w-full sm:w-64">
               <Input
-                placeholder="Search..."
+                placeholder="Search ticket queue..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 icon={Search}
@@ -545,12 +594,13 @@ export default function DashboardPage() {
             </form>
           </div>
 
+          {/* Table Container */}
           <Table
             columns={getColumns()}
             data={tickets}
             loading={loading}
             keyField="id"
-            emptyMessage="No tickets found"
+            emptyMessage="No tickets found matching current criteria"
           />
         </div>
       </div>
@@ -559,14 +609,14 @@ export default function DashboardPage() {
       <Modal
         isOpen={forwardModalOpen}
         onClose={() => setForwardModalOpen(false)}
-        title="Route Ticket"
+        title="Route Ticket to Department"
         size="md"
       >
         <form onSubmit={handleForwardSubmit} className="space-y-4 text-xs">
-          <div className="p-3 bg-token-secondary rounded-lg border border-token-border">
-            <div className="font-semibold text-token-text-primary">{selectedTicketForForward?.title}</div>
-            <div className="text-token-text-secondary text-[11px] mt-0.5">
-              Customer: {selectedTicketForForward?.customer_name}
+          <div className="p-3.5 bg-token-muted rounded-xl border border-token-border">
+            <div className="font-bold text-token-text-primary text-sm">{selectedTicketForForward?.title}</div>
+            <div className="text-token-text-secondary text-xs mt-0.5">
+              Requester: {selectedTicketForForward?.customer_name}
             </div>
           </div>
 
@@ -584,8 +634,8 @@ export default function DashboardPage() {
           />
 
           <Textarea
-            label="Handover Note"
-            placeholder="Optional context for the assigned team..."
+            label="Handover Notes (Internal)"
+            placeholder="Provide context or instructions for the specialist..."
             rows={3}
             value={forwardComments}
             onChange={(e) => setForwardComments(e.target.value)}
@@ -606,7 +656,7 @@ export default function DashboardPage() {
       <Modal
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        title="Edit Ticket"
+        title="Modify Ticket"
         size="md"
       >
         <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">

@@ -1,6 +1,6 @@
 /**
  * Utility functions for data formatting, dates, status badges, and priority colors.
- * Used across enterprise dashboard components.
+ * MoonRow styled badge definitions and date formatters.
  */
 
 /**
@@ -24,7 +24,7 @@ export function formatDate(dateString) {
 }
 
 /**
- * Format relative time or short date
+ * Format relative time or short date (e.g. "Aug 5")
  */
 export function formatShortDate(dateString) {
   if (!dateString) return 'N/A';
@@ -41,7 +41,7 @@ export function formatShortDate(dateString) {
 }
 
 /**
- * Return enterprise badge styling for ticket statuses
+ * Return MoonRow badge styling for ticket statuses
  */
 export function getStatusBadgeStyle(status) {
   const normalized = (status || 'OPEN').toUpperCase();
@@ -63,24 +63,24 @@ export function getStatusBadgeStyle(status) {
     case 'OPEN':
     default:
       return {
-        bg: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
-        dot: 'bg-blue-500',
+        bg: 'bg-[#FD451B]/10 text-[#FD451B] border-[#FD451B]/20',
+        dot: 'bg-[#FD451B]',
         label: 'Open'
       };
   }
 }
 
 /**
- * Return enterprise badge styling for ticket priorities
+ * Return MoonRow badge styling for ticket priorities
  */
 export function getPriorityBadgeStyle(priority) {
   const normalized = (priority || 'MEDIUM').toUpperCase();
   switch (normalized) {
     case 'URGENT':
     case 'CRITICAL':
-      return 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20 font-semibold';
+      return 'bg-[#FD451B]/10 text-[#FD451B] border-[#FD451B]/30 font-bold';
     case 'HIGH':
-      return 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 font-medium';
+      return 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20 font-semibold';
     case 'MEDIUM':
       return 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20 font-medium';
     case 'LOW':
