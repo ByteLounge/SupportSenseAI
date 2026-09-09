@@ -8,12 +8,30 @@ const { Pool } = require('pg');
 const env = require('./env');
 
 /**
- * Configure PostgreSQL Pool connection options
+ * Configure PostgreSQL Pool connection options.
+ * Natively supports Supabase (Direct port 5432 & Transaction Pooler port 6543)
+ * as well as standard local/containerized PostgreSQL instances.
  */
-const poolConfig = process.env.DATABASE_URL
+const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+
+const isCloudOrSupabase = Boolean(
+  connectionString && (
+    connectionString.includes('supabase.co') ||
+    connectionString.includes('supabase.com') ||
+    connectionString.includes('pooler.supabase.com') ||
+    connectionString.includes('render.com') ||
+    process.env.DB_SSL === 'true' ||
+    process.env.NODE_ENV === 'production'
+  )
+);
+
+const poolConfig = connectionString
   ? {
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      connectionString,
+      ssl: isCloudOrSupabase ? { rejectUnauthorized: false } : false,
+      max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000
     }
   : {
       host: env.DB_HOST,
@@ -21,9 +39,10 @@ const poolConfig = process.env.DATABASE_URL
       database: env.DB_NAME,
       user: env.DB_USER,
       password: env.DB_PASSWORD,
-      max: 20,
+      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+      max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000
+      connectionTimeoutMillis: 10000
     };
 
 const pool = new Pool(poolConfig);

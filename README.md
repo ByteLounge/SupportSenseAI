@@ -548,7 +548,8 @@ This repository includes a native **Render Blueprint** (`render.yaml`) for 100% 
 | `DB_NAME` | Backend | PostgreSQL Database Name | `supportsense_db` |
 | `DB_USER` | Backend | PostgreSQL User Name | `postgres` |
 | `DB_PASSWORD` | Backend | PostgreSQL User Password | `postgrespassword` |
-| `DATABASE_URL` | Backend | Full PostgreSQL Connection URI | `postgres://user:pass@host:5432/db` |
+| `DATABASE_URL` | Backend | Supabase / PostgreSQL Connection URI | `postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:6543/postgres` |
+| `DB_SSL` | Backend | Enforce SSL for cloud database | `true` (automatically enabled for Supabase) |
 | `AI_SERVICE_URL` | Backend | Internal URI of FastAPI Microservice | `http://ai-service:8000` |
 | `GEMINI_API_KEY` | AI Service | Google Gemini 1.5 API Key | `AIzaSy...` |
 | `GEMINI_MODEL_NAME` | AI Service | Target LLM model name | `gemini-1.5-flash` |

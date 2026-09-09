@@ -377,10 +377,10 @@ graph LR
    - **`backend`:** Depends on `postgres` (healthy) and `ai-service` (started), injects connection URLs, and starts Express on port `5000`.
    - **`frontend`:** Builds React production bundle, serves via Nginx on port `80`, and proxies `/api/` to backend.
 
-3. **Render Blueprint ([`render.yaml`](file:///D:/Projects/SupportSenseAI/render.yaml)):**
-   - Defines a managed PostgreSQL database (`supportsense-db`).
+3. **Render Blueprint ([`render.yaml`](file:///D:/Projects/SupportSenseAI/render.yaml)) & Supabase:**
+   - Pairs **Supabase** (Persistent managed PostgreSQL with Supavisor transaction pooler on port 6543) with **Render** compute services.
    - Defines Docker web services for `supportsense-ai-service` and `supportsense-backend`.
-   - Injects `DATABASE_URL` directly from the database resource into the backend.
+   - Injects `DATABASE_URL` (Supabase connection pooler URI) and `DB_SSL: true` into the backend.
    - Defines static site deployment for `supportsense-frontend` with automatic SPA rewrites (`/*` -> `/index.html`).
 
 4. **GitHub Actions CI/CD ([`.github/workflows/ci.yml`](file:///D:/Projects/SupportSenseAI/.github/workflows/ci.yml)):**

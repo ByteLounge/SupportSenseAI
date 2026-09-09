@@ -168,6 +168,50 @@ RETURNING *;
 ## 9. Auto-Migration & Seed Runner (`dbInit.js`)
 
 On server startup, [`dbInit.js`](file:///D:/Projects/SupportSenseAI/backend/src/config/dbInit.js) inspects the `information_schema.tables` for the `users` table:
-- If absent (e.g. initial Render deployment or fresh local container), it automatically executes `database/migrations/001_init_schema.sql` followed by `database/seeds/001_seed_data.sql`.
-- Provides zero-touch automated database bootstrapping in Docker and Render environments.
+- If absent (e.g. initial deployment or fresh local container), it automatically executes `database/migrations/001_init_schema.sql` followed by `database/seeds/001_seed_data.sql`.
+- Provides zero-touch automated database bootstrapping in Docker, Render, and Supabase environments.
+
+---
+
+## 10. Supabase Managed PostgreSQL Migration & Cloud Architecture
+
+SupportSense AI migrates from Render's ephemeral PostgreSQL to **Supabase** for enterprise reliability, high persistence, zero-expiration storage, and built-in connection pooling:
+
+### 10.1 Why Supabase Over Render Free Tier
+1. **No 30-Day Expiration**: Render free PostgreSQL instances are automatically spun down and deleted after 30 days. Supabase provides persistent, long-term cloud storage.
+2. **Native Connection Pooler (Supavisor)**: Supabase provides a dedicated PgBouncer/Supavisor transaction pooler on port `6543`, supporting hundreds of concurrent API clients without exhausting PostgreSQL connection limits.
+3. **Enterprise SSL Encryption**: Supabase enforces SSL encryption on all incoming connections, eliminating plaintext risk over the public internet.
+
+### 10.2 Supabase Connection Topologies
+```
+[ Express Backend on Render ]
+          |
+          |  Encrypted SSL (Port 6543 / 5432)
+          v
+[ Supabase Cloud (AWS Infrastructure) ]
+          |
+          +---> [ Supavisor Transaction Pooler (:6543) ] ---> [ PostgreSQL 15 Engine ]
+          |
+          +---> [ Direct Session Connection (:5432) ]     ---> [ PostgreSQL 15 Engine ]
+```
+
+- **Transaction Pooler (Port 6543 - Recommended for Production API)**:
+  `postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres`
+- **Direct Connection (Port 5432 - For Schema Migrations)**:
+  `postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres`
+
+### 10.3 Automated Migration Script (`scripts/migrate_to_supabase.js`)
+A dedicated Node.js migration CLI is provided at [`scripts/migrate_to_supabase.js`](file:///D:/Projects/SupportSenseAI/scripts/migrate_to_supabase.js):
+
+```bash
+# 1. Initialize fresh Supabase database with schema & seed accounts:
+node scripts/migrate_to_supabase.js "postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:6543/postgres"
+
+# 2. Or migrate live records directly from Render to Supabase:
+node scripts/migrate_to_supabase.js \
+  --source "postgresql://supportsense_user:[RENDER_PASS]@[RENDER_HOST]/supportsense_db" \
+  --target "postgresql://postgres.[REF]:[SUPABASE_PASS]@aws-0-[REGION].pooler.supabase.com:6543/postgres"
+```
+
+The script verifies SSL connectivity, applies [`001_init_schema.sql`](file:///D:/Projects/SupportSenseAI/database/migrations/001_init_schema.sql), copies data rows across all 6 tables in dependency order, synchronizes the `ticket_number_seq` sequence, and outputs row count verification telemetry.
 

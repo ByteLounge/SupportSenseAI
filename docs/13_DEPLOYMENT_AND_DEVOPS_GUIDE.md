@@ -4,7 +4,7 @@
 
 ## 1. Containerized Multi-Tier Architecture
 
-SupportSense AI is fully containerized across 4 multi-tier services, deployable via **Docker Compose** or through automated cloud infrastructure blueprints:
+SupportSense AI is fully containerized across 4 multi-tier services, deployable via **Docker Compose** locally or through automated cloud infrastructure pairing **Render.com** (Compute) with **Supabase** (Managed PostgreSQL):
 
 ```
                           [ Internet Ingress ]
@@ -15,8 +15,8 @@ SupportSense AI is fully containerized across 4 multi-tier services, deployable 
         [ React Frontend ]                  [ Express Backend ]
          Port 80 (Nginx)                    Port 5000 (Node 18)
                   |                                 |
-                  |                                 +---> [ PostgreSQL 15 DB ]
-                  |                                 |      Port 5432 (PgBouncer/Pool)
+                  |                                 +---> [ Supabase Cloud ]
+                  |                                 |      Port 6543 (Supavisor Pooler)
                   v                                 |
         [ REST Proxy / API ]                        +---> [ FastAPI AI Service ]
                   +------------------------------------->  Port 8000 (Gemini SDK)
@@ -52,18 +52,12 @@ docker-compose logs -f
 
 ---
 
-## 3. 1-Click Cloud Deployment via Render Blueprint (`render.yaml`)
+## 3. 1-Click Cloud Deployment via Render Blueprint (`render.yaml`) & Supabase
 
-SupportSense AI provides native Infrastructure-as-Code (IaC) via [`render.yaml`](file:///D:/Projects/SupportSenseAI/render.yaml) for automated 1-click cloud provisioning on [Render.com](https://render.com).
+SupportSense AI utilizes **Supabase** for its production relational database tier and **Render** for compute services, defined via [`render.yaml`](file:///D:/Projects/SupportSenseAI/render.yaml):
 
 ### Render Infrastructure Topology
 ```yaml
-databases:
-  - name: supportsense-db
-    databaseName: supportsense_db
-    user: supportsense_user
-    plan: free
-
 services:
   # 1. Python FastAPI AI Microservice (Google Gemini)
   - type: web
@@ -91,9 +85,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: supportsense-db
-          property: connectionString
+        sync: false # Set in Render Dashboard to Supabase Pooler URI (port 6543)
+      - key: DB_SSL
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: AI_SERVICE_URL
@@ -229,7 +223,8 @@ jobs:
 | :--- | :--- | :--- | :--- |
 | `PORT` | Backend | Port Express binds to | `5000` |
 | `NODE_ENV` | Backend | Environment flag | `production` / `development` |
-| `DATABASE_URL` | Backend | PostgreSQL connection string | `postgresql://user:pass@host:5432/supportsense_db` |
+| `DATABASE_URL` | Backend | Supabase / PostgreSQL URI | `postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:6543/postgres` |
+| `DB_SSL` | Backend | Enforce SSL encrypted connection | `true` |
 | `JWT_SECRET` | Backend | HMAC SHA-256 signing secret | `supersecretjwtkey...` |
 | `AI_SERVICE_URL` | Backend | FastAPI proxy destination | `http://localhost:8000` or Render internal host |
 | `CORS_ORIGIN` | Backend | Allowed CORS origins | `http://localhost:3000,http://localhost:80` |

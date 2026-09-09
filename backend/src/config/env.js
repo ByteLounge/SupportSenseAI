@@ -23,7 +23,9 @@ module.exports = {
     ? process.env.ALLOWED_ORIGINS.split(',') 
     : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:80'],
   
-  // PostgreSQL Database Credentials
+  // PostgreSQL / Supabase Database Credentials
+  DATABASE_URL: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || null,
+  DB_SSL: process.env.DB_SSL === 'true',
   DB_HOST: process.env.DB_HOST || 'localhost',
   DB_PORT: process.env.DB_PORT || 5432,
   DB_NAME: process.env.DB_NAME || 'supportsense_db',
