@@ -76,70 +76,71 @@ Agile teams use the **Fibonacci Sequence** (`1, 2, 3, 5, 8, 13...`) because as t
 
 ## 4. Complete Sprint-by-Sprint Story Point Breakdown (All 29 Tasks)
 
-Here is the complete, beginner-friendly inventory of every Jira ticket in SupportSense AI across all 4 Sprints.
+> [!NOTE]
+> **Universal Priority Standardization**: All 29 tasks across Sprints 1 to 4 are standardized to **Medium Priority**. Task triage and delivery focus are calibrated through **Story Points** (relative complexity and effort) rather than varying priority levels.
 
 ### Sprint 1: Research, Learning & Planning (Completed)
 *Goal: Understand customer support pain points, select AI models, design database architecture, and write requirements.*  
-*Sprint Total: 4 Tasks | 18 Story Points*
+*Sprint Total: 4 Tasks | 18 Story Points | Priority: All Medium*
 
-| Task ID | Task Title (Beginner-Friendly) | Assignee | Role | Points | Complexity | Why This Point Value Was Chosen (Rationale) |
-|:---|:---|:---|:---|:---:|:---:|:---|
-| **SSAI-101** | Research How Customer Support Tools Work & Compare Features | Rohan Salkar | Frontend Lead | **3** | Moderate | Moderate effort. Involves studying Zendesk, Freshdesk, and Linear, identifying slow response bottlenecks, and drafting 4 user personas. Low technical risk. |
-| **SSAI-102** | Choose Right AI Model & Collect Real Customer Chat Datasets | Yash Sanikop | Frontend & AI Lead | **5** | Medium-High | Medium-high complexity. Required testing Gemini 1.5 Flash API latency, measuring token costs, writing system prompt templates, and organizing Kaggle/Hugging Face support datasets. |
-| **SSAI-103** | Design Simple 3-Tier System Architecture & Database Tables | Shrujan Mitbavkar | Backend Lead | **5** | Medium-High | Medium-high complexity. Involves designing 6 normalized PostgreSQL tables (`users`, `tickets`, `messages`, `ai_metadata`, `checklists`, `insights`), foreign keys, and planning query performance indexes. |
-| **SSAI-104** | Write Plain-English Project Requirements & 4-Sprint Schedule | Aarti Singh | DevOps & QA Lead | **5** | Medium-High | Substantial analytical effort. Required defining 8 core project features, drafting Human-in-the-Loop AI safety rules, and structuring the 8-week team schedule. |
+| Task ID | Task Title (Beginner-Friendly) | Assignee | Role | Priority | Points | Complexity | Why This Point Value Was Chosen (Rationale) |
+|:---|:---|:---|:---|:---:|:---:|:---:|:---|
+| **SSAI-101** | Research How Customer Support Tools Work & Compare Features | Rohan Salkar | Frontend Lead | **Medium** | **3** | Moderate | Moderate effort. Involves studying Zendesk, Freshdesk, and Linear, identifying slow response bottlenecks, and drafting 4 user personas. Low technical risk. |
+| **SSAI-102** | Choose Right AI Model & Collect Real Customer Chat Datasets | Yash Sanikop | Frontend & AI Lead | **Medium** | **5** | Medium-High | Medium-high complexity. Required testing Gemini 1.5 Flash API latency, measuring token costs, writing system prompt templates, and organizing Kaggle/Hugging Face support datasets. |
+| **SSAI-103** | Design Simple 3-Tier System Architecture & Database Tables | Shrujan Mitbavkar | Backend Lead | **Medium** | **5** | Medium-High | Medium-high complexity. Involves designing 6 normalized PostgreSQL tables (`users`, `tickets`, `messages`, `ai_metadata`, `checklists`, `insights`), foreign keys, and planning query performance indexes. |
+| **SSAI-104** | Write Plain-English Project Requirements & 4-Sprint Schedule | Aarti Singh | DevOps & QA Lead | **Medium** | **5** | Medium-High | Substantial analytical effort. Required defining 8 core project features, drafting Human-in-the-Loop AI safety rules, and structuring the 8-week team schedule. |
 
 ---
 
 ### Sprint 2: Prototype Development & Architecture Setup (Completed)
 *Goal: Build initial UI components, Express REST API backend, PostgreSQL database, and FastAPI AI scaffold.*  
-*Sprint Total: 10 Tasks | 59 Story Points*
+*Sprint Total: 10 Tasks | 59 Story Points | Priority: All Medium*
 
-| Task ID | Task Title (Beginner-Friendly) | Assignee | Role | Points | Complexity | Why This Point Value Was Chosen (Rationale) |
-|:---|:---|:---|:---|:---:|:---:|:---|
-| **SSAI-201** | Build Website Frame with Dark & Light Mode Switcher | Rohan Salkar | Frontend Lead | **5** | Medium-High | Building responsive sidebar navigation, top header, mobile drawer, and persistent theme switcher using Tailwind CSS classes. |
-| **SSAI-202** | Build Reusable UI Buttons, Cards & Offline Mock Data | Rohan Salkar | Frontend Lead | **5** | Medium-High | Creating reusable component library (buttons, badges, status pills, mood indicators) and comprehensive mock JSON data so teammates can test offline. |
-| **SSAI-203** | Create User Login Page with 1-Click Persona Testing Buttons | Yash Sanikop | Frontend & AI Lead | **5** | Medium-High | Building interactive authentication screens with tab switching (Customer vs Agent vs Admin) and 1-click sample login buttons for instant demo evaluation. |
-| **SSAI-204** | Build Ticket Workspace with Chat Thread & Live AI Helper Drawer | Yash Sanikop | Frontend & AI Lead | **8** | High | High complexity. Dual-pane layout featuring customer chat conversation bubbles, agent internal note toggles, and expandable AI decision drawer with sentiment indicators. |
-| **SSAI-205** | Set Up Python AI Microservice with Google Gemini & Caching | Yash Sanikop | Frontend & AI Lead | **8** | High | High technical complexity. Setting up FastAPI server, Google Gemini 1.5 Flash SDK, prompt formatting, SHA-256 in-memory caching (300s TTL), and fallback error handling. |
-| **SSAI-206** | Set Up Express Backend Server, Security Headers & Rate Limiter | Shrujan Mitbavkar | Backend Lead | **5** | Medium-High | Express.js application architecture with Helmet security headers, CORS origin whitelisting, Winston JSON structured logging, and Express rate limiting (100 req/15m). |
-| **SSAI-207** | Create PostgreSQL Database Tables & Starter Test Data | Shrujan Mitbavkar | Backend Lead | **5** | Medium-High | Writing raw SQL migration scripts creating all 6 tables, constraints, UUID primary keys, and realistic seed data for 4 personas and sample tickets. |
-| **SSAI-208** | Build Secure User Registration, Password Encryption & Login Tokens | Aarti Singh | DevOps & QA Lead | **5** | Medium-High | Developing bcrypt password hashing (10 salt rounds), JSON Web Token (JWT) issuance, verification middleware, and role-based access control (RBAC). |
-| **SSAI-209** | Build Ticket Management APIs & Connect to AI Microservice | Aarti Singh | DevOps & QA Lead | **8** | High | High complexity. Full CRUD ticket endpoints (`GET /api/tickets`, `POST /api/tickets`, `POST /api/tickets/:id/messages`), query filters, and calling the Python AI microservice asynchronously. |
-| **SSAI-210** | Set Up Docker Containers & Complete Technical Documentation | Aarti Singh | DevOps & QA Lead | **5** | Medium-High | Multi-stage Dockerfiles for Frontend, Express Backend, and Python AI service, coordinating `docker-compose.yml`, and writing setup guides. |
+| Task ID | Task Title (Beginner-Friendly) | Assignee | Role | Priority | Points | Complexity | Why This Point Value Was Chosen (Rationale) |
+|:---|:---|:---|:---|:---:|:---:|:---:|:---|
+| **SSAI-201** | Build Website Frame with Dark & Light Mode Switcher | Rohan Salkar | Frontend Lead | **Medium** | **5** | Medium-High | Building responsive sidebar navigation, top header, mobile drawer, and persistent theme switcher using Tailwind CSS classes. |
+| **SSAI-202** | Build Reusable UI Buttons, Cards & Offline Mock Data | Rohan Salkar | Frontend Lead | **Medium** | **5** | Medium-High | Creating reusable component library (buttons, badges, status pills, mood indicators) and comprehensive mock JSON data so teammates can test offline. |
+| **SSAI-203** | Create User Login Page with 1-Click Persona Testing Buttons | Yash Sanikop | Frontend & AI Lead | **Medium** | **5** | Medium-High | Building interactive authentication screens with tab switching (Customer vs Agent vs Admin) and 1-click sample login buttons for instant demo evaluation. |
+| **SSAI-204** | Build Ticket Workspace with Chat Thread & Live AI Helper Drawer | Yash Sanikop | Frontend & AI Lead | **Medium** | **8** | High | High complexity. Dual-pane layout featuring customer chat conversation bubbles, agent internal note toggles, and expandable AI decision drawer with sentiment indicators. |
+| **SSAI-205** | Set Up Python AI Microservice with Google Gemini & Caching | Yash Sanikop | Frontend & AI Lead | **Medium** | **8** | High | High technical complexity. Setting up FastAPI server, Google Gemini 1.5 Flash SDK, prompt formatting, SHA-256 in-memory caching (300s TTL), and fallback error handling. |
+| **SSAI-206** | Set Up Express Backend Server, Security Headers & Rate Limiter | Shrujan Mitbavkar | Backend Lead | **Medium** | **5** | Medium-High | Express.js application architecture with Helmet security headers, CORS origin whitelisting, Winston JSON structured logging, and Express rate limiting (100 req/15m). |
+| **SSAI-207** | Create PostgreSQL Database Tables & Starter Test Data | Shrujan Mitbavkar | Backend Lead | **Medium** | **5** | Medium-High | Writing raw SQL migration scripts creating all 6 tables, constraints, UUID primary keys, and realistic seed data for 4 personas and sample tickets. |
+| **SSAI-208** | Build Secure User Registration, Password Encryption & Login Tokens | Aarti Singh | DevOps & QA Lead | **Medium** | **5** | Medium-High | Developing bcrypt password hashing (10 salt rounds), JSON Web Token (JWT) issuance, verification middleware, and role-based access control (RBAC). |
+| **SSAI-209** | Build Ticket Management APIs & Connect to AI Microservice | Aarti Singh | DevOps & QA Lead | **Medium** | **8** | High | High complexity. Full CRUD ticket endpoints (`GET /api/tickets`, `POST /api/tickets`, `POST /api/tickets/:id/messages`), query filters, and calling the Python AI microservice asynchronously. |
+| **SSAI-210** | Set Up Docker Containers & Complete Technical Documentation | Aarti Singh | DevOps & QA Lead | **Medium** | **5** | Medium-High | Multi-stage Dockerfiles for Frontend, Express Backend, and Python AI service, coordinating `docker-compose.yml`, and writing setup guides. |
 
 ---
 
-### Sprint 3: Full Integration & Decision Assist AI (Completed)
+### Sprint 3: Full Integration & Decision Assist AI (Active — In Progress)
 *Goal: Connect frontend to real backend, enable real Gemini AI triage, checklist execution, response quality checks, and status machine rules.*  
-*Sprint Total: 7 Tasks | 38 Story Points*
+*Sprint Total: 7 Tasks | 38 Story Points | Priority: All Medium | State: Active (Not Closed)*
 
-| Task ID | Task Title (Beginner-Friendly) | Assignee | Role | Points | Complexity | Why This Point Value Was Chosen (Rationale) |
-|:---|:---|:---|:---|:---:|:---:|:---|
-| **SSAI-301** | Connect All Website Screens to the Real Live Backend Server | Rohan Salkar | Frontend Lead | **5** | Medium-High | Replacing all mock data hooks with real Axios API calls, handling authentication tokens in request headers, loading spinners, and network error alerts. |
-| **SSAI-302** | Connect Real Google Gemini AI for Smart Ticket Triage & Mood Detection | Yash Sanikop | Frontend & AI Lead | **8** | High | High complexity. Connecting live Gemini AI to inspect customer messages, extract category, priority, customer mood (`🙂/😐/😠`), and numeric patience score (`0.00-1.00`). |
-| **SSAI-303** | Generate AI Action Checklists & Allow Agents to Check Off Items | Yash Sanikop | Frontend & AI Lead | **5** | Medium-High | Prompting AI to generate 3–5 step troubleshooting checklists tailored to specific ticket issues, with database persistence when agents toggle checklist checkboxes. |
-| **SSAI-304** | Build Pre-Send AI Tone & Quality Checker for Support Replies | Rohan Salkar | Frontend Lead | **5** | Medium-High | Building pre-send modal that reviews agent reply drafts, scoring them on Professionalism, Empathy, Clarity, and Actionability before sending to customers. |
-| **SSAI-305** | Enforce Strict Ticket Status Rules & Concurrency Testing | Shrujan Mitbavkar | Backend Lead | **5** | Medium-High | State machine validation (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED`), atomic PostgreSQL transactions preventing orphaned messages, and connection pool stress testing. |
-| **SSAI-306** | Build AI Summary Banner for Reopened Support Tickets | Aarti Singh | DevOps & QA Lead | **5** | Medium-High | Async background job that triggers when a ticket status switches from `RESOLVED` back to `OPEN`, calling Gemini to produce a 5-bullet summary banner. |
-| **SSAI-307** | Build Automated Department Routing & Instant Auto-Replies | Aarti Singh | DevOps & QA Lead | **5** | Medium-High | Smart routing engine matching keywords to departments (`Billing`, `Technical`, `Accounts`), dispatching immediate automated confirmation messages. |
+| Task ID | Task Title (Beginner-Friendly) | Assignee | Role | Priority | Points | Complexity | Why This Point Value Was Chosen (Rationale) |
+|:---|:---|:---|:---|:---:|:---:|:---:|:---|
+| **SSAI-301** | Connect All Website Screens to the Real Live Backend Server | Rohan Salkar | Frontend Lead | **Medium** | **5** | Medium-High | Replacing all mock data hooks with real Axios API calls, handling authentication tokens in request headers, loading spinners, and network error alerts. |
+| **SSAI-302** | Connect Real Google Gemini AI for Smart Ticket Triage & Mood Detection | Yash Sanikop | Frontend & AI Lead | **Medium** | **8** | High | High complexity. Connecting live Gemini AI to inspect customer messages, extract category, priority, customer mood (`🙂/😐/😠`), and numeric patience score (`0.00-1.00`). |
+| **SSAI-303** | Generate AI Action Checklists & Allow Agents to Check Off Items | Yash Sanikop | Frontend & AI Lead | **Medium** | **5** | Medium-High | Prompting AI to generate 3–5 step troubleshooting checklists tailored to specific ticket issues, with database persistence when agents toggle checklist checkboxes. |
+| **SSAI-304** | Build Pre-Send AI Tone & Quality Checker for Support Replies | Rohan Salkar | Frontend Lead | **Medium** | **5** | Medium-High | Building pre-send modal that reviews agent reply drafts, scoring them on Professionalism, Empathy, Clarity, and Actionability before sending to customers. |
+| **SSAI-305** | Enforce Strict Ticket Status Rules & Concurrency Testing | Shrujan Mitbavkar | Backend Lead | **Medium** | **5** | Medium-High | State machine validation (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED`), atomic PostgreSQL transactions preventing orphaned messages, and connection pool stress testing. |
+| **SSAI-306** | Build AI Summary Banner for Reopened Support Tickets | Aarti Singh | DevOps & QA Lead | **Medium** | **5** | Medium-High | Async background job that triggers when a ticket status switches from `RESOLVED` back to `OPEN`, calling Gemini to produce a 5-bullet summary banner. |
+| **SSAI-307** | Build Automated Department Routing & Instant Auto-Replies | Aarti Singh | DevOps & QA Lead | **Medium** | **5** | Medium-High | Smart routing engine matching keywords to departments (`Billing`, `Technical`, `Accounts`), dispatching immediate automated confirmation messages. |
 
 ---
 
-### Sprint 4: Advanced AI, Cloud Migration & Production Hardening (Active)
+### Sprint 4: Advanced AI, Cloud Migration & Production Hardening (Future / Planned)
 *Goal: AI Concierge chatbot, 1-click tone polisher, Supabase cloud database migration, comprehensive test suites, and Render deployment.*  
-*Sprint Total: 8 Tasks | 41 Story Points*
+*Sprint Total: 8 Tasks | 41 Story Points | Priority: All Medium | State: Future*
 
-| Task ID | Task Title (Beginner-Friendly) | Assignee | Role | Points | Complexity | Why This Point Value Was Chosen (Rationale) |
-|:---|:---|:---|:---|:---:|:---:|:---|
-| **SSAI-401** | Test Website Accessibility, Colors & Responsive Layouts | Rohan Salkar | Frontend Lead | **5** | Medium-High | Cross-device UI testing on mobile, tablet, and desktop screens; verifying color contrast ratios, screen reader labels, and keyboard navigation. |
-| **SSAI-402** | Test AI Accuracy with 100 Support Records & Benchmark Speed | Yash Sanikop | Frontend & AI Lead | **5** | Medium-High | Running automated benchmark test over 100 customer scenarios; validating classification accuracy (>85%) and ensuring responses return under 1.8 seconds. |
-| **SSAI-403** | Add Database Speed Indexes & Run Backend Test Suite | Shrujan Mitbavkar | Backend Lead | **5** | Medium-High | Adding compound B-tree indexes for fast queries (`customer_id`, `status`, `created_at`), running Jest unit tests and Supertest integration tests (7/7 passing). |
-| **SSAI-404** | Security Check: Protect Private Notes & Block Malicious Input | Aarti Singh | DevOps & QA Lead | **3** | Moderate | Verifying internal notes are strictly hidden from customer view, input sanitization prevents XSS attacks, and non-admin users cannot access admin routes. |
-| **SSAI-405** | Deploy Full Project to Render Cloud Platform with HTTPS | Aarti Singh | DevOps & QA Lead | **5** | Medium-High | Configuring `render.yaml` infrastructure-as-code blueprint, setting up production environment variables, and verifying live web services. |
-| **SSAI-406** | Build AI Concierge Chatbot to Turn Simple Words into Formal Tickets | Yash Sanikop | Frontend & AI Lead | **8** | High | High complexity. Conversational intake widget asking clarifying questions and synthesizing natural customer chats into formal structured tickets. |
-| **SSAI-407** | Build 1-Click AI Response Tone Polisher for Support Agents | Rohan Salkar | Frontend Lead | **5** | Medium-High | Multi-style agent assistant modal allowing 1-click rewriting of responses into Empathetic, Concise, Formal, or Technical styles with before/after preview. |
-| **SSAI-408** | Migrate Database from Render to Supabase Cloud with Connection Pooling | Shrujan Mitbavkar | Backend Lead | **5** | Medium-High | Migrating database to enterprise Supabase PostgreSQL (`ap-southeast-1`), enabling SSL, pgBouncer connection pooling, and live schema verification. |
+| Task ID | Task Title (Beginner-Friendly) | Assignee | Role | Priority | Points | Complexity | Why This Point Value Was Chosen (Rationale) |
+|:---|:---|:---|:---|:---:|:---:|:---:|:---|
+| **SSAI-401** | Test Website Accessibility, Colors & Responsive Layouts | Rohan Salkar | Frontend Lead | **Medium** | **5** | Medium-High | Cross-device UI testing on mobile, tablet, and desktop screens; verifying color contrast ratios, screen reader labels, and keyboard navigation. |
+| **SSAI-402** | Test AI Accuracy with 100 Support Records & Benchmark Speed | Yash Sanikop | Frontend & AI Lead | **Medium** | **5** | Medium-High | Running automated benchmark test over 100 customer scenarios; validating classification accuracy (>85%) and ensuring responses return under 1.8 seconds. |
+| **SSAI-403** | Add Database Speed Indexes & Run Backend Test Suite | Shrujan Mitbavkar | Backend Lead | **Medium** | **5** | Medium-High | Adding compound B-tree indexes for fast queries (`customer_id`, `status`, `created_at`), running Jest unit tests and Supertest integration tests (7/7 passing). |
+| **SSAI-404** | Security Check: Protect Private Notes & Block Malicious Input | Aarti Singh | DevOps & QA Lead | **Medium** | **3** | Moderate | Verifying internal notes are strictly hidden from customer view, input sanitization prevents XSS attacks, and non-admin users cannot access admin routes. |
+| **SSAI-405** | Deploy Full Project to Render Cloud Platform with HTTPS | Aarti Singh | DevOps & QA Lead | **Medium** | **5** | Medium-High | Configuring `render.yaml` infrastructure-as-code blueprint, setting up production environment variables, and verifying live web services. |
+| **SSAI-406** | Build AI Concierge Chatbot to Turn Simple Words into Formal Tickets | Yash Sanikop | Frontend & AI Lead | **Medium** | **8** | High | High complexity. Conversational intake widget asking clarifying questions and synthesizing natural customer chats into formal structured tickets. |
+| **SSAI-407** | Build 1-Click AI Response Tone Polisher for Support Agents | Rohan Salkar | Frontend Lead | **Medium** | **5** | Medium-High | Multi-style agent assistant modal allowing 1-click rewriting of responses into Empathetic, Concise, Formal, or Technical styles with before/after preview. |
+| **SSAI-408** | Migrate Database from Render to Supabase Cloud with Connection Pooling | Shrujan Mitbavkar | Backend Lead | **Medium** | **5** | Medium-High | Migrating database to enterprise Supabase PostgreSQL (`ap-southeast-1`), enabling SSL, pgBouncer connection pooling, and live schema verification. |
 
 ---
 
@@ -163,9 +164,9 @@ In Scrum, **Velocity** is the amount of work (measured in story points) a team s
   *Context*: Typical initial sprint with lower velocity. Team spent time understanding requirements, researching competitors, and architecting before writing heavy code.
 - **Sprint 2 (Prototype Build)**: **59 Points** (10 tasks)  
   *Context*: Core implementation sprint. High velocity because foundational scaffolding (UI theme, Express backend, PostgreSQL schema, Docker, JWT auth) was built simultaneously by all 4 engineers.
-- **Sprint 3 (AI & Integration)**: **38 Points** (7 tasks)  
-  *Context*: Integration sprint. Moderate-high velocity connecting all frontend components to live backend routes, deploying live Gemini triage, and status machines.
-- **Sprint 4 (Advanced AI & Cloud Ops)**: **41 Points** (8 tasks)  
+- **Sprint 3 (AI & Integration)**: **38 Points** (7 tasks, Priority: Medium, State: Active)  
+  *Context*: Integration sprint. Currently **active and ongoing** (not closed). Connecting all frontend components to live backend routes, deploying live Gemini triage, checklists, and status machines.
+- **Sprint 4 (Advanced AI & Cloud Ops)**: **41 Points** (8 tasks, Priority: Medium, State: Future)  
   *Context*: Production polish sprint. Adding novel AI Concierge chatbot, tone polisher modal, migrating to Supabase cloud, and executing end-to-end test suites.
 - **Total Project Velocity**: **156 Story Points** across 8 weeks (Average: **39 Story Points per Sprint**).
 

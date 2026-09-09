@@ -30,47 +30,49 @@
 
 The product backlog consists of **29 tasks** totaling **156 story points**, distributed across 6 Epics:
 
+> **Task Priority**: All 29 tasks across Sprints 1 to 4 are standardized to **Medium Priority**, ensuring steady delivery focus while story points represent relative complexity.
+
 ```
 [EPIC-1: Research & Requirements Specification] (18 pts)
-  ├── SSAI-101: Research How Customer Support Tools Work & Compare Features (Est: 3 pts | Assignee: Rohan)
-  ├── SSAI-102: Choose Right AI Model & Collect Real Customer Chat Datasets (Est: 5 pts | Assignee: Yash)
-  ├── SSAI-103: Design Simple 3-Tier System Architecture & Database Tables (Est: 5 pts | Assignee: Shrujan)
-  └── SSAI-104: Write Plain-English Project Requirements & 4-Sprint Schedule (Est: 5 pts | Assignee: Aarti)
+  ├── SSAI-101: Research How Customer Support Tools Work & Compare Features (Priority: Medium | Est: 3 pts | Assignee: Rohan)
+  ├── SSAI-102: Choose Right AI Model & Collect Real Customer Chat Datasets (Priority: Medium | Est: 5 pts | Assignee: Yash)
+  ├── SSAI-103: Design Simple 3-Tier System Architecture & Database Tables (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
+  └── SSAI-104: Write Plain-English Project Requirements & 4-Sprint Schedule (Priority: Medium | Est: 5 pts | Assignee: Aarti)
 
 [EPIC-2: UI/UX Design System & Frontend SPA] (33 pts)
-  ├── SSAI-201: Build Website Frame with Dark & Light Mode Switcher (Est: 5 pts | Assignee: Rohan)
-  ├── SSAI-202: Build Reusable UI Buttons, Cards & Offline Mock Data (Est: 5 pts | Assignee: Rohan)
-  ├── SSAI-203: Create User Login Page with 1-Click Persona Testing Buttons (Est: 5 pts | Assignee: Yash)
-  ├── SSAI-204: Build Ticket Workspace with Chat Thread & Live AI Helper Drawer (Est: 8 pts | Assignee: Yash)
-  ├── SSAI-301: Connect All Website Screens to the Real Live Backend Server (Est: 5 pts | Assignee: Rohan)
-  └── SSAI-407: Build 1-Click AI Response Tone Polisher for Support Agents (Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-201: Build Website Frame with Dark & Light Mode Switcher (Priority: Medium | Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-202: Build Reusable UI Buttons, Cards & Offline Mock Data (Priority: Medium | Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-203: Create User Login Page with 1-Click Persona Testing Buttons (Priority: Medium | Est: 5 pts | Assignee: Yash)
+  ├── SSAI-204: Build Ticket Workspace with Chat Thread & Live AI Helper Drawer (Priority: Medium | Est: 8 pts | Assignee: Yash)
+  ├── SSAI-301: Connect All Website Screens to the Real Live Backend Server (Priority: Medium | Est: 5 pts | Assignee: Rohan)
+  └── SSAI-407: Build 1-Click AI Response Tone Polisher for Support Agents (Priority: Medium | Est: 5 pts | Assignee: Rohan)
 
 [EPIC-3: Core Backend Architecture & Database Engine] (30 pts)
-  ├── SSAI-206: Set Up Express Backend Server, Security Headers & Rate Limiter (Est: 5 pts | Assignee: Shrujan)
-  ├── SSAI-207: Create PostgreSQL Database Tables & Starter Test Data (Est: 5 pts | Assignee: Shrujan)
-  ├── SSAI-208: Build Secure User Registration, Password Encryption & Login Tokens (Est: 5 pts | Assignee: Aarti)
-  ├── SSAI-209: Build Ticket Management APIs & Connect to AI Microservice (Est: 8 pts | Assignee: Aarti)
-  ├── SSAI-305: Enforce Strict Ticket Status Rules & Concurrency Testing (Est: 5 pts | Assignee: Shrujan)
-  └── SSAI-408: Migrate Database from Render to Supabase Cloud with Pooling (Est: 5 pts | Assignee: Shrujan)
+  ├── SSAI-206: Set Up Express Backend Server, Security Headers & Rate Limiter (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
+  ├── SSAI-207: Create PostgreSQL Database Tables & Starter Test Data (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
+  ├── SSAI-208: Build Secure User Registration, Password Encryption & Login Tokens (Priority: Medium | Est: 5 pts | Assignee: Aarti)
+  ├── SSAI-209: Build Ticket Management APIs & Connect to AI Microservice (Priority: Medium | Est: 8 pts | Assignee: Aarti)
+  ├── SSAI-305: Enforce Strict Ticket Status Rules & Concurrency Testing (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
+  └── SSAI-408: Migrate Database from Render to Supabase Cloud with Pooling (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
 
 [EPIC-4: AI/LLM Microservice & Gemini Decision Support] (37 pts)
-  ├── SSAI-205: Set Up Python AI Microservice with Google Gemini & Caching (Est: 8 pts | Assignee: Yash)
-  ├── SSAI-302: Connect Real Google Gemini AI for Smart Ticket Triage & Mood Detection (Est: 8 pts | Assignee: Yash)
-  ├── SSAI-303: Generate AI Action Checklists & Allow Agents to Check Off Items (Est: 5 pts | Assignee: Yash)
-  ├── SSAI-304: Build Pre-Send AI Tone & Quality Checker for Support Replies (Est: 5 pts | Assignee: Rohan)
-  ├── SSAI-306: Build AI Summary Banner for Reopened Support Tickets (Est: 5 pts | Assignee: Aarti)
-  └── SSAI-406: Build AI Concierge Chatbot to Turn Simple Words into Formal Tickets (Est: 8 pts | Assignee: Yash)
+  ├── SSAI-205: Set Up Python AI Microservice with Google Gemini & Caching (Priority: Medium | Est: 8 pts | Assignee: Yash)
+  ├── SSAI-302: Connect Real Google Gemini AI for Smart Ticket Triage & Mood Detection (Priority: Medium | Est: 8 pts | Assignee: Yash)
+  ├── SSAI-303: Generate AI Action Checklists & Allow Agents to Check Off Items (Priority: Medium | Est: 5 pts | Assignee: Yash)
+  ├── SSAI-304: Build Pre-Send AI Tone & Quality Checker for Support Replies (Priority: Medium | Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-306: Build AI Summary Banner for Reopened Support Tickets (Priority: Medium | Est: 5 pts | Assignee: Aarti)
+  └── SSAI-406: Build AI Concierge Chatbot to Turn Simple Words into Formal Tickets (Priority: Medium | Est: 8 pts | Assignee: Yash)
 
 [EPIC-5: Testing, Quality Assurance & Security Validation] (16 pts)
-  ├── SSAI-307: Build Automated Department Routing & Instant Auto-Replies (Est: 5 pts | Assignee: Aarti)
-  ├── SSAI-401: Test Website Accessibility, Colors & Responsive Layouts (Est: 5 pts | Assignee: Rohan)
-  ├── SSAI-402: Test AI Accuracy with 100 Support Records & Benchmark Speed (Est: 5 pts | Assignee: Yash)
-  └── SSAI-404: Security Check: Protect Private Notes & Block Malicious Input (Est: 3 pts | Assignee: Aarti)
+  ├── SSAI-307: Build Automated Department Routing & Instant Auto-Replies (Priority: Medium | Est: 5 pts | Assignee: Aarti)
+  ├── SSAI-401: Test Website Accessibility, Colors & Responsive Layouts (Priority: Medium | Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-402: Test AI Accuracy with 100 Support Records & Benchmark Speed (Priority: Medium | Est: 5 pts | Assignee: Yash)
+  └── SSAI-404: Security Check: Protect Private Notes & Block Malicious Input (Priority: Medium | Est: 3 pts | Assignee: Aarti)
 
 [EPIC-6: DevOps, Cloud Deployment & Technical Documentation] (22 pts)
-  ├── SSAI-210: Set Up Docker Containers & Complete Technical Documentation (Est: 5 pts | Assignee: Aarti)
-  ├── SSAI-403: Add Database Speed Indexes & Run Backend Test Suite (Est: 5 pts | Assignee: Shrujan)
-  └── SSAI-405: Deploy Full Project to Render Cloud Platform with HTTPS (Est: 5 pts | Assignee: Aarti)
+  ├── SSAI-210: Set Up Docker Containers & Complete Technical Documentation (Priority: Medium | Est: 5 pts | Assignee: Aarti)
+  ├── SSAI-403: Add Database Speed Indexes & Run Backend Test Suite (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
+  └── SSAI-405: Deploy Full Project to Render Cloud Platform with HTTPS (Priority: Medium | Est: 5 pts | Assignee: Aarti)
 ```
 
 ---

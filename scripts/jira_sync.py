@@ -155,6 +155,7 @@ TASKS = [
         "epic": "EPIC-1",
         "assignee": "Rohan Salkar",
         "points": 3,
+        "priority": "Medium",
         "labels": ["research", "documentation", "ui"],
         "status": "Done",
         "description": "Study popular customer support apps like Zendesk, Freshdesk, and Linear. Find out what annoys customers (like waiting too long for an answer or having to repeat their issue) and decide how SupportSense AI will solve these problems in a simpler, faster way.\n\n### What Needs to Work (Acceptance Criteria)\n1. Make a simple comparison chart comparing at least 3 existing support apps.\n2. Write down the 3 main goals: Fast first reply, solving problems on the first contact, and high customer happiness.\n3. Create 4 simple user types: Customer, Support Agent, Team Leader, and System Administrator.\n\n### Complexity & Story Points (3 Points)\nModerate effort. Involves reading documentation, testing competing apps, and writing clear beginner-friendly summary notes.",
@@ -173,6 +174,7 @@ TASKS = [
         "epic": "EPIC-1",
         "assignee": "Yash Sanikop",
         "points": 5,
+        "priority": "Medium",
         "labels": ["research", "ai", "llm", "frontend"],
         "status": "Done",
         "description": "Test different AI models to see which one answers support questions fastest and cheapest. We chose Google Gemini 1.5 Flash because it replies in under 1 second. Also, gather real customer support chats from Kaggle and Hugging Face so our AI learns from real human interactions.\n\n### What Needs to Work (Acceptance Criteria)\n1. Test Google Gemini 1.5 Flash speed and confirm it returns neat, structured data.\n2. Write simple prompt templates that tell the AI how to act like a helpful support assistant.\n3. Download real customer support chat datasets to teach the AI how long typical fixes take.\n\n### Complexity & Story Points (5 Points)\nMedium-high complexity. Requires testing API keys, measuring response times, crafting AI instructions, and organizing large CSV datasets.",
@@ -191,6 +193,7 @@ TASKS = [
         "epic": "EPIC-1",
         "assignee": "Shrujan Mitbavkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["research", "backend", "database"],
         "status": "Done",
         "description": "Draw a clear blueprint showing how the website (Frontend), the server (Backend), the AI service, and the database talk to each other. Design simple tables to store users, tickets, chat messages, AI notes, and verification checklists.\n\n### What Needs to Work (Acceptance Criteria)\n1. Create a clear diagram showing how data moves from user to database and AI.\n2. Design 6 clean database tables: users, tickets, ticket_messages, ai_metadata, agent_checklists, weekly_insights.\n3. Add search indexes so looking up tickets is fast even with thousands of records.\n\n### Complexity & Story Points (5 Points)\nMedium-high complexity. Requires designing database relationships, preventing duplicate data, and making sure tables link together properly with foreign keys.",
@@ -209,6 +212,7 @@ TASKS = [
         "epic": "EPIC-1",
         "assignee": "Aarti Singh",
         "points": 5,
+        "priority": "Medium",
         "labels": ["research", "documentation", "backend"],
         "status": "Done",
         "description": "Write a clear, beginner-friendly guide explaining what the project will do (features) and what rules it must follow (like security and speed). Set up the rule that AI only gives advice and humans make final decisions. Plan the 4 sprints so everyone on the team knows what to build each week.\n\n### What Needs to Work (Acceptance Criteria)\n1. Write a simple Project Requirements document explaining the 8 main features.\n2. Explain the safety rule: AI assists agents, but humans make the final decisions.\n3. Split the 8 weeks of work into 4 clear 2-week sprints with assigned team members.\n\n### Complexity & Story Points (5 Points)\nMedium-high complexity. Requires aligning the entire team on deadlines, features, coding standards, and safety rules.",
@@ -231,6 +235,7 @@ TASKS = [
         "epic": "EPIC-2",
         "assignee": "Rohan Salkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["frontend", "ui"],
         "status": "Done",
         "description": "Build the main website frame using React and Tailwind CSS. It should include a friendly top navigation bar, a collapsible sidebar menu that adapts to whether you are a Customer or an Agent, and a button to switch between Dark and Light mode that remembers your preference.\n\n### What Needs to Work (Acceptance Criteria)\n1. The website opens cleanly in the browser with zero build errors.\n2. Clicking the theme button smoothly changes between Dark and Light mode.\n3. The sidebar highlights the current page and collapses cleanly on smaller screens.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves setting up the React application, routing with React Router, and managing persistent theme state.",
@@ -249,6 +254,7 @@ TASKS = [
         "epic": "EPIC-2",
         "assignee": "Rohan Salkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["frontend", "ui", "api"],
         "status": "Done",
         "description": "Create reusable building blocks (buttons, cards, tables, popups, loading animations) so our screens look consistent. Also build a smart offline fallback in api.js with realistic sample tickets so the app can be tested and demoed even if the backend server is offline.\n\n### What Needs to Work (Acceptance Criteria)\n1. Reusable components (Button, Card, Table, Modal) look clean and match our brand.\n2. The app handles loading states smoothly with animated placeholder boxes.\n3. If the backend is turned off, the website uses sample tickets without crashing.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Requires building several reusable components and writing realistic mock ticket scenarios with chat threads.",
@@ -267,6 +273,7 @@ TASKS = [
         "epic": "EPIC-2",
         "assignee": "Yash Sanikop",
         "points": 5,
+        "priority": "Medium",
         "labels": ["frontend", "ui"],
         "status": "Done",
         "description": "Build an easy-to-use login screen. To make grading and testing easy for anyone, add 1-click 'Demo Persona' buttons so you can immediately sign in as Customer Alex, Agent Sarah, or Admin without having to remember and type passwords.\n\n### What Needs to Work (Acceptance Criteria)\n1. Users can sign in with their email and password.\n2. Clicking a persona card (e.g. 'Sarah Agent') instantly logs in with that role.\n3. Customers see their own tickets, while Agents see the full support queue.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves managing user login tokens (JWT) in React context and adjusting navigation permissions based on user role.",
@@ -285,6 +292,7 @@ TASKS = [
         "epic": "EPIC-2",
         "assignee": "Yash Sanikop",
         "points": 8,
+        "priority": "Medium",
         "labels": ["frontend", "ui", "ai"],
         "status": "Done",
         "description": "Build the main workspace where support agents spend their day: on the left, a chat thread showing the customer's problem and agent replies; on the right, a sliding AI Helper Drawer showing customer mood (happy/frustrated), a patience meter, estimated resolution time, and interactive task checkboxes.\n\n### What Needs to Work (Acceptance Criteria)\n1. Chat messages show clearly who sent them with timestamps and role badges.\n2. Agents can write private internal notes that customers can never see.\n3. Sliding AI drawer shows mood emoji, patience gauge, and interactive checkboxes.\n\n### Complexity & Story Points (8 Points)\nHigh complexity. This is the core screen of the application. It combines complex layouts, chat message streams, private note filters, and dynamic AI helper components.",
@@ -303,6 +311,7 @@ TASKS = [
         "epic": "EPIC-4",
         "assignee": "Yash Sanikop",
         "points": 8,
+        "priority": "Medium",
         "labels": ["ai", "llm", "backend"],
         "status": "Done",
         "description": "Create a separate, lightweight Python server using FastAPI to handle all AI tasks. Connect it to Google Gemini 1.5 Flash. Add smart memory caching so if two customers ask the same question, the AI answers instantly in under 1 millisecond without calling Google again.\n\n### What Needs to Work (Acceptance Criteria)\n1. Python server runs on port 8000 and serves automatic API documentation.\n2. Google Gemini receives ticket text and returns clean structured answers.\n3. Identical questions are answered instantly from cache in under 1ms.\n4. If the internet or Gemini drops, the server returns friendly fallback answers.\n\n### Complexity & Story Points (8 Points)\nHigh complexity. Involves configuring FastAPI, connecting to Google Generative AI SDK, setting up asynchronous non-blocking calls, and building in-memory caching.",
@@ -322,6 +331,7 @@ TASKS = [
         "epic": "EPIC-3",
         "assignee": "Shrujan Mitbavkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["backend", "security"],
         "status": "Done",
         "description": "Create the main Node.js Express backend server on port 5000. Add security guards like Helmet headers, rate limiting to stop hackers from spamming login attempts, clear error handling, and a health check page at /health.\n\n### What Needs to Work (Acceptance Criteria)\n1. Visiting /health returns HTTP 200 with server status and uptime.\n2. Too many failed login attempts in a short time gets blocked by the rate limiter.\n3. The backend logs helpful messages to the console for debugging.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves configuring Express middleware, CORS policies, security headers, and request rate limiting.",
@@ -341,6 +351,7 @@ TASKS = [
         "epic": "EPIC-3",
         "assignee": "Shrujan Mitbavkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["backend", "database"],
         "status": "Done",
         "description": "Write SQL scripts to create our 6 database tables (users, tickets, messages, AI data, checklists, insights) with automatic update timestamps. Create a seed script that adds starter users (Sarah Agent, Alex Customer, Admin) and sample tickets so the app is immediately ready for testing.\n\n### What Needs to Work (Acceptance Criteria)\n1. Running the migration script creates all 6 tables and indexes without errors.\n2. Passwords in the seed script are securely encrypted with bcrypt.\n3. The server automatically runs migrations on startup if tables don't exist yet.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves writing normalized SQL schemas, foreign keys, cascade delete rules, and an automatic startup runner (dbInit.js).",
@@ -359,6 +370,7 @@ TASKS = [
         "epic": "EPIC-3",
         "assignee": "Aarti Singh",
         "points": 5,
+        "priority": "Medium",
         "labels": ["backend", "security"],
         "status": "Done",
         "description": "Build user registration and login endpoints. Encrypt all passwords using bcrypt so plain passwords are never stored in the database. When a user logs in, issue a signed digital pass (JWT token) and ensure public users cannot grant themselves Admin privileges.\n\n### What Needs to Work (Acceptance Criteria)\n1. Logging in with correct email/password returns a secure JWT access token.\n2. Anyone signing up via the public form is automatically given the Customer role.\n3. Protected routes block requests that don't have a valid login token.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves password hashing, JWT token signing and verification, and role-based access control (RBAC).",
@@ -378,6 +390,7 @@ TASKS = [
         "epic": "EPIC-3",
         "assignee": "Aarti Singh",
         "points": 8,
+        "priority": "Medium",
         "labels": ["backend", "database", "api"],
         "status": "Done",
         "description": "Write backend functions to create tickets, post chat replies, change ticket status, and forward tickets between departments. Build an HTTP connector that sends tickets to the Python AI service with a 5-second safety timeout so customer tickets never get stuck.\n\n### What Needs to Work (Acceptance Criteria)\n1. Submitting a ticket creates a database row and asks the AI for initial advice.\n2. If the AI service is slow or down, the ticket still saves safely with friendly default values.\n3. Checking a checklist item updates its completed status in the database.\n\n### Complexity & Story Points (8 Points)\nHigh complexity. Involves coordinating multi-step ticket creation, database queries, and inter-service HTTP communication with failure fallbacks.",
@@ -397,6 +410,7 @@ TASKS = [
         "epic": "EPIC-6",
         "assignee": "Aarti Singh",
         "points": 5,
+        "priority": "Medium",
         "labels": ["deployment", "testing", "documentation"],
         "status": "Done",
         "description": "Package the frontend, backend, AI service, and database into Docker containers so the entire project boots with a single command (`docker-compose up`). Set up automated GitHub tests, and organize technical documentation so new developers can get started quickly.\n\n### What Needs to Work (Acceptance Criteria)\n1. Running `docker-compose up` starts all 4 services without errors.\n2. GitHub Actions automatically tests every pull request.\n3. Documentation index in docs/ clearly explains how the project is organized.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves writing Dockerfiles, configuring Docker network bridges, setting up GitHub Actions YAML, and structuring documentation.",
@@ -420,6 +434,7 @@ TASKS = [
         "epic": "EPIC-2",
         "assignee": "Rohan Salkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["frontend", "backend", "api"],
         "status": "Done",
         "description": "Switch the website from using sample mock data to connecting directly with the real Node.js backend and database. Ensure that logging in, viewing tickets, posting chat messages, and checking off tasks updates real database records in real time.\n\n### What Needs to Work (Acceptance Criteria)\n1. Website talks directly to http://localhost:5000/api/v1.\n2. Logging in stores your real JWT token and sends it with every request.\n3. Creating a ticket or posting a message immediately updates the live database.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Requires testing every screen against real API endpoints, handling network errors with friendly toasts, and testing session expiration.",
@@ -438,6 +453,7 @@ TASKS = [
         "epic": "EPIC-4",
         "assignee": "Yash Sanikop",
         "points": 8,
+        "priority": "Medium",
         "labels": ["ai", "llm", "backend"],
         "status": "Done",
         "description": "Connect the Python AI service to the real Google Gemini 1.5 Flash API. Whenever a customer submits a ticket, Gemini reads the text, figures out the category (Billing, Technical, Account), checks if the customer is Happy or Frustrated, guesses resolution time, and writes an empathetic suggested reply.\n\n### What Needs to Work (Acceptance Criteria)\n1. New tickets receive AI mood detection (🙂 HAPPY, 😐 NEUTRAL, 😠 FRUSTRATED).\n2. AI calculates a patience score (CALM, CONCERNED, FRUSTRATED, CRITICAL).\n3. The AI answers in under 1.8 seconds with structured JSON.\n\n### Complexity & Story Points (8 Points)\nHigh complexity. Requires fine-tuning system prompts, handling API rate limits, model pooling to avoid slow startup, and measuring response latency.",
@@ -456,6 +472,7 @@ TASKS = [
         "epic": "EPIC-4",
         "assignee": "Yash Sanikop",
         "points": 5,
+        "priority": "Medium",
         "labels": ["ai", "frontend", "backend"],
         "status": "Done",
         "description": "Have the AI generate 3 to 5 clear verification checkboxes for each ticket (for example: 'Check invoice in Stripe', 'Verify credit card number'). Agents can click checkboxes on their screen, and the checked status saves immediately in the database with a progress bar.\n\n### What Needs to Work (Acceptance Criteria)\n1. Every new ticket automatically gets 3 to 5 customized checklist steps.\n2. Clicking a checkbox immediately saves its completed state to PostgreSQL.\n3. The checklist shows a neat progress bar (e.g. 66% completed).\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves prompt engineering for actionable checklist steps, building backend toggle endpoints, and updating UI progress state smoothly.",
@@ -474,6 +491,7 @@ TASKS = [
         "epic": "EPIC-4",
         "assignee": "Rohan Salkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["ai", "frontend", "ui"],
         "status": "Done",
         "description": "Give support agents a 'Check Response Quality' button before they send replies. The AI audits the draft across 4 simple scores (Professionalism, Empathy, Clarity, Actionability) from 0 to 100, gives an overall grade (A/B/C), and lets the agent click one button to improve their message.\n\n### What Needs to Work (Acceptance Criteria)\n1. Clicking 'Check Quality' shows 4 scores (0-100%) and a friendly overall grade.\n2. AI gives a helpful coaching tip to improve the reply.\n3. Clicking 'Apply Suggestion' puts the improved text into the reply box.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves building the popup modal, calling the AI quality check endpoint, rendering animated progress bars, and updating text state.",
@@ -492,6 +510,7 @@ TASKS = [
         "epic": "EPIC-3",
         "assignee": "Shrujan Mitbavkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["backend", "database"],
         "status": "Done",
         "description": "Make sure ticket statuses follow strict logical steps: Open -> In Progress -> Resolved -> Closed. Prevent illegal jumps (like jumping from Open straight to Closed). Also test that creating 50 tickets at the exact same second produces unique ticket numbers without database crashes.\n\n### What Needs to Work (Acceptance Criteria)\n1. System blocks invalid status jumps with a clear HTTP 400 error message.\n2. Closed tickets are locked and cannot be edited.\n3. 50 simultaneous ticket requests all get unique sequential ticket numbers (T-1001, T-1002).\n\n### Complexity & Story Points (5 Points)\nMedium-high complexity. Involves building a state machine validation rule, managing PostgreSQL sequence numbers, and writing multi-request concurrency tests.",
@@ -510,6 +529,7 @@ TASKS = [
         "epic": "EPIC-4",
         "assignee": "Aarti Singh",
         "points": 5,
+        "priority": "Medium",
         "labels": ["ai", "backend", "frontend"],
         "status": "Done",
         "description": "When an old ticket is reopened (from Resolved back to Open), have the AI read the whole past conversation in the background and write a quick 5-bullet summary banner at the top of the screen. This saves agents from having to read through 20 old messages.\n\n### What Needs to Work (Acceptance Criteria)\n1. Reopening a ticket triggers a background AI summary without freezing the screen.\n2. AI writes a 5 to 6 bullet recap explaining what happened and why it was reopened.\n3. A prominent summary banner appears at the top of the ticket screen.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves fire-and-forget background workers so the web response is instant, storing summary text in PostgreSQL, and rendering a clean banner.",
@@ -528,6 +548,7 @@ TASKS = [
         "epic": "EPIC-4",
         "assignee": "Aarti Singh",
         "points": 5,
+        "priority": "Medium",
         "labels": ["ai", "backend"],
         "status": "Done",
         "description": "Automatically route new tickets to the right team: send billing questions to Finance & Billing, technical bugs to Technical Support, login issues to Identity & Access, and API errors to API Platform. Post an instant polite confirmation reply so the customer knows work has started.\n\n### What Needs to Work (Acceptance Criteria)\n1. New tickets are automatically assigned to the correct department.\n2. If AI confidence is above 75%, an automated polite greeting is posted to the thread.\n3. Agents can forward tickets to another department with a required handover note.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves setting up department routing rules, auto-reply policies, and building a ticket forward modal with audit logging.",
@@ -550,6 +571,7 @@ TASKS = [
         "epic": "EPIC-5",
         "assignee": "Rohan Salkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["frontend", "testing", "ui"],
         "status": "Done",
         "description": "Test the website on mobile phones, tablets, and desktop screens. Make sure text is easy to read, colors meet accessibility standards (WCAG 2.1 AA), buttons have enough space to tap on touchscreens, and nothing spills over the edge of the screen.\n\n### What Needs to Work (Acceptance Criteria)\n1. All text passes accessibility color contrast checks (at least 4.5:1 ratio).\n2. Website looks great on mobile (360px), tablet (768px), and desktop (1920px).\n3. Component tests pass with zero errors.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves testing across multiple screen sizes, auditing color contrast in both dark and light modes, and writing React component tests.",
@@ -568,6 +590,7 @@ TASKS = [
         "epic": "EPIC-5",
         "assignee": "Yash Sanikop",
         "points": 5,
+        "priority": "Medium",
         "labels": ["ai", "testing", "llm"],
         "status": "Done",
         "description": "Run 100 test customer support tickets through our AI to check its accuracy. Verify that it categorizes issues correctly at least 90% of the time, detects angry or happy mood accurately, and responds in under 1.8 seconds on 95% of queries.\n\n### What Needs to Work (Acceptance Criteria)\n1. Ticket classification achieves >= 90% accuracy on test tickets.\n2. Customer mood detection achieves >= 88% accuracy.\n3. 95% of AI requests finish in under 1.8 seconds.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves running automated test scripts over benchmark datasets, calculating accuracy percentages, and measuring response latency.",
@@ -586,6 +609,7 @@ TASKS = [
         "epic": "EPIC-5",
         "assignee": "Shrujan Mitbavkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["backend", "database", "testing"],
         "status": "Done",
         "description": "Add database speed indexes so filtering thousands of tickets by status or customer takes less than 50 milliseconds. Run our complete backend test suite (Jest and Supertest) to make sure authentication, tickets, and messages work without bugs.\n\n### What Needs to Work (Acceptance Criteria)\n1. Ticket queue searches run in less than 50ms on PostgreSQL.\n2. Backend test suites achieve high code coverage with 100% pass rate.\n3. Database connection pool stays healthy under heavy test traffic.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves analyzing SQL queries, tuning connection pool settings, and expanding integration tests.",
@@ -604,6 +628,7 @@ TASKS = [
         "epic": "EPIC-5",
         "assignee": "Aarti Singh",
         "points": 3,
+        "priority": "Medium",
         "labels": ["security", "backend", "testing"],
         "status": "Done",
         "description": "Perform a complete security review: make sure customers can never view private staff notes, clean all user input so hackers cannot inject malicious code (<script>), and check that the rate limiter stops password guessing attacks.\n\n### What Needs to Work (Acceptance Criteria)\n1. Customer API responses never include internal staff notes.\n2. Malicious script tags in ticket titles or messages are safely neutralized.\n3. Trying more than 10 wrong passwords in 15 minutes gets temporarily blocked.\n\n### Complexity & Story Points (3 Points)\nModerate complexity. Involves testing security boundaries, verifying input sanitization, and confirming rate limiter rules.",
@@ -622,6 +647,7 @@ TASKS = [
         "epic": "EPIC-6",
         "assignee": "Aarti Singh",
         "points": 5,
+        "priority": "Medium",
         "labels": ["deployment", "documentation"],
         "status": "Done",
         "description": "Deploy the website frontend, Express backend, and Python AI service to Render.com using an automated blueprint (render.yaml). Set up secure HTTPS web addresses, link environment variables, and prepare a smooth live demo walkthrough.\n\n### What Needs to Work (Acceptance Criteria)\n1. Live website is accessible over secure HTTPS with zero browser console errors.\n2. Backend connects smoothly to cloud services.\n3. Documentation has clear step-by-step guides for demoing Customer and Agent journeys.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves configuring cloud deployment blueprints, linking environment variables, setting up SSL certificates, and verifying cloud builds.",
@@ -640,6 +666,7 @@ TASKS = [
         "epic": "EPIC-4",
         "assignee": "Yash Sanikop",
         "points": 8,
+        "priority": "Medium",
         "labels": ["ai", "frontend", "conversational"],
         "status": "Done",
         "description": "Build an interactive AI Concierge chatbot widget anchored in the bottom corner of every page. Customers can describe their problem in plain, casual words (like 'I was charged twice'), and the AI chats with them empathetically and automatically drafts a structured, professional support ticket with observed errors, business impact, and verification steps ready to submit with 1 click.\n\n### What Needs to Work (Acceptance Criteria)\n1. Floating chatbot widget appears in the bottom right corner of all pages.\n2. Customers can chat in simple words and get warm, helpful answers.\n3. AI creates a formal ticket preview with summary, impact, and reproduction steps.\n4. Clicking 'Submit Ticket' instantly saves the ticket to the database.\n\n### Complexity & Story Points (8 Points)\nHigh complexity. Involves conversational multi-turn chat handling, natural-language-to-structured-ticket transformation, markdown rendering, and 1-click ticket dispatch.",
@@ -659,6 +686,7 @@ TASKS = [
         "epic": "EPIC-4",
         "assignee": "Rohan Salkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["ai", "frontend", "ui"],
         "status": "Done",
         "description": "Add a 1-click tone polishing tool inside the agent's reply box. If an agent writes a rough or quick draft, they can click a button to rewrite it into one of 4 styles: Empathetic (warm and reassuring), Concise (bullet points with no fluff), Formal (corporate and professional), or Technical (includes log names and error details).\n\n### What Needs to Work (Acceptance Criteria)\n1. Clicking 'Polish Tone' opens a modal with 4 style buttons: Empathetic, Concise, Formal, Technical.\n2. AI rewrites the draft in under 1 second and explains why it improved the message.\n3. Clicking 'Use Polished Text' replaces the reply box content cleanly.\n\n### Complexity & Story Points (5 Points)\nMedium complexity. Involves building the tone selection modal, creating the POST /api/v1/ai/polish-tone endpoint, and integrating seamless text replacement.",
@@ -677,6 +705,7 @@ TASKS = [
         "epic": "EPIC-6",
         "assignee": "Shrujan Mitbavkar",
         "points": 5,
+        "priority": "Medium",
         "labels": ["backend", "database", "deployment"],
         "status": "Done",
         "description": "Migrate the PostgreSQL database from Render's 30-day expiring free tier to Supabase for permanent, enterprise-grade cloud storage. Enable enforced SSL encryption, set up connection pooling to support high traffic without running out of connections, and create an automated migration script.\n\n### What Needs to Work (Acceptance Criteria)\n1. All 6 tables, sequences, indexes, and triggers are created on Supabase PostgreSQL.\n2. Node.js backend connects to Supabase with SSL { rejectUnauthorized: false }.\n3. Connection pooler supports bursts of concurrent traffic without timeouts.\n4. Migration CLI tool (scripts/migrate_to_supabase.js) runs cleanly.\n\n### Complexity & Story Points (5 Points)\nMedium-high complexity. Involves cloud database provisioning, SSL configuration, database sequence synchronization, and creating an automated migration script.",
@@ -892,6 +921,15 @@ class JiraSyncManager:
 
             if existing_key:
                 self.log(f"Found existing {task['type']} '{task['custom_id']}' -> {existing_key}", "INFO")
+                # Ensure priority is Medium and story points are up to date
+                if not self.dry_run:
+                    up_payload = {
+                        "fields": {
+                            "priority": {"name": task.get("priority", "Medium")},
+                            "customfield_10016": float(task["points"])
+                        }
+                    }
+                    requests.put(f"{self.jira_url}/rest/api/3/issue/{existing_key}", auth=self.auth, headers=self.headers, json=up_payload)
                 if sprint_id:
                     self._move_issue_to_sprint(existing_key, sprint_id)
                 if task["status"] == "Done":
@@ -915,7 +953,8 @@ class JiraSyncManager:
                 },
                 "issuetype": {"id": type_id},
                 "labels": task.get("labels", []),
-                "customfield_10016": float(task["points"])  # Story point estimate
+                "customfield_10016": float(task["points"]),  # Story point estimate
+                "priority": {"name": task.get("priority", "Medium")}
             }
 
             if assignee_id:
