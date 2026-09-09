@@ -178,6 +178,14 @@ All system prompts are maintained in [`ai-service/app/prompts/templates.py`](fil
 - **Prompt Constant:** `ORGANIZATIONAL_INSIGHTS_ROLE_PROMPT`
 - **Role:** Analyzes batches of weekly resolved tickets to identify top recurring friction points, common agent handling mistakes, public documentation gaps, and ready-to-publish FAQ entries.
 
+### 7. AI Concierge & Natural Language Ticket Crafter
+- **Prompt Constant:** `AI_CONCIERGE_TICKET_CRAFTER_PROMPT`
+- **Role:** Interactive conversational assistant that speaks empathetically to the customer in natural language, troubleshoots quick issues, and synthesizes unstructured complaints into complete enterprise ticket drafts with executive summaries, observed errors, business impact, reproduction steps, and diagnostic assessment.
+
+### 8. Enterprise Communications Editor & Tone Coach
+- **Prompt Constant:** `AI_TONE_POLISH_PROMPT`
+- **Role:** 1-Click tone refiner that rewrites agent draft responses into Empathetic, Concise, Formal, or Technical styles while maintaining core technical facts, links, and action items.
+
 ---
 
 ## 5. Department Automated Response System
@@ -239,25 +247,40 @@ class DepartmentAutoReplyResponse(BaseModel):
     actions_triggered: List[str]
     requires_human_escalation: bool
     reasoning: Optional[str]
+
+class ConciergeChatResponse(BaseModel):
+    reply: str
+    ticket_draft: Optional[ConciergeTicketDraft] = None
+    suggested_quick_actions: List[str] = []
+    confidence_score: float
+
+class TonePolishResponse(BaseModel):
+    polished_text: str
+    tone: str
+    rationale: str
+    confidence_score: float
 ```
 
 ---
 
 ### Service Modules
 
-1. [`ai-service/app/services/triage_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/triage_service.py)
+1. [`ai-service/app/services/concierge_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/concierge_service.py)
+   - **`process_concierge_chat_async(message, history, customer_name, customer_email)`:** Manages multi-turn concierge conversation, prompts `AI_CONCIERGE_TICKET_CRAFTER_PROMPT`, and executes heuristic offline fallback if Gemini is unreachable.
+   - **`process_tone_polish_async(draft, tone)`:** Rewrites responses into Empathetic, Concise, Formal, or Technical styles using `AI_TONE_POLISH_PROMPT`.
+
+2. [`ai-service/app/services/triage_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/triage_service.py)
    - **`process_ticket_triage_async(title, description)`:** Pulls precomputed dataset benchmarks and few-shot examples, formats `TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT`, and executes asynchronous Gemini call with a 512 token limit.
    - **`process_timeline_summary_async(messages)`:** Asynchronously condenses threaded messages into 5-6 bullet executive summaries with a 384 token limit.
 
-2. [`ai-service/app/services/auto_reply_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/auto_reply_service.py)
+3. [`ai-service/app/services/auto_reply_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/auto_reply_service.py)
    - **`evaluate_department_auto_reply_async(title, description, category, department_name)`:** Matches categories against department definitions and evaluates auto-reply qualification using `DEPARTMENT_AUTO_REPLY_ROLE_PROMPT` asynchronously.
 
-3. [`ai-service/app/services/quality_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/quality_service.py)
+4. [`ai-service/app/services/quality_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/quality_service.py)
    - **`evaluate_response_quality_async(ticket_context, draft_reply)`:** Asynchronously audits agent draft responses across the 4 pillars (0-100) with a 384 token ceiling.
 
-4. [`ai-service/app/services/insights_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/insights_service.py)
+5. [`ai-service/app/services/insights_service.py`](file:///D:/Projects/SupportSenseAI/ai-service/app/services/insights_service.py)
    - **`generate_weekly_learning_insights_async(week_identifier)`:** Aggregates ticket samples and generates friction points, mistakes, and FAQ suggestions asynchronously.
-
 
 ---
 
@@ -268,6 +291,8 @@ Defined in [`ai-service/app/api/router.py`](file:///D:/Projects/SupportSenseAI/a
 | Method | Endpoint | Request Body / Query | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/v1/ai/triage` | `TriageRequest` (`title`, `description`) | Full classification, mood, resolution forecast, checklist |
+| `POST` | `/api/v1/ai/concierge/chat` | `ConciergeChatRequest` | Interactive conversational concierge; crafts formal tickets |
+| `POST` | `/api/v1/ai/polish-tone` | `TonePolishRequest` | 1-Click response tone refiner (Empathetic, Concise, etc.) |
 | `POST` | `/api/v1/ai/department-auto-reply` | `DepartmentAutoReplyRequest` | Evaluates eligibility & generates automated confirmation |
 | `POST` | `/api/v1/ai/verify-response` | `QualityCheckRequest` | Pre-send 4-pillar quality & empathy check |
 | `POST` | `/api/v1/ai/summarize-timeline` | `TimelineSummaryRequest` (`messages`) | 5-6 bullet timeline summary for reopened tickets |

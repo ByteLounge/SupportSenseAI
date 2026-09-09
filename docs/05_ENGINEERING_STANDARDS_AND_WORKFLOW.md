@@ -6,19 +6,17 @@
 
 ```
 SupportSenseAI/
-├── frontend/                     # React + Vite + Tailwind SPA (Member 1 Lead)
+├── frontend/                     # React 18 + Vite + Tailwind SPA (Member 1 Lead)
 │   ├── public/
 │   ├── src/
-│   │   ├── assets/               # SVGs, icons, static visual assets
+│   │   ├── assets/               # SVGs, icons, static visual assets (logo.png)
 │   │   ├── components/           # Modular UI components (Buttons, Cards, Modals)
-│   │   │   ├── ai/               # AI Mood Badge, Quality Checker Modal, Timeline Summary
-│   │   │   ├── common/           # Navbar, Sidebar, LoadingSkeleton, Toast
-│   │   │   └── tickets/          # TicketCard, TicketList, ChecklistView, MessageThread
-│   │   ├── context/              # AuthContext, ThemeContext (Dark/Light Mode)
-│   │   ├── hooks/                # Custom React hooks (useTickets, useAI, useAuth)
-│   │   ├── pages/                # Dashboard, TicketDetail, Login, AdminInsights
-│   │   ├── services/             # Axios API client modules
-│   │   ├── utils/                # Date formatters, helper functions
+│   │   │   ├── ai/               # AI Concierge, Tone Checker, Timeline Banner, Mood Badge, Quality Check
+│   │   │   └── common/           # Navbar, Sidebar, PriorityBadge, LoadingSkeleton, Toast, Modals
+│   │   ├── context/              # AuthContext, ThemeContext, ToastContext
+│   │   ├── layouts/              # MainLayout with responsive navbar, sidebar & breadcrumbs
+│   │   ├── pages/                # Dashboard, Tickets, Detail, Create, Depts, KB, Insights, Users
+│   │   ├── services/             # Axios API client (api.js) with JWT interceptor & smart mock layer
 │   │   ├── App.jsx
 │   │   ├── index.css             # Tailwind & design token utility variables
 │   │   └── main.jsx
@@ -27,36 +25,35 @@ SupportSenseAI/
 │
 ├── backend/                      # Node.js + Express REST Server (Member 2 Lead)
 │   ├── src/
-│   │   ├── config/               # Database connection (PostgreSQL pool), ENV config
-│   │   ├── controllers/          # Request handlers (authController, ticketController)
+│   │   ├── config/               # Database connection (PostgreSQL pool), env.js, dbInit.js
+│   │   ├── controllers/          # authController, ticketController, aiProxyController
 │   │   ├── middleware/           # authMiddleware, errorHandler, rateLimiter
-│   │   ├── models/               # Database query models / DAO functions
-│   │   ├── routes/               # Express route declarations (/api/v1/auth, /api/v1/tickets)
-│   │   ├── services/             # Integration client to call FastAPI AI service
-│   │   ├── utils/                # Logger (Winston/Pino), response formatters
+│   │   ├── models/               # userModel, ticketModel, aiMetadataModel (transactions, upserts)
+│   │   ├── routes/               # authRoutes, ticketRoutes, aiProxyRoutes
+│   │   ├── services/             # aiService.js (HTTP client with timeouts & graceful fallbacks)
+│   │   ├── utils/                # logger.js & responseFormatter.js
 │   │   └── app.js
 │   ├── server.js                 # HTTP Server entrypoint
 │   └── package.json
 │
 ├── ai-service/                   # FastAPI Python AI Microservice (Member 3 Lead)
 │   ├── app/
-│   │   ├── api/                  # API routers (/triage, /verify-response, /insights)
-│   │   ├── core/                 # Config, Gemini SDK initialization, settings
-│   │   ├── models/               # Pydantic schemas for request/response validation
-│   │   ├── prompts/              # System prompts for Gemini LLM
-│   │   ├── services/             # Gemini API caller & JSON parsing logic
+│   │   ├── api/                  # API routers (router.py: triage, concierge, tone, auto-reply, datasets)
+│   │   ├── core/                 # config.py, gemini_client.py (model pooling & TTL cache)
+│   │   ├── models/               # Pydantic schemas (schemas.py)
+│   │   ├── prompts/              # 40-line specialized role-based prompts (templates.py)
+│   │   ├── services/             # triage, concierge, auto_reply, quality, insights, dataset services
 │   │   └── main.py               # FastAPI application entrypoint
 │   ├── requirements.txt
 │   └── Dockerfile
 │
 ├── database/                     # PostgreSQL Migrations & Seeds (Member 2 & 4 Lead)
 │   ├── migrations/               # DDL SQL files (001_init_schema.sql)
-│   └── seeds/                    # Seed SQL files (001_sample_tickets.sql)
+│   └── seeds/                    # Seed SQL files (001_seed_data.sql)
 │
 ├── tests/                        # Comprehensive Suite (Member 4 Lead)
-│   ├── unit/                     # Backend & AI unit test specs
-│   ├── integration/              # API Integration test specs
-│   └── e2e/                      # Playwright / Cypress UI specs
+│   ├── unit/                     # Backend (auth, ticket) & AI service (features, triage) unit specs
+│   └── integration/              # Supertest (api.test.js), concurrency & transaction specs
 │
 ├── deployment/                   # Containerization & Ops (Member 4 Lead)
 │   ├── docker-compose.yml
@@ -64,16 +61,27 @@ SupportSenseAI/
 │
 ├── .github/                      # CI/CD Automation Workflows
 │   └── workflows/
-│       └── ci.yml                # GitHub Actions backend test, frontend build & pytest pipeline
+│       └── ci.yml                # GitHub Actions: PostgreSQL 15, Jest, Vite build & Pytest
 │
 ├── render.yaml                   # 1-Click Render Blueprint deployment specification
-└── docs/                         # Project Documentation Hub (Member 4 & Team)
+└── docs/                         # Project Documentation Hub (13 Modules + 3 Team Guides)
     ├── 01_PROJECT_VISION_AND_PRD.md
     ├── 02_REQUIREMENTS_AND_USE_CASES.md
     ├── 03_AGILE_SPRINT_PLANNING.md
     ├── 04_SYSTEM_ARCHITECTURE_AND_DESIGN.md
     ├── 05_ENGINEERING_STANDARDS_AND_WORKFLOW.md
-    └── 06_TESTING_DEPLOYMENT_AND_GOVERNANCE.md
+    ├── 06_TESTING_DEPLOYMENT_AND_GOVERNANCE.md
+    ├── 07_UI_UX_DESIGN_SYSTEM.md
+    ├── 08_DATABASE_DESIGN_SPECIFICATION.md
+    ├── 09_BACKEND_ARCHITECTURE_AND_API_GUIDE.md
+    ├── 10_AI_SERVICE_SPECIFICATION.md
+    ├── 11_FRONTEND_ARCHITECTURE_GUIDE.md
+    ├── 12_TESTING_AND_QUALITY_ASSURANCE.md
+    ├── 13_DEPLOYMENT_AND_DEVOPS_GUIDE.md
+    ├── README.md
+    ├── TEAM_AI_DATASET_PROMPTS_GUIDE.md
+    ├── TEAM_BACKEND_DEVOPS_GUIDE.md
+    └── TEAM_FRONTEND_ENGINEERING_GUIDE.md
 ```
 
 ---
@@ -123,8 +131,10 @@ We enforce a **Feature Branch Workflow** with mandatory Pull Requests (PR) and c
 ```
 main --------------------------------------------------------> (Production Ready)
   \                                                         /
-   \-- feature/SSAI-101-auth-jwt ----(PR + Review)---------/
-    \-- feature/SSAI-302-ai-triage --(PR + Review)--------/
+   \-- feat/SCRUM-110-connection-pooling-test (PR + CI)----/
+    \-- feat/SCRUM-111-status-transition-validation (PR)--/
+     \-- feat/SCRUM-112-ticket-transaction (PR + CI)-----/
+      \-- feature/SCRUM-113-reopened-timeline-summarizer-/
 ```
 
 ---
@@ -135,16 +145,18 @@ All git branches must follow the strict format:
 `<type>/<ticket-id>-<short-description>`
 
 Types:
-- `feature`: New functionality or user story.
+- `feat` or `feature`: New functionality or user story.
 - `fix`: Bug fix or patch.
 - `docs`: Documentation updates.
 - `test`: Adding or refactoring unit/integration tests.
-- `chore`: Infrastructure, dependency update, or maintenance.
+- `chore` / `refactor`: Infrastructure, styling, or maintenance.
 
 Examples:
-- `feature/SSAI-101-user-login-api`
-- `feature/SSAI-302-fastapi-triage-endpoint`
-- `fix/SSAI-204-checklist-persistence-bug`
+- `feat/SCRUM-110-connection-pooling-test`
+- `feat/SCRUM-111-status-transition-validation`
+- `feat/SCRUM-112-ticket-transaction`
+- `feature/SCRUM-113-reopened-timeline-summarizer`
+- `feat/SCRUM-114-ai-concierge-chatbot`
 
 ---
 

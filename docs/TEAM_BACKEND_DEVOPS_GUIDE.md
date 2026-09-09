@@ -210,11 +210,18 @@ To keep search and filtering instantaneous, indexes are placed on:
 
 2. [`backend/src/models/ticketModel.js`](file:///D:/Projects/SupportSenseAI/backend/src/models/ticketModel.js)
    - **Functions:**
-     - `generateTicketNumber()`: Generates human-friendly identifiers (e.g. `T-1001`, `T-1002`).
-     - `createTicket({ customerId, title, description, category, priority })`: Inserts a new ticket with status `OPEN`.
+     - `generateTicketNumber()`: Generates human-friendly identifiers from PostgreSQL sequence (e.g. `T-1001`, `T-1002`).
+     - `createTicketWithInitialMessage({ customerId, title, description, category, priority })` (SCRUM-112): Atomic PostgreSQL transaction that wraps ticket creation and initial message insertion in a single `BEGIN` ... `COMMIT` block with automatic `ROLLBACK` on error.
+     - `createTicket({ customerId, title, description, category, priority })`: Fallback ticket inserter with status `OPEN`.
+     - `ALLOWED_STATUS_TRANSITIONS` (SCRUM-111): Strict state machine map:
+       - `OPEN` -> `['IN_PROGRESS', 'RESOLVED', 'CLOSED']`
+       - `IN_PROGRESS` -> `['PENDING', 'RESOLVED', 'CLOSED']`
+       - `PENDING` -> `['IN_PROGRESS', 'RESOLVED', 'CLOSED']`
+       - `RESOLVED` -> `['OPEN', 'CLOSED']` (Reopened transition triggers async timeline summarizer)
+       - `CLOSED` -> `[]` (Terminal immutable state)
      - `getAllTickets({ status, priority, search, userRole, userId })`: Queries tickets with dynamic SQL filtering and role guard (Customers only see their own tickets).
      - `getTicketById(ticketId, userRole)`: Queries ticket details, sender info, threaded messages (excluding internal notes if `userRole === 'CUSTOMER'`), AI metadata, and checklists.
-     - `updateTicketStatus(ticketId, { status, assignedAgentId })`: Modifies status and assigns agents.
+     - `updateTicketStatus(ticketId, { status, assignedAgentId })`: Validates transition against `ALLOWED_STATUS_TRANSITIONS`, modifies status, and updates assigned agent.
      - `modifyTicket(ticketId, fields)`: Safe dynamic SQL updater for administrative overrides.
      - `deleteTicket(ticketId)`: Deletes ticket by UUID.
      - `createMessage({ ticketId, senderId, messageBody, isInternalNote })`: Adds a customer reply or agent note.
@@ -254,21 +261,24 @@ To keep search and filtering instantaneous, indexes are placed on:
    - **`getUsers` & `updateUserRole`:** Admin-only endpoints for viewing and managing user roles.
 
 2. [`backend/src/controllers/ticketController.js`](file:///D:/Projects/SupportSenseAI/backend/src/controllers/ticketController.js)
-   - **`createTicket` Workflow:**
-     1. Creates ticket in DB.
-     2. Inserts customer message into thread.
-     3. Calls `aiService.performAITriage(title, description)`.
-     4. Persists AI metadata and agent checklists to PostgreSQL.
-     5. Calls `aiService.evaluateDepartmentAutoReply(...)`. If confidence >= 75% and auto-reply is enabled, posts an automated response message to the ticket thread.
-     6. Returns complete ticket object with metadata and checklists.
+   - **`createTicket` Workflow (SCRUM-112):**
+     1. Executes atomic `createTicketWithInitialMessage` to guarantee ticket and customer message are created together.
+     2. Dispatches `aiService.performAITriage(title, description)` asynchronously.
+     3. Persists AI metadata and agent checklists to PostgreSQL using atomic upserts.
+     4. Calls `aiService.evaluateDepartmentAutoReply(...)`. If confidence >= 75% and auto-reply is enabled, posts an automated response message to the ticket thread.
+     5. Returns complete ticket object with metadata and checklists.
    - **`getTickets` & `getTicketById`:** Retrieves list and details with role-based filtering.
-   - **`updateStatus`:** Updates status. If transitioning from `RESOLVED` to `OPEN` (ticket reopened), it triggers `aiService.summarizeTimeline()` to generate an updated 5-6 bullet history summary.
+   - **`updateStatus` (SCRUM-111 & SCRUM-113):**
+     1. Enforces state transitions via `ALLOWED_STATUS_TRANSITIONS` (returns 400 Bad Request on illegal jumps).
+     2. When transitioning from `RESOLVED` to `OPEN` (ticket reopened), returns HTTP 200 immediately to client and triggers `triggerReopenedTimelineSummary` in the background as a fire-and-forget worker, updating `ai_metadata.timeline_summary`.
    - **`forwardTicket`:** Reassigns department and adds an internal handover note.
    - **`modifyTicket` & `deleteTicket`:** Admin override controls.
    - **`postMessage`:** Adds replies or internal notes (sanitizing customer inputs so customers cannot post internal notes).
    - **`toggleChecklist`:** Updates checklist completion.
 
 3. [`backend/src/controllers/aiProxyController.js`](file:///D:/Projects/SupportSenseAI/backend/src/controllers/aiProxyController.js)
+   - **`chatConcierge`:** Proxies interactive customer queries and natural language ticket formulation to `/api/v1/ai/concierge/chat`.
+   - **`polishTone`:** Proxies agent response drafts for 1-click rewriting to `/api/v1/ai/polish-tone`.
    - **`verifyResponse`:** Takes ticket context and draft reply, forwards to AI service, and returns 4-pillar quality scores (Professionalism, Empathy, Clarity, Actionability).
    - **`getWeeklyInsights`:** Returns aggregated friction points, common mistakes, and recommended FAQs.
    - **`evaluateAutoReply`:** Manually tests auto-reply policies for a given ticket.
@@ -309,10 +319,10 @@ All endpoints (except login and register) require `Authorization: Bearer <JWT_TO
 
 | Method | Endpoint | Access | Query / Body Payload | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/tickets` | Authenticated | `{ "title", "description", "category", "priority" }` | Submit ticket; runs AI triage & auto-reply |
+| `POST` | `/api/v1/tickets` | Authenticated | `{ "title", "description", "category", "priority" }` | Submit ticket; atomic transaction, AI triage & auto-reply |
 | `GET` | `/api/v1/tickets` | Authenticated | `?status=OPEN&priority=HIGH&search=billing` | List tickets with optional filters |
 | `GET` | `/api/v1/tickets/:id` | Authenticated | None | Get full ticket details, messages & AI metadata |
-| `PATCH` | `/api/v1/tickets/:id/status` | Agent, Admin | `{ "status": "IN_PROGRESS", "assignedAgentId": "uuid" }` | Update status (Reopening auto-updates timeline) |
+| `PATCH` | `/api/v1/tickets/:id/status` | Agent, Admin | `{ "status": "IN_PROGRESS", "assignedAgentId": "uuid" }` | State machine transition (Reopening triggers async summary) |
 | `POST` | `/api/v1/tickets/:id/forward` | Agent, Admin | `{ "targetDepartment", "comments", "assignedAgentId" }` | Route ticket to another department |
 | `PATCH` | `/api/v1/tickets/:id` | Agent, Admin | `{ "title", "description", "category", "priority" }` | Modify ticket properties |
 | `DELETE` | `/api/v1/tickets/:id` | Admin Only | None | Delete ticket record |
@@ -323,6 +333,8 @@ All endpoints (except login and register) require `Authorization: Bearer <JWT_TO
 
 | Method | Endpoint | Access | Body Payload | Description |
 | :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/ai/concierge/chat` | Authenticated | `{ "message", "history", "customerName", "customerEmail" }` | Conversational concierge; crafts structured ticket draft |
+| `POST` | `/api/v1/ai/polish-tone` | Agent, Admin | `{ "draft", "tone": "empathetic" }` | 1-Click tone refiner (Empathetic, Concise, Formal, Technical) |
 | `POST` | `/api/v1/ai/verify-response` | Agent, Admin | `{ "ticketContext", "draftReply" }` | Evaluates tone, empathy, clarity & actionability |
 | `GET` | `/api/v1/ai/insights` | Agent, Admin | None | Fetch weekly organizational learning & FAQs |
 | `POST` | `/api/v1/ai/department-auto-reply` | Agent, Admin | `{ "title", "description", "category", "departmentName" }` | Evaluates automated department response |

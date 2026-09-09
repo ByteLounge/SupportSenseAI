@@ -43,18 +43,63 @@ The SupportSense AI backend is built using Node.js and Express 4.x following str
 ## 3. Implemented API Endpoints Reference
 
 ### 3.1 Authentication Endpoints (`/api/v1/auth`)
-- `POST /register`: Registers customer/agent and returns JWT access token.
-- `POST /login`: Validates credentials and returns signed JWT token.
+- `POST /register`: Registers customer/agent and returns JWT access token (self-registration strictly enforces `CUSTOMER` role).
+- `POST /login`: Validates credentials against bcrypt hash and returns signed JWT token (1-hour expiration).
 - `GET /me`: Returns profile details for the authenticated user.
+- `GET /users`: Lists all registered user accounts (Admin only).
+- `PATCH /users/:id/role`: Modifies user role (`CUSTOMER`, `AGENT`, `ADMIN` — Admin only).
 
 ### 3.2 Ticket Management Endpoints (`/api/v1/tickets`)
-- `POST /`: Creates a ticket, triggers automated AI Triage, and persists initial checklist items.
-- `GET /`: Returns tickets filtered by status, priority, or search term (scoped by role).
+- `POST /`: Atomically creates ticket and customer message via transaction (`createTicketWithInitialMessage`), triggers AI triage and department auto-reply evaluation.
+- `GET /`: Returns tickets filtered by `status`, `priority`, or `search` term (role-guarded: Customers only view their own tickets).
 - `GET /:id`: Retrieves complete ticket details with messages, AI metadata, and checklists.
-- `PATCH /:id/status`: Updates ticket status/assignment. Triggers AI timeline summarizer on reopen.
-- `POST /:id/messages`: Posts message or internal note to conversation thread.
-- `PATCH /:id/checklist/:itemId`: Toggles checklist item completion state.
+- `PATCH /:id/status`: Enforces state machine transitions (`ALLOWED_STATUS_TRANSITIONS`). Reopening (`RESOLVED` ➔ `OPEN`) asynchronously triggers the AI timeline summarizer.
+- `POST /:id/forward`: Forwards ticket to a target department (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform Team`) with internal handover notes.
+- `PATCH /:id`: Modifies ticket attributes such as title, category, priority, status, or assigned agent (Admin/Agent escalation override).
+- `DELETE /:id`: Deletes or archives a ticket record (Admin only).
+- `POST /:id/messages`: Posts message or internal note to conversation thread (customers cannot view or create internal notes).
+- `PATCH /:id/checklist/:itemId`: Toggles checklist item completion state in `agent_checklists`.
 
 ### 3.3 AI Decision Assistance Proxy (`/api/v1/ai`)
-- `POST /verify-response`: Forwards draft reply to AI microservice for tone & quality analysis.
-- `GET /insights`: Fetches weekly organizational learning insights.
+- `POST /concierge`: AI Concierge Chatbot & Formal Ticket Crafter (accessible to all authenticated roles).
+- `POST /polish-tone`: 1-Click AI Response Tone Polishing into `empathetic`, `concise`, `formal`, or `technical` styles (Agent/Admin).
+- `POST /verify-response`: Forwards draft reply to AI microservice for 4-pillar quality & empathy analysis (Agent/Admin).
+- `POST /department-auto-reply`: Evaluates auto-reply eligibility and generates department confirmation response (Agent/Admin).
+- `GET /departments`: Returns configured departments, categories, target SLAs, and active auto-reply rules (Agent/Admin).
+- `GET /benchmarks`: Fetches category SLA resolution durations and priority distributions (Agent/Admin).
+- `GET /insights`: Fetches weekly organizational learning insights and FAQ suggestions (Agent/Admin).
+
+---
+
+## 4. Key Architectural Mechanisms
+
+### 4.1 Atomic Transactional Ticket Creation (SCRUM-112)
+Implemented in [`ticketModel.js`](file:///D:/Projects/SupportSenseAI/backend/src/models/ticketModel.js) (`createTicketWithInitialMessage`), wrapping:
+1. `BEGIN` transaction.
+2. Sequence retrieval (`ticket_number_seq`).
+3. `INSERT INTO tickets ... RETURNING *`.
+4. `INSERT INTO ticket_messages ... RETURNING *`.
+5. `COMMIT` transaction.
+If message creation fails, `ROLLBACK` executes, eliminating orphaned tickets.
+
+### 4.2 Strict Status Transition State Machine (SCRUM-111)
+Implemented in [`ticketController.js`](file:///D:/Projects/SupportSenseAI/backend/src/controllers/ticketController.js):
+```javascript
+const ALLOWED_STATUS_TRANSITIONS = {
+  OPEN: ['IN_PROGRESS'],
+  IN_PROGRESS: ['RESOLVED'],
+  RESOLVED: ['OPEN', 'CLOSED'],
+  CLOSED: []
+};
+```
+Invalid transitions return HTTP 400 with a descriptive error. `CLOSED` is a terminal state.
+
+### 4.3 Async Fire-and-Forget Timeline Summarizer (SCRUM-113)
+When an agent updates ticket status from `RESOLVED` to `OPEN`:
+- The HTTP PATCH response returns immediately (HTTP 200) without blocking on LLM latency.
+- Background worker `triggerReopenedTimelineSummary(ticketId, messages)` queries `/api/v1/ai/summarize-timeline` and upserts the result into `ai_metadata.timeline_summary`.
+
+### 4.4 Connection Pooling & Concurrency Resilience (SCRUM-110)
+- Configured in [`db.js`](file:///D:/Projects/SupportSenseAI/backend/src/config/db.js) with 20 max clients and idle timeouts.
+- Tested in [`ticket-concurrency.test.js`](file:///D:/Projects/SupportSenseAI/tests/integration/ticket-concurrency.test.js) under 10 concurrent requests without sequence number collisions.
+

@@ -50,24 +50,33 @@ Welcome to the central documentation repository for **SupportSense AI**, an ente
 | 33 | **React SPA Frontend Architecture & Component Guide** | [11_FRONTEND_ARCHITECTURE_GUIDE.md](./11_FRONTEND_ARCHITECTURE_GUIDE.md) |
 | 34 | **Testing Strategy & Automated Quality Assurance** | [12_TESTING_AND_QUALITY_ASSURANCE.md](./12_TESTING_AND_QUALITY_ASSURANCE.md) |
 | 35 | **Deployment, CI/CD Pipeline & DevOps Guide** | [13_DEPLOYMENT_AND_DEVOPS_GUIDE.md](./13_DEPLOYMENT_AND_DEVOPS_GUIDE.md) |
+| 36 | **AI Implementation, Datasets & Role-Based Prompts Guide** | [TEAM_AI_DATASET_PROMPTS_GUIDE.md](./TEAM_AI_DATASET_PROMPTS_GUIDE.md) |
+| 37 | **Backend, API & DevOps Engineering Guide** | [TEAM_BACKEND_DEVOPS_GUIDE.md](./TEAM_BACKEND_DEVOPS_GUIDE.md) |
+| 38 | **Frontend Engineering & UI/UX Guide** | [TEAM_FRONTEND_ENGINEERING_GUIDE.md](./TEAM_FRONTEND_ENGINEERING_GUIDE.md) |
 
 ---
 
 ## 👥 Internship Team Composition
 
-- **Member 1 (Frontend Lead)**: React, Vite, Tailwind CSS, State Management, UI/UX Components
-- **Member 2 (Backend Lead)**: Node.js, Express, REST APIs, PostgreSQL, Auth & Security
-- **Member 3 (AI Engineer)**: FastAPI Microservice, Google Gemini Integration, NLP Features, AI Confidence Scoring
-- **Member 4 (DevOps, QA & Technical Writer)**: Docker & Docker Compose, CI/CD, Automated Tests, Documentation & Governance
+- **Member 1 (Frontend Lead)**: React 18, Vite, Tailwind CSS, State Management, UI/UX Components, MoonRow design system.
+- **Member 2 (Backend Lead)**: Node.js, Express, REST APIs, PostgreSQL, Auth & Security, Database transactions & pooling.
+- **Member 3 (AI Engineer)**: FastAPI Microservice, Google Gemini Integration, NLP Features, AI Confidence Scoring, Model pooling & TTL caching.
+- **Member 4 (DevOps, QA & Technical Writer)**: Docker & Docker Compose, Render Blueprint, CI/CD, Automated Tests, Documentation & Governance.
 
 ---
 
 ## 🚀 Novel Enterprise Features Overview
 
-1. **AI Mood Indicator**: Categorizes customer emotion (🙂 Happy, 😐 Neutral, 😠 Frustrated) with confidence percentages.
-2. **Resolution Predictor**: Forecasts ticket completion time (e.g. "Estimated resolution: 2–3 days") based on historical resolution patterns.
-3. **Agent Assist Checklist**: Dynamic step-by-step action items generated for agents (e.g., `[ ] Verify account`, `[ ] Check payment logs`, `[ ] Reset password`).
-4. **Learning Insights**: Weekly AI analytics reporting top 5 repeated issues, recurring agent mistakes, and suggested knowledge base FAQ additions.
-5. **Customer Patience Score**: Dynamic status tracking (Calm, Concerned, Frustrated, Critical) guiding agent tone and SLA escalation.
-6. **Response Quality Checker**: Pre-send reply evaluation for Professionalism, Empathy, Clarity, and Actionability.
-7. **Ticket Timeline Summary**: 5–6 bullet AI summary of thread history when tickets are reopened or reassigned.
+1. **AI Concierge Chatbot & Conversational Ticket Crafter**: Conversational intake widget turning informal natural customer queries into structured enterprise tickets ready for 1-click dispatch.
+2. **1-Click AI Response Tone Polishing**: Multi-style agent response transformer offering 1-click rewrites into Empathetic, Concise, Formal, or Technical styles with rationale.
+3. **Reopened Ticket Timeline Summary & Banner**: 5–6 bullet executive summary generated via an async fire-and-forget worker upon reopening (`RESOLVED` ➔ `OPEN`), presented in a prominent top banner.
+4. **Transactional Ticket & Message Creation (SCRUM-112)**: Atomic PostgreSQL transaction wrapping ticket insertion and initial customer message to prevent data divergence.
+5. **Strict Status Transition State Machine (SCRUM-111)**: Strict validation engine enforcing legal state progressions (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED` or `OPEN`).
+6. **Department Automated Replies & Rules**: Pre-configured departmental policies (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform`) dispatching automated confirmations and diagnostics.
+7. **Model Instance Pooling & TTL Response Caching**: In-memory `GenerativeModel` pooling and 300s SHA256 hashed cache delivering sub-millisecond response times for repeated queries.
+8. **AI Mood Indicator & Sentiment Confidence**: Real-time customer emotion categorization (`🙂 HAPPY`, `😐 NEUTRAL`, `😠 FRUSTRATED`) with numerical confidence ratings (`0.00` to `1.00`).
+9. **Customer Patience Score & SLA Guardrail**: Tracks customer patience degradation (`CALM`, `CONCERNED`, `FRUSTRATED`, `CRITICAL`) to guide agent tone and trigger escalation alerts.
+10. **Dataset-Grounded Resolution Predictor & Checklists**: Forecasts resolution timeframes and generates dynamic step-by-step verification checklists calibrated against Kaggle & Hugging Face benchmarks.
+11. **Response Quality & Empathy Checker**: Pre-send reply evaluation scoring agent drafts for Professionalism, Empathy, Clarity, and Actionability.
+12. **Weekly Organizational Learning Insights**: Analyzes historical ticket resolution patterns to generate top repeated issues, recurring agent mistakes, and suggested Knowledge Base FAQs.
+

@@ -112,3 +112,62 @@ erDiagram
 
 - **Migration**: [`database/migrations/001_init_schema.sql`](file:///D:/Projects/SupportSenseAI/database/migrations/001_init_schema.sql)
 - **Seed Data**: [`database/seeds/001_seed_data.sql`](file:///D:/Projects/SupportSenseAI/database/seeds/001_seed_data.sql)
+
+---
+
+## 6. Atomic Transactions & Data Integrity (SCRUM-112)
+
+To prevent orphaned tickets or missing message threads, ticket creation is wrapped in a single ACID PostgreSQL transaction in [`ticketModel.js`](file:///D:/Projects/SupportSenseAI/backend/src/models/ticketModel.js) (`createTicketWithInitialMessage`):
+
+```sql
+BEGIN;
+SELECT nextval('ticket_number_seq') AS ticket_number;
+INSERT INTO tickets (ticket_number, customer_id, title, description, category, priority, status)
+VALUES ('T-' || nextval, $1, $2, $3, $4, $5, 'OPEN') RETURNING *;
+INSERT INTO ticket_messages (ticket_id, sender_id, message_body, is_internal_note)
+VALUES ($ticket_id, $customer_id, $description, FALSE) RETURNING *;
+COMMIT;
+-- If any query fails, ROLLBACK is executed immediately.
+```
+
+---
+
+## 7. Sequence Generation & Connection Pooling (SCRUM-110)
+
+1. **Non-Colliding Sequence (`ticket_number_seq`)**:
+   - PostgreSQL dedicated sequence ensuring thread-safe, non-colliding ticket numbers (`T-1001`, `T-1002`, ...) even under 100+ concurrent requests.
+2. **PostgreSQL Pool Configuration (`db.js`)**:
+   - Max 20 concurrent pool clients.
+   - 30-second idle connection timeout, 5-second connection acquisition timeout.
+   - Tested in [`ticket-concurrency.test.js`](file:///D:/Projects/SupportSenseAI/tests/integration/ticket-concurrency.test.js).
+
+---
+
+## 8. UPSERT Patterns (AI Metadata & Timeline Summaries)
+
+Both initial triage ingestion and subsequent timeline updates use `ON CONFLICT (ticket_id) DO UPDATE` to ensure idempotent AI operations without duplicate key errors:
+
+```sql
+INSERT INTO ai_metadata (
+  ticket_id, customer_mood, mood_confidence, patience_score, 
+  predicted_resolution_time, overall_confidence, timeline_summary, related_ticket_ids
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+ON CONFLICT (ticket_id) DO UPDATE SET
+  customer_mood = EXCLUDED.customer_mood,
+  mood_confidence = EXCLUDED.mood_confidence,
+  patience_score = EXCLUDED.patience_score,
+  predicted_resolution_time = EXCLUDED.predicted_resolution_time,
+  overall_confidence = EXCLUDED.overall_confidence,
+  timeline_summary = COALESCE(EXCLUDED.timeline_summary, ai_metadata.timeline_summary),
+  analyzed_at = CURRENT_TIMESTAMP
+RETURNING *;
+```
+
+---
+
+## 9. Auto-Migration & Seed Runner (`dbInit.js`)
+
+On server startup, [`dbInit.js`](file:///D:/Projects/SupportSenseAI/backend/src/config/dbInit.js) inspects the `information_schema.tables` for the `users` table:
+- If absent (e.g. initial Render deployment or fresh local container), it automatically executes `database/migrations/001_init_schema.sql` followed by `database/seeds/001_seed_data.sql`.
+- Provides zero-touch automated database bootstrapping in Docker and Render environments.
+

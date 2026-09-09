@@ -121,12 +121,13 @@ All components are located in [`frontend/src/components/common/`](file:///D:/Pro
 
 - [`Button.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Button.jsx): Supports variants (`primary`, `secondary`, `danger`, `ghost`), sizes (`sm`, `md`, `lg`), loading spinner states, and Lucide icons.
 - [`Card.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Card.jsx): Clean container with optional header title, subtitle, and top-right action slots.
-- [`Badge.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Badge.jsx) & [`PriorityBadge.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/PriorityBadge.jsx): Color-coded badges for statuses (`OPEN`, `IN_PROGRESS`, `RESOLVED`) and priorities (`LOW`, `MEDIUM`, `HIGH`, `URGENT`).
+- [`Badge.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Badge.jsx) & [`PriorityBadge.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/PriorityBadge.jsx): Color-coded badges for statuses (`OPEN`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`) and priorities (`LOW`, `MEDIUM`, `HIGH`, `URGENT`).
+- [`LoadingSkeleton.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/LoadingSkeleton.jsx) & [`Skeleton.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Skeleton.jsx): Pulse animation placeholder components ensuring smooth zero-layout-shift UI loading.
 - [`Input.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Input.jsx) & [`Textarea.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Textarea.jsx): Form fields with floating labels, helper text, and validation error messages.
 - [`Dropdown.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Dropdown.jsx): Accessible select component with keyboard support.
 - [`Modal.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Modal.jsx): Accessible dialog with backdrop blur, keyboard `ESC` dismissal, and body scroll lock.
 - [`Table.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Table.jsx) & [`Pagination.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Pagination.jsx): High-density data table supporting sorting, selection, and page navigation.
-- [`Loader.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Loader.jsx) & [`Skeleton.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Skeleton.jsx): Smooth loading animations.
+- [`Loader.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/Loader.jsx): Spinner loading animations.
 - [`EmptyState.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/EmptyState.jsx) & [`ErrorState.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/common/ErrorState.jsx): User-friendly placeholders when queries yield zero records or fail.
 
 ---
@@ -135,18 +136,31 @@ All components are located in [`frontend/src/components/common/`](file:///D:/Pro
 
 Located in [`frontend/src/components/ai/`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/):
 
-1. [`AIMoodBadge.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIMoodBadge.jsx)
+1. **[`AIConciergeWidget.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIConciergeWidget.jsx) & [`AIConciergeChatbot.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIConciergeChatbot.jsx)**
+   - Floating interactive concierge widget available on all authenticated views.
+   - Converses with customers in natural language, guides troubleshooting, and synthesizes complete enterprise support ticket drafts.
+   - Provides 1-click submission directly into the ticket queue via `createTicketApi`.
+
+2. **[`TimelineSummaryBanner.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/TimelineSummaryBanner.jsx)**
+   - Automatically mounts at the top of [`TicketDetailPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/TicketDetailPage.jsx) when a ticket is reopened (`RESOLVED -> OPEN`) or has >3 conversation turns.
+   - Summarizes thread history into 5-6 chronological bullets identifying past attempts and root escalation blockers.
+
+3. **[`AIToneCheckerModal.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIToneCheckerModal.jsx)**
+   - 1-Click tone polisher accessible from the ticket reply composer.
+   - Rewrites draft responses into **Empathetic**, **Concise**, **Formal**, or **Technical** styles with instant insertion into the editor.
+
+4. [`AIMoodBadge.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIMoodBadge.jsx)
    - Visualizes customer sentiment:
      - `🙂 Happy` (Emerald)
      - `😐 Neutral` (Sky Blue)
      - `😠 Frustrated` (Rose / Red)
-   - Displays confidence percentage (e.g. `(94%)`).
+   - Displays confidence percentage (e.g. `(94%)`) with tooltip details.
 
-2. [`AISuggestionsPanel.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AISuggestionsPanel.jsx)
+5. [`AISuggestionsPanel.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AISuggestionsPanel.jsx)
    - Renders the AI-suggested category, target department, confidence rating, and pre-drafted reply text.
    - Provides **"Accept Suggestion"** (populates draft box) and **"Edit"** buttons.
 
-3. [`QualityCheckModal.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/QualityCheckModal.jsx)
+6. [`QualityCheckModal.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/QualityCheckModal.jsx)
    - Evaluates agent draft responses across 4 metrics before sending:
      - **Professionalism** (0–100%)
      - **Empathy** (0–100%)
@@ -154,8 +168,8 @@ Located in [`frontend/src/components/ai/`](file:///D:/Projects/SupportSenseAI/fr
      - **Actionability** (0–100%)
    - Displays overall grade (`EXCELLENT`, `GOOD`, `NEEDS_IMPROVEMENT`) and coaching recommendations.
 
-4. [`AIAssistDrawer.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIAssistDrawer.jsx)
-   - Slide-over drawer presenting the customer patience score (`CALM` to `CRITICAL`), dataset resolution benchmarks, and reopened timeline summaries.
+7. [`AIAssistDrawer.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIAssistDrawer.jsx)
+   - Slide-over drawer presenting customer patience score (`CALM` to `CRITICAL`), resolution benchmarks, and interactive verification checklist.
 
 ---
 
@@ -177,13 +191,15 @@ Located in [`frontend/src/pages/`](file:///D:/Projects/SupportSenseAI/frontend/s
 4. [`TicketDetailPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/TicketDetailPage.jsx)
    - The central workspace for support agents:
      - Multi-turn conversation thread.
+     - Reopened timeline summary banner (`TimelineSummaryBanner.jsx`).
      - Internal agent-only notes (highlighted with distinct yellow/amber styling).
      - Interactive AI checklist with checkboxes that persist to PostgreSQL.
-     - Reply composition box with **"AI Empathy & Tone Check"** button.
+     - Reply composition box with **1-Click Tone Polisher** (`AIToneCheckerModal.jsx`) and **AI Quality Check** (`QualityCheckModal.jsx`).
      - Inter-department forwarding modal.
 
 5. [`CreateTicketPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/CreateTicketPage.jsx)
    - Guided submission form. Customers get automatic Knowledge Base tips; agents/admins get department assignment and priority overrides.
+   - Embedded launcher for the AI Concierge Chatbot.
 
 6. [`DepartmentsPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/DepartmentsPage.jsx)
    - Displays department policies (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform`), active auto-reply templates, target SLAs, and sample diagnostics.
@@ -219,8 +235,16 @@ API.interceptors.request.use((config) => {
 });
 ```
 
-### 2. Built-in Standalone Mock Layer
-Every API function wraps its HTTP call in a `try...catch` block. If the backend is offline or returns an error, the function gracefully falls back to local in-memory mock records (`MOCK_TICKETS`, `DEMO_PERSONAS`, `MOCK_FAQS`). This ensures that UI testing, Cypress/Playwright tests, and reviewer demonstrations never crash!
+### 2. Built-in Standalone Mock Layer & Resilient Wrapper
+Every API function wraps its HTTP call in `safeApiCall(apiFn, mockFallbackFn)`. If the backend is offline or returns an error, the function gracefully falls back to local in-memory mock records (`MOCK_TICKETS`, `DEMO_PERSONAS`, `MOCK_FAQS`).
+
+### 3. Key Exported API Methods
+- **`chatConciergeApi(payload)`**: Interacts with the AI Concierge chatbot service.
+- **`polishToneApi(payload)`**: Polishes response drafts into Empathetic, Concise, Formal, or Technical styles.
+- **`summarizeTimelineApi(messages)`**: Condenses message history into an executive TL;DR.
+- **`verifyQualityApi(payload)`**: Runs 4-pillar response quality auditing.
+- **`getWeeklyInsightsApi()`**: Retrieves aggregated weekly learning metrics and FAQ recommendations.
+- **`createTicketApi(ticketData)`**: Dispatches atomic ticket creation.
 
 ---
 

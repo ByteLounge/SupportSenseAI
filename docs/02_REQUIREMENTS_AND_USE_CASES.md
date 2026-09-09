@@ -5,46 +5,51 @@
 ## 4. Functional Requirements
 
 ### 4.1 Ticket & Workspace Management (FR-100 series)
-- **FR-101 (Ticket Creation)**: Customers/Agents can submit new support tickets with Title, Description, Category, Product Area, and optional attachment metadata.
-- **FR-102 (Lifecycle State Engine)**: System must enforce valid ticket status transitions: `Open` -> `In Progress` -> `Pending Customer` -> `Resolved` -> `Closed` (or `Reopened`).
-- **FR-103 (Threaded Messaging)**: Messages within a ticket thread must support customer replies, agent public responses, and internal agent-only notes.
-- **FR-104 (Agent Assignment)**: Team leads can assign tickets manually or agents can self-assign unassigned tickets.
+- **FR-101 (Ticket Creation & Ingestion)**: Customers/Agents can submit new support tickets via standard form or through the AI Concierge Chatbot.
+- **FR-102 (Lifecycle State Engine & Status Transitions)**: System must enforce strict status transitions (`ALLOWED_STATUS_TRANSITIONS`): `OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED`. Reopening is permitted only from `RESOLVED` to `OPEN`. Attempts to make invalid transitions return HTTP 400.
+- **FR-103 (Threaded Messaging)**: Messages within a ticket thread support customer replies, agent public responses, and internal agent-only notes (customers are restricted from viewing or posting internal notes).
+- **FR-104 (Agent Assignment & Forwarding)**: Agents/Admins can reassign tickets or forward tickets between departments (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform Team`) with internal handover notes.
+- **FR-105 (Atomic Transactional Ticket Creation - SCRUM-112)**: System must create the ticket record and its initial customer message within a single atomic PostgreSQL transaction (`BEGIN` / `COMMIT` / `ROLLBACK`). If initial message creation fails, the ticket is rolled back completely.
+- **FR-106 (Database Concurrency & Pooling - SCRUM-110)**: Backend must handle burst submissions using PostgreSQL connection pooling and the `ticket_number_seq` sequence to guarantee non-colliding human-readable ticket numbers (`T-1001`, `T-1002`, ...).
 
 ### 4.2 AI Intelligence & Decision Support (FR-200 series)
-- **FR-201 (AI Classification & Priority)**: System calls AI service upon ticket creation to automatically tag category (Billing, Technical, Account, Feature Request, Bug) and priority level (Low, Medium, High, Urgent) with confidence scores.
-- **FR-202 (AI Mood & Patience Score)**: AI evaluates customer sentiment and updates mood (`🙂 Happy`, `😐 Neutral`, `😠 Frustrated`) and patience score (`Calm`, `Concerned`, `Frustrated`, `Critical`).
-- **FR-203 (Resolution Time Predictor)**: AI analyzes issue complexity and historical data to output estimated resolution duration (e.g., "2–3 business days").
-- **FR-204 (Agent Assist Checklist)**: AI generates 3–5 actionable verification checkboxes tailored to ticket content (e.g. `[ ] Check payment gateway logs`, `[ ] Verify user subscription status`).
-- **FR-205 (Response Quality Checker)**: Before posting a draft reply, agent can click "Check Response Quality". AI scores tone on Professionalism, Empathy, Clarity, Actionability, and suggests enhancements.
-- **FR-206 (Ticket Timeline Summary)**: When a ticket is reopened or reassigned, AI builds a concise 5–6 bullet timeline summary of key conversation milestones.
-- **FR-207 (Duplicate & Related Ticket Detection)**: AI computes semantic similarity across past tickets to flag potential duplicates and surface related historical solutions.
-- **FR-208 (Weekly Learning Insights)**: AI aggregates closed ticket data weekly to compute top 5 recurring customer pain points, common agent handling errors, and recommended Knowledge Base additions.
+- **FR-201 (AI Classification & Priority)**: System calls the AI service upon ticket creation to automatically tag category (`Billing`, `Technical`, `Account`, `Bug`, `General`) and priority (`LOW`, `MEDIUM`, `HIGH`, `URGENT`) with confidence ratings.
+- **FR-202 (AI Mood & Patience Score)**: AI evaluates customer emotion in real time (`🙂 HAPPY`, `😐 NEUTRAL`, `😠 FRUSTRATED`) and patience score (`CALM`, `CONCERNED`, `FRUSTRATED`, `CRITICAL`) with numerical confidence metrics.
+- **FR-203 (Resolution Time Predictor)**: AI analyzes issue complexity and historical benchmarks from Kaggle/HuggingFace datasets to predict resolution duration (e.g., *"1–2 business days"*).
+- **FR-204 (Agent Assist Checklist)**: AI generates 3–5 actionable verification checkboxes tailored to the ticket content (persisted in `agent_checklists` and toggleable in UI).
+- **FR-205 (Response Quality Checker)**: Agents can evaluate proposed draft replies across 4 key pillars: Professionalism, Empathy, Clarity, and Actionability (0–100 scales) with instant improvement suggestions.
+- **FR-206 (Reopened Ticket Timeline Summary - SCRUM-113)**: When a ticket is reopened (`RESOLVED` ➔ `OPEN`), an asynchronous fire-and-forget worker queries the AI service to condense the entire message history into a 5-6 bullet executive summary and persists it to `ai_metadata.timeline_summary`.
+- **FR-207 (AI Concierge Chatbot & Ticket Crafter)**: Conversational assistant widget where users describe issues in simple language; the AI converses empathetically, diagnoses initial obstacles, and synthesizes a formal enterprise ticket specification ready for 1-click dispatch.
+- **FR-208 (1-Click AI Response Tone Polishing)**: Agents can rewrite draft responses into specialized styles: `Empathetic`, `Concise`, `Formal`, or `Technical` with instant preview and rationale.
+- **FR-209 (Department Automated Responses)**: AI evaluates incoming tickets against department rules and dispatches immediate confirmations with automated diagnostics if confidence meets the department threshold (80%–90%).
+- **FR-210 (Weekly Learning Insights)**: AI aggregates closed ticket data weekly to compute top recurring customer pain points, common agent handling errors, and recommended Knowledge Base additions.
 
 ### 4.3 Administration & Analytics (FR-300 series)
-- **FR-301 (Role-Based Access Control)**: Three distinct roles: `Customer`, `Agent`, `Admin`.
-- **FR-302 (Analytics Dashboard)**: Real-time graphs showing ticket volume, resolution times, average CSAT, SLA breach rates, and mood distribution.
+- **FR-301 (Role-Based Access Control)**: Three distinct roles: `CUSTOMER`, `AGENT`, `ADMIN`. Public registration strictly enforces `CUSTOMER` role.
+- **FR-302 (Analytics & SLA Dashboard)**: Real-time graphs and metrics showing ticket volume, resolution times, average CSAT, SLA breach risks, and customer mood distributions.
+- **FR-303 (Department Rules & Policies View)**: Dedicated interface displaying supported departments, categories, target SLAs, and active auto-reply templates.
 
 ---
 
 ## 5. Non-Functional Requirements
 
 ### 5.1 Performance & Scalability (NFR-100)
-- **NFR-101 (API Response Time)**: Backend REST endpoints must respond in ≤ 200ms for 95% of standard requests.
-- **NFR-102 (AI Latency)**: AI microservice responses (including Gemini API calls) must complete within 2.5 seconds.
-- **NFR-103 (Database Efficiency)**: Queries on ticket queues must utilize compound indexes and execute in ≤ 50ms.
+- **NFR-101 (API Response Time)**: Backend REST endpoints respond in ≤ 200ms for 95% of standard requests.
+- **NFR-102 (AI Latency & Concurrency)**: AI microservice leverages model instance pooling (`_MODEL_CACHE`) and in-memory TTL caching (`_RESPONSE_CACHE`) to provide sub-millisecond cached responses and < 1.5s live generation.
+- **NFR-103 (Database Efficiency)**: Queries on ticket queues utilize compound indexes (`idx_tickets_status_priority`, `idx_tickets_customer_id`, etc.) and execute in ≤ 50ms.
 
 ### 5.2 Security & Compliance (NFR-200)
-- **NFR-201 (Authentication)**: Secure JWT sign-in with HTTP-only cookies or Bearer tokens. Passwords hashed using `bcrypt` (10 rounds).
-- **NFR-202 (Input Validation)**: All client input validated using schema validators (e.g. `Joi` or `Zod` on backend, Pydantic on AI service).
-- **NFR-203 (Sanitization)**: HTML/XSS sanitization on all ticket descriptions and response bodies.
+- **NFR-201 (Authentication & RBAC)**: Secure JWT Bearer tokens with 1-hour expiration. Passwords hashed using bcrypt (10 rounds).
+- **NFR-202 (Anti-Privilege Escalation)**: Public registration endpoint sanitizes input roles to prevent unauthorized elevation to `AGENT` or `ADMIN`.
+- **NFR-203 (CORS Origin Whitelisting)**: Express and FastAPI enforce explicit origin whitelisting (`ALLOWED_ORIGINS`).
 
 ### 5.3 Reliability & Availability (NFR-300)
-- **NFR-301 (Graceful Degradation)**: If Gemini API fails or times out, system must seamlessly fallback to manual ticket routing without crashing ticket submission.
-- **NFR-302 (Uptime Goal)**: System designed for 99.9% operational availability.
+- **NFR-301 (Graceful Degradation & HITL Fallback)**: If Gemini API fails or times out (5-second timeout via `AbortSignal.timeout(5000)`), the system seamlessly returns safe fallback payloads without interrupting ticket workflows.
+- **NFR-302 (Zero Downtime Standalone UI)**: Frontend incorporates local mock fallback data (`api.js`) for seamless offline demonstrations and developer workflows.
 
 ### 5.4 Usability & Accessibility (NFR-400)
-- **NFR-401 (WCAG 2.1 AA Compliance)**: Minimum 4.5:1 color contrast ratio across Light and Dark themes. Keyboard navigability for all ticket actions.
-- **NFR-402 (Responsive Design)**: Dynamic layout responsive from mobile screen (360px) to ultra-wide (1920px+).
+- **NFR-401 (WCAG 2.1 AA Compliance)**: Minimum 4.5:1 color contrast ratio across Light and Dark themes, keyboard navigation, and ARIA labels.
+- **NFR-402 (MoonRow Enterprise Design System)**: Cohesive typography, dark/light theme persistence, responsive mobile to 4K displays.
 
 ---
 
@@ -59,14 +64,15 @@ graph TD
     end
 
     subgraph "SupportSense AI Platform"
-        UC1[Create Ticket]
-        UC2[View Ticket History]
-        UC3[Auto-Classify & Score Ticket]
+        UC1[Create Ticket via Form / AI Concierge]
+        UC2[View Ticket Queue & History]
+        UC3[Auto-Classify, Score & Auto-Reply]
         UC4[Review AI Assist Checklist]
-        UC5[Draft & Quality Check Reply]
-        UC6[Reopen Ticket & View AI Summary]
-        UC7[View Analytics & Weekly Insights]
-        UC8[Manage Users & System Settings]
+        UC5[Draft Reply & Check Quality / Tone]
+        UC6[Reopen Ticket & Generate AI Timeline Summary]
+        UC7[Forward Ticket to Department]
+        UC8[View Analytics & Weekly Insights]
+        UC9[Manage Users, Roles & Departments]
     end
 
     C --> UC1
@@ -75,11 +81,13 @@ graph TD
     A --> UC4
     A --> UC5
     A --> UC6
-    TL --> UC7
+    A --> UC7
     TL --> UC8
+    TL --> UC9
 
     UC1 -.->|Triggers| UC3
     UC5 -.->|Invokes| UC4
+    UC6 -.->|Triggers Async Worker| UC2
 ```
 
 ---
@@ -90,14 +98,14 @@ graph TD
 - **Primary Actor**: Support Agent / System Backend
 - **Pre-conditions**: Customer submits a new ticket.
 - **Main Success Scenario**:
-  1. System receives raw ticket payload (Title & Description).
-  2. Backend routes payload to Python FastAPI AI microservice.
-  3. AI microservice queries Gemini API with structured prompt.
-  4. AI returns JSON containing category, priority, mood (`😠 Frustrated`), patience score (`Concerned`), predicted resolution (`2-3 days`), and checklist items.
-  5. Backend updates ticket record with AI metadata and confidence score (`0.92`).
-  6. Support Agent opens ticket, sees pre-classified priority, mood indicator, and actionable checkboxes.
+  1. System creates ticket and initial customer message atomically (`createTicketWithInitialMessage`).
+  2. Backend asynchronously requests AI triage from Python FastAPI microservice.
+  3. AI microservice queries Gemini API with `TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT` grounded in dataset benchmarks.
+  4. AI returns JSON containing category, priority, customer mood (`😠 FRUSTRATED`), patience score (`CONCERNED`), predicted resolution (`1-2 business days`), and checklist items.
+  5. System evaluates department auto-reply; if eligible, posts automated confirmation message to the thread.
+  6. Support Agent opens ticket, viewing pre-classified priority, mood badge, and actionable checkboxes.
 - **Alternative Flow**:
-  - *Gemini API Timeout/Error*: System logs error, assigns default category `Unassigned`, priority `Medium`, confidence `0.00`, and notifies agent to manually review.
+  - *Gemini API Timeout/Error*: System returns graceful fallback metadata (Category `General`, Priority `MEDIUM`, Confidence `0.50`), allowing human agents to triage manually without failure.
 
 ### UC-02: AI Pre-Send Response Quality Verification
 - **Primary Actor**: Support Agent
@@ -105,6 +113,34 @@ graph TD
 - **Main Success Scenario**:
   1. Agent clicks **"Verify Response Quality"**.
   2. Frontend sends customer original issue + agent draft to `/api/v1/ai/verify-response`.
-  3. AI microservice scores draft on 4 axes: Professionalism (85%), Empathy (90%), Clarity (95%), Actionability (80%).
-  4. AI provides 1-sentence suggestion: *"Consider acknowledging the billing delay before asking for transaction ID."*
-  5. Agent accepts suggested improvement, adjusts draft, and sends response.
+  3. AI microservice scores draft on 4 axes: Professionalism, Empathy, Clarity, Actionability (0–100).
+  4. AI provides specific improvement suggestions.
+  5. Agent clicks "Apply Suggestion" or manually refines draft before dispatch.
+
+### UC-03: AI Concierge Conversational Intake & Ticket Creation
+- **Primary Actor**: Customer or Agent
+- **Pre-conditions**: User opens the SupportSense AI Concierge widget.
+- **Main Success Scenario**:
+  1. User describes issue in simple, conversational words (e.g. *"I was charged twice on my credit card yesterday"*).
+  2. AI Concierge engages empathetically, provides preliminary diagnostic feedback, and asks quick clarifying questions.
+  3. AI Concierge crafts a formal enterprise ticket specification containing Executive Summary, Symptoms, Business Impact, and Diagnostic Checklist.
+  4. User clicks **"Dispatch Ticket"** to submit the ticket atomically into the system.
+
+### UC-04: 1-Click AI Response Tone Polishing
+- **Primary Actor**: Support Agent
+- **Pre-conditions**: Agent types an informal or rough draft response in the ticket reply box.
+- **Main Success Scenario**:
+  1. Agent clicks **"Polish Tone"** and selects a style (`Empathetic`, `Concise`, `Formal`, or `Technical`).
+  2. System calls `/api/v1/ai/polish-tone` with draft text and desired tone.
+  3. AI rewrites the message while preserving facts and provides a rationale.
+  4. Agent reviews the polished text and clicks **"Apply to Reply"**.
+
+### UC-05: Reopened Ticket Timeline Summary Generation
+- **Primary Actor**: Support Agent / Backend Worker
+- **Pre-conditions**: Ticket is currently in `RESOLVED` status.
+- **Main Success Scenario**:
+  1. Agent updates ticket status to `OPEN` (e.g. customer indicates issue recurred).
+  2. Backend validates status transition and returns HTTP 200 immediately.
+  3. Fire-and-forget worker calls `/api/v1/ai/summarize-timeline` with full thread history.
+  4. AI microservice condenses thread into 5-6 chronological bullets and upserts into `ai_metadata`.
+  5. Next ticket detail view displays the prominent `TimelineSummaryBanner` at the top of the workbench.
