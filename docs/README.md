@@ -53,6 +53,7 @@ Welcome to the central documentation repository for **SupportSense AI**, an ente
 | 36 | **AI Implementation, Datasets & Role-Based Prompts Guide** | [TEAM_AI_DATASET_PROMPTS_GUIDE.md](./TEAM_AI_DATASET_PROMPTS_GUIDE.md) |
 | 37 | **Backend, API & DevOps Engineering Guide** | [TEAM_BACKEND_DEVOPS_GUIDE.md](./TEAM_BACKEND_DEVOPS_GUIDE.md) |
 | 38 | **Frontend Engineering & UI/UX Guide** | [TEAM_FRONTEND_ENGINEERING_GUIDE.md](./TEAM_FRONTEND_ENGINEERING_GUIDE.md) |
+| 39 | **Jira Agile Story Point Breakdown & Estimation Guide** | [JIRA_STORY_POINT_BREAKDOWN_GUIDE.md](./JIRA_STORY_POINT_BREAKDOWN_GUIDE.md) |
 
 ---
 

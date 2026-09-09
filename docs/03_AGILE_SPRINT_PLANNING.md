@@ -2,69 +2,93 @@
 
 ---
 
-## 6. User Stories & Story Points
-
-| ID | As a... | I want to... | So that... | Story Points |
-|---|---|---|---|---|
-| **US-01** | Support Agent | see customer mood (`🙂/😐/😠`) and patience score | I can prioritize urgent customer complaints and adapt my tone | 5 |
-| **US-02** | Support Agent | get an AI-generated checklist for each ticket | I know exact verification steps without missing critical procedures | 5 |
-| **US-03** | Support Agent | check my response quality before sending | I ensure my communication is empathetic, clear, and professional | 8 |
-| **US-04** | Support Agent | see an AI summary and banner when a ticket is reopened | I don't have to read 20 past messages to catch up on history | 5 |
-| **US-05** | Team Lead | view predicted ticket resolution times | I can set realistic customer expectations and manage team capacity | 5 |
-| **US-06** | Knowledge Manager | view weekly AI Learning Insights | I can update FAQ documentation based on top customer issues | 8 |
-| **US-07** | Support Agent | polish my response tone with 1 click | I can tailor communication into empathetic, concise, formal, or technical style | 5 |
-| **US-08** | Customer | describe issues conversationally with an AI Concierge | I can get immediate diagnostics and dispatch a formal ticket without filling forms | 8 |
-| **US-09** | Customer | receive instant departmental confirmation auto-replies | I know my ticket has been received and initial diagnostics have begun | 5 |
-| **US-10** | System Administrator | manage agent roles and system configuration | I maintain secure, role-based access across the platform | 3 |
-| **US-11** | Backend Lead | ensure ticket and initial message creation is atomic | database consistency is guaranteed if any step in creation fails | 5 |
-| **US-12** | Backend Lead | enforce valid ticket status transitions | tickets cannot skip required stages or transition from terminal states | 3 |
+> **Detailed Guide Available**: For the comprehensive, plain-English breakdown of story points, Fibonacci scale definitions, and team workload balance across all 29 tasks, please see [JIRA_STORY_POINT_BREAKDOWN_GUIDE.md](./JIRA_STORY_POINT_BREAKDOWN_GUIDE.md).
 
 ---
 
-## 7. Product Backlog
+## 6. User Stories & Story Points
+
+| ID | As a... | I want to... | So that... | Story Points |
+|---|---|---|---|:---:|
+| **US-01** | Support Agent | see customer mood (`🙂/😐/😠`) and a numerical patience score | I can prioritize urgent customer complaints and adapt my tone immediately | 5 |
+| **US-02** | Support Agent | get an AI-generated step-by-step checklist for each ticket | I know the exact verification steps to resolve issues without missing procedures | 5 |
+| **US-03** | Support Agent | check my response quality and tone before hitting send | I ensure my communication is empathetic, clear, actionable, and professional | 8 |
+| **US-04** | Support Agent | see an AI summary banner when a ticket is reopened | I don't have to read 20 past messages to catch up on conversation history | 5 |
+| **US-05** | Team Lead | view predicted ticket resolution times and category breakdowns | I can set realistic customer expectations and manage team capacity effectively | 5 |
+| **US-06** | Knowledge Manager | view weekly AI Learning Insights and recurring failure patterns | I can update FAQ documentation and help articles based on top customer questions | 8 |
+| **US-07** | Support Agent | polish my response tone with 1 click into 4 styles | I can tailor communication into Empathetic, Concise, Formal, or Technical style | 5 |
+| **US-08** | Customer | describe issues conversationally with an AI Concierge | I get instant diagnostics and can turn my casual words into a formal ticket | 8 |
+| **US-09** | Customer | receive instant departmental confirmation auto-replies | I know my ticket has been received and initial diagnostics have begun | 5 |
+| **US-10** | System Administrator | manage agent roles, test logins, and system configuration | I maintain secure, role-based access across the customer support platform | 3 |
+| **US-11** | Backend Lead | ensure ticket and initial message creation happens in one atomic transaction | database consistency is guaranteed and orphaned records are prevented | 5 |
+| **US-12** | Backend Lead | enforce valid ticket status transitions via a strict state machine | tickets cannot skip required stages or transition out of terminal states | 5 |
+| **US-13** | Database Lead | migrate database to Supabase Cloud with connection pooling | queries remain fast, reliable, and secure across global cloud infrastructure | 5 |
+
+---
+
+## 7. Product Backlog (29 Tasks across 6 Epics)
+
+The product backlog consists of **29 tasks** totaling **156 story points**, distributed across 6 Epics:
 
 ```
-[Epic 1: Authentication & Core Architecture]
-  ├── SSAI-101: Setup PostgreSQL Database schema, migrations & seeds (Priority: High, Est: 5 pts)
-  ├── SSAI-102: Implement Node.js Express Auth Endpoints & JWT (Priority: High, Est: 5 pts)
-  └── SSAI-103: Setup Vite/React Frontend Shell & Tailwind Theme (Priority: High, Est: 3 pts)
+[EPIC-1: Research & Requirements Specification] (18 pts)
+  ├── SSAI-101: Research How Customer Support Tools Work & Compare Features (Est: 3 pts | Assignee: Rohan)
+  ├── SSAI-102: Choose Right AI Model & Collect Real Customer Chat Datasets (Est: 5 pts | Assignee: Yash)
+  ├── SSAI-103: Design Simple 3-Tier System Architecture & Database Tables (Est: 5 pts | Assignee: Shrujan)
+  └── SSAI-104: Write Plain-English Project Requirements & 4-Sprint Schedule (Est: 5 pts | Assignee: Aarti)
 
-[Epic 2: Core Ticketing Engine & Resiliency]
-  ├── SSAI-201: Ticket Creation & List APIs (Priority: High, Est: 5 pts)
-  ├── SSAI-202: Threaded Message & Internal Notes API (Priority: High, Est: 5 pts)
-  ├── SSAI-203: Ticket Dashboard & Filter Components (Priority: High, Est: 5 pts)
-  ├── SCRUM-110: Connection Pooling & Concurrency Verification (Priority: High, Est: 5 pts)
-  ├── SCRUM-111: Strict Ticket Status Transition Validation (Priority: High, Est: 5 pts)
-  └── SCRUM-112: Atomic Transactional Ticket & Message Creation (Priority: High, Est: 5 pts)
+[EPIC-2: UI/UX Design System & Frontend SPA] (33 pts)
+  ├── SSAI-201: Build Website Frame with Dark & Light Mode Switcher (Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-202: Build Reusable UI Buttons, Cards & Offline Mock Data (Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-203: Create User Login Page with 1-Click Persona Testing Buttons (Est: 5 pts | Assignee: Yash)
+  ├── SSAI-204: Build Ticket Workspace with Chat Thread & Live AI Helper Drawer (Est: 8 pts | Assignee: Yash)
+  ├── SSAI-301: Connect All Website Screens to the Real Live Backend Server (Est: 5 pts | Assignee: Rohan)
+  └── SSAI-407: Build 1-Click AI Response Tone Polisher for Support Agents (Est: 5 pts | Assignee: Rohan)
 
-[Epic 3: AI Intelligence Microservice & Model Optimizations]
-  ├── SSAI-301: FastAPI Microservice Setup & Gemini Integration (Priority: High, Est: 8 pts)
-  ├── SSAI-302: AI Auto-Classification & Mood/Patience Analysis (Priority: High, Est: 8 pts)
-  ├── SSAI-303: Resolution Predictor & Agent Checklist Generator (Priority: High, Est: 5 pts)
-  ├── SSAI-304: Pre-send Quality Checker & Suggestion Engine (Priority: High, Est: 8 pts)
-  └── SSAI-305: Model Instance Pooling & In-Memory TTL Response Caching (Priority: High, Est: 5 pts)
+[EPIC-3: Core Backend Architecture & Database Engine] (30 pts)
+  ├── SSAI-206: Set Up Express Backend Server, Security Headers & Rate Limiter (Est: 5 pts | Assignee: Shrujan)
+  ├── SSAI-207: Create PostgreSQL Database Tables & Starter Test Data (Est: 5 pts | Assignee: Shrujan)
+  ├── SSAI-208: Build Secure User Registration, Password Encryption & Login Tokens (Est: 5 pts | Assignee: Aarti)
+  ├── SSAI-209: Build Ticket Management APIs & Connect to AI Microservice (Est: 8 pts | Assignee: Aarti)
+  ├── SSAI-305: Enforce Strict Ticket Status Rules & Concurrency Testing (Est: 5 pts | Assignee: Shrujan)
+  └── SSAI-408: Migrate Database from Render to Supabase Cloud with Pooling (Est: 5 pts | Assignee: Shrujan)
 
-[Epic 4: Novel Decision Assist & Conversational Workflows]
-  ├── SCRUM-113: Reopened Ticket Timeline Summarizer & Banner (Priority: High, Est: 5 pts)
-  ├── SCRUM-114: AI Concierge Chatbot & Formal Ticket Crafter (Priority: High, Est: 8 pts)
-  ├── SCRUM-115: 1-Click AI Response Tone Polishing Modal (Priority: Medium, Est: 5 pts)
-  └── SCRUM-116: Department Automated Response Engine & Policies (Priority: High, Est: 8 pts)
+[EPIC-4: AI/LLM Microservice & Gemini Decision Support] (37 pts)
+  ├── SSAI-205: Set Up Python AI Microservice with Google Gemini & Caching (Est: 8 pts | Assignee: Yash)
+  ├── SSAI-302: Connect Real Google Gemini AI for Smart Ticket Triage & Mood Detection (Est: 8 pts | Assignee: Yash)
+  ├── SSAI-303: Generate AI Action Checklists & Allow Agents to Check Off Items (Est: 5 pts | Assignee: Yash)
+  ├── SSAI-304: Build Pre-Send AI Tone & Quality Checker for Support Replies (Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-306: Build AI Summary Banner for Reopened Support Tickets (Est: 5 pts | Assignee: Aarti)
+  └── SSAI-406: Build AI Concierge Chatbot to Turn Simple Words into Formal Tickets (Est: 8 pts | Assignee: Yash)
 
-[Epic 5: Analytics, Insights & DevOps Deployment]
-  ├── SSAI-401: Weekly AI Learning Insights Engine (Priority: Medium, Est: 8 pts)
-  ├── SSAI-402: Admin Analytics Dashboard & SLA Monitoring (Priority: Medium, Est: 5 pts)
-  ├── SSAI-403: Render Blueprint (render.yaml) & Docker Compose (Priority: High, Est: 5 pts)
-  └── SSAI-404: Automated CI/CD Pipeline with Live PostgreSQL Container (Priority: High, Est: 5 pts)
+[EPIC-5: Testing, Quality Assurance & Security Validation] (16 pts)
+  ├── SSAI-307: Build Automated Department Routing & Instant Auto-Replies (Est: 5 pts | Assignee: Aarti)
+  ├── SSAI-401: Test Website Accessibility, Colors & Responsive Layouts (Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-402: Test AI Accuracy with 100 Support Records & Benchmark Speed (Est: 5 pts | Assignee: Yash)
+  └── SSAI-404: Security Check: Protect Private Notes & Block Malicious Input (Est: 3 pts | Assignee: Aarti)
+
+[EPIC-6: DevOps, Cloud Deployment & Technical Documentation] (22 pts)
+  ├── SSAI-210: Set Up Docker Containers & Complete Technical Documentation (Est: 5 pts | Assignee: Aarti)
+  ├── SSAI-403: Add Database Speed Indexes & Run Backend Test Suite (Est: 5 pts | Assignee: Shrujan)
+  └── SSAI-405: Deploy Full Project to Render Cloud Platform with HTTPS (Est: 5 pts | Assignee: Aarti)
 ```
 
 ---
 
 ## 8. Sprint Backlog Distribution
 
-- **Sprint 1 Backlog**: SSAI-101, SSAI-102, SSAI-103, SSAI-201 (Base Platform & Ticket CRUD)
-- **Sprint 2 Backlog**: SSAI-202, SSAI-203, SSAI-301, SSAI-302, SCRUM-110, SCRUM-111 (Threaded Conversations, Status Machine, Base AI Triage)
-- **Sprint 3 Backlog**: SSAI-303, SSAI-304, SCRUM-112, SCRUM-113, SCRUM-116 (Checklists, Quality Check, Transactions, Reopened Timeline, Auto-Replies)
-- **Sprint 4 Backlog**: SCRUM-114, SCRUM-115, SSAI-305, SSAI-401, SSAI-402, SSAI-403, SSAI-404 (AI Concierge, Tone Polisher, Caching, Insights, CI/CD & Render)
+- **Sprint 1 (Research, Learning & Planning)**: 4 tasks, **18 Story Points**
+  - Tasks: `SSAI-101`, `SSAI-102`, `SSAI-103`, `SSAI-104`
+  - Team Focus: Domain research, Gemini speed tests, 3-tier architecture design, and sprint roadmap.
+- **Sprint 2 (Prototype Build & Architecture)**: 10 tasks, **59 Story Points**
+  - Tasks: `SSAI-201`, `SSAI-202`, `SSAI-203`, `SSAI-204`, `SSAI-205`, `SSAI-206`, `SSAI-207`, `SSAI-208`, `SSAI-209`, `SSAI-210`
+  - Team Focus: Scaffolding frontend UI, Express backend, JWT auth, PostgreSQL tables, FastAPI service, and Docker compose.
+- **Sprint 3 (AI & Integration)**: 7 tasks, **38 Story Points**
+  - Tasks: `SSAI-301`, `SSAI-302`, `SSAI-303`, `SSAI-304`, `SSAI-305`, `SSAI-306`, `SSAI-307`
+  - Team Focus: Live REST integration, Gemini triage & mood detection, interactive checklists, tone checker, status machine, and reopened banner.
+- **Sprint 4 (Advanced AI, Cloud Migration & Hardening)**: 8 tasks, **41 Story Points**
+  - Tasks: `SSAI-401`, `SSAI-402`, `SSAI-403`, `SSAI-404`, `SSAI-405`, `SSAI-406`, `SSAI-407`, `SSAI-408`
+  - Team Focus: AI Concierge chatbot, 1-click tone polisher, Supabase cloud database migration, accessibility, benchmarks, test suites, and Render deployment.
 
 ---
 
@@ -75,64 +99,90 @@ gantt
     title SupportSense AI 2-Month Internship Sprint Roadmap
     dateFormat  YYYY-MM-DD
     section Sprint 1 (W1-W2)
-    Architecture & Core Auth         :active, s1, 2026-08-05, 14d
+    Architecture, PRD & AI Datasets       :done, s1, 2026-08-03, 14d
     section Sprint 2 (W3-W4)
-    Ticketing Engine & Base Triage   :s2, after s1, 14d
+    Prototype Scaffolding & DB Setup      :done, s2, after s1, 14d
     section Sprint 3 (W5-W6)
-    Novel Assist, Checklists & Timelines:s3, after s2, 14d
+    Live Integration & Decision Assist AI :done, s3, after s2, 14d
     section Sprint 4 (W7-W8)
-    AI Concierge, Tone Polish & Render Ops:s4, after s3, 14d
+    AI Concierge, Supabase & Cloud Ops    :active, s4, after s3, 14d
 ```
+
+### Sprint Velocity Summary
+- **Sprint 1**: 18 Points
+- **Sprint 2**: 59 Points
+- **Sprint 3**: 38 Points
+- **Sprint 4**: 41 Points
+- **Total Project Velocity**: **156 Points** (Average: ~39 points per 2-week sprint)
 
 ---
 
 ## 10. Jira Epic List
 
-1. **EPIC-01**: Auth & Security System (`SSAI-EPIC-1`)
-2. **EPIC-02**: Core Ticket & Communication Engine (`SSAI-EPIC-2`)
-3. **EPIC-03**: AI Microservice & Gemini Decision Support (`SSAI-EPIC-3`)
-4. **EPIC-04**: Novel Decision Assist & Conversational Workflows (`SSAI-EPIC-4`)
-5. **EPIC-05**: Enterprise Analytics & Learning Insights (`SSAI-EPIC-5`)
-6. **EPIC-06**: DevOps, Testing & CI/CD Deployment (`SSAI-EPIC-6`)
+1. **EPIC-1**: Research & Requirements Specification (`SSAI-EPIC-1`) — Lead: *Rohan Salkar*
+2. **EPIC-2**: UI/UX Design System & Frontend SPA (`SSAI-EPIC-2`) — Lead: *Rohan Salkar*
+3. **EPIC-3**: Core Backend Architecture & Database Engine (`SSAI-EPIC-3`) — Lead: *Shrujan Mitbavkar*
+4. **EPIC-4**: AI/LLM Microservice & Gemini Decision Support (`SSAI-EPIC-4`) — Lead: *Yash Sanikop*
+5. **EPIC-5**: Testing, Quality Assurance & Security Validation (`SSAI-EPIC-5`) — Lead: *Aarti Singh*
+6. **EPIC-6**: DevOps, Cloud Deployment & Technical Documentation (`SSAI-EPIC-6`) — Lead: *Aarti Singh*
 
 ---
 
-## 11. Jira User Stories & Task Breakdown
+## 11. Jira User Stories & Task Breakdown Examples
 
-### Ticket Example: `SCRUM-112` (Atomic Transactional Ticket Creation)
-- **Summary**: Implement atomic transaction in `ticketModel.js` for ticket and initial message creation.
-- **Issue Type**: Story
-- **Epic Link**: EPIC-02 (Core Ticket Engine)
-- **Assignee**: Member 2 (Backend Lead)
-- **Description**: Ensure tickets and initial messages cannot become orphaned if errors occur during ticket submission.
+### Task Example: `SSAI-305` (Strict Ticket Status Rules & Concurrency Testing)
+- **Summary**: Enforce Strict Ticket Status Rules and Concurrency Testing
+- **Issue Type**: Task
+- **Epic**: EPIC-3 (Core Backend Architecture & Database Engine)
+- **Assignee**: Shrujan Mitbavkar (Backend Lead)
+- **Story Points**: 5 Points (Medium-High Complexity)
+- **Description**: Make sure tickets follow strict state progression (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED` or `OPEN`). Block invalid jumps (like jumping from `OPEN` directly to `RESOLVED`). Also verify database connection pooling handles simultaneous requests without crashing.
 
-### Ticket Example: `SCRUM-113` (Reopened Timeline Summarizer)
-- **Summary**: Implement async fire-and-forget timeline summarization when ticket status changes from `RESOLVED` to `OPEN`.
+### Task Example: `SSAI-306` (AI Summary Banner for Reopened Tickets)
+- **Summary**: Build AI Summary Banner for Reopened Support Tickets
+- **Issue Type**: Task
+- **Epic**: EPIC-4 (AI/LLM Microservice & Gemini Decision Support)
+- **Assignee**: Aarti Singh (DevOps & QA Lead)
+- **Story Points**: 5 Points (Medium-High Complexity)
+- **Description**: When a previously solved ticket is reopened by a customer, automatically summarize past conversation history into 5-6 clear bullet points using Gemini, and show this summary in a yellow highlight banner at the top of the ticket.
+
+### Task Example: `SSAI-406` (AI Concierge Chatbot)
+- **Summary**: Build AI Concierge Chatbot to Turn Simple Words into Formal Tickets
 - **Issue Type**: Story
-- **Epic Link**: EPIC-04 (Novel Decision Assist)
-- **Assignee**: Member 2 (Backend) & Member 3 (AI Engineer)
+- **Epic**: EPIC-4 (AI/LLM Microservice & Gemini Decision Support)
+- **Assignee**: Yash Sanikop (Frontend & AI Lead)
+- **Story Points**: 8 Points (High Complexity)
+- **Description**: Build an intelligent intake chatbot on the customer portal that chats with customers in natural plain English, gathers necessary issue details, and turns casual descriptions into structured enterprise tickets with title, department, priority, and diagnostic steps ready for 1-click dispatch.
+
+### Task Example: `SSAI-408` (Migrate Database to Supabase Cloud)
+- **Summary**: Migrate Database from Render to Supabase Cloud with Connection Pooling
+- **Issue Type**: Task
+- **Epic**: EPIC-3 (Core Backend Architecture & Database Engine)
+- **Assignee**: Shrujan Mitbavkar (Backend Lead)
+- **Story Points**: 5 Points (Medium-High Complexity)
+- **Description**: Migrate PostgreSQL database from Render to managed Supabase PostgreSQL in region `ap-southeast-1`. Update connection pooling settings (`ssl: { rejectUnauthorized: false }`), run migration scripts to verify 6 core tables and starter data, and test live queries with latency under 50ms.
 
 ---
 
-## 12. Acceptance Criteria
+## 12. Acceptance Criteria Examples
 
-### Acceptance Criteria for `SCRUM-111` (Status Transitions):
+### Acceptance Criteria for `SSAI-305` (Status Machine Rules):
 1. **GIVEN** a ticket in status `OPEN`,
 2. **WHEN** an agent attempts to transition directly to `RESOLVED` or `CLOSED`,
-3. **THEN** the system returns HTTP 400 with an error message: `"Invalid status transition from OPEN to {status}."`.
+3. **THEN** the server returns HTTP 400 Bad Request with a clear explanation: `"Invalid status transition from OPEN to {status}."`.
 4. **AND** only `IN_PROGRESS` is accepted as a valid next state.
 
-### Acceptance Criteria for `SCRUM-112` (Transactional Creation):
-1. **GIVEN** a customer submits a valid ticket payload,
-2. **WHEN** `createTicketWithInitialMessage` executes,
-3. **THEN** both the ticket row and initial `ticket_messages` row are committed together atomically.
-4. **IF** the message insertion fails (e.g. invalid sender ID),
-5. **THEN** the transaction is rolled back and no orphaned ticket is retained in the database.
-
-### Acceptance Criteria for `SCRUM-113` (Reopened Timeline Summary):
+### Acceptance Criteria for `SSAI-306` (Reopened Ticket Timeline Summary):
 1. **GIVEN** a ticket in status `RESOLVED`,
-2. **WHEN** an agent updates status to `OPEN`,
-3. **THEN** the status update endpoint returns HTTP 200 immediately without blocking on Gemini.
-4. **AND** an asynchronous fire-and-forget background worker queries the AI microservice to condense the message history.
-5. **AND** updates `ai_metadata.timeline_summary` with `ON CONFLICT (ticket_id) DO UPDATE`.
-6. **AND** the UI renders the prominent `TimelineSummaryBanner` at the top of the ticket workspace.
+2. **WHEN** a customer sends a new message reopening the ticket to `OPEN`,
+3. **THEN** the status update endpoint returns HTTP 200 immediately without blocking.
+4. **AND** an asynchronous background worker queries the AI microservice to condense previous conversation history.
+5. **AND** updates `ai_metadata.timeline_summary` in the database.
+6. **AND** the frontend displays the prominent yellow summary banner at the top of the ticket workspace.
+
+### Acceptance Criteria for `SSAI-408` (Supabase Cloud Database Migration):
+1. **GIVEN** the production Supabase PostgreSQL connection URI,
+2. **WHEN** the backend initializes `src/config/db.js`,
+3. **THEN** the connection pool establishes an SSL-encrypted connection to `db.mdiakmrjbhxlmzvkhdwa.supabase.co:5432`.
+4. **AND** executing database queries returns live rows for all 6 tables in under 50ms.
+5. **AND** connection drops or network hiccups are gracefully retried by the pool without crashing the Express server.
