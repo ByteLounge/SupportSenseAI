@@ -26,11 +26,12 @@
 
 ---
 
-## 7. Product Backlog (29 Tasks across 6 Epics)
+## 7. Product Backlog (31 Tasks across 6 Epics)
 
-The product backlog consists of **29 tasks** totaling **156 story points**, distributed across 6 Epics:
+The product backlog consists of **31 tasks** totaling **166 story points**, distributed across 6 Epics:
 
-> **Task Priority**: All 29 tasks across Sprints 1 to 4 are standardized to **Medium Priority**, ensuring steady delivery focus while story points represent relative complexity.
+> **Zero Backlog Guarantee**: Every single task is assigned directly to its respective Sprint (Sprint 1, 2, 3, or 4). There are **0 unassigned issues in the backlog**, ensuring Jira Sprint Burndown charts and velocity metrics reflect 100% of planned and delivered work.
+> **Task Priority**: All tasks across Sprints 1 to 4 are standardized to **Medium Priority**, ensuring steady delivery focus while story points represent relative complexity.
 
 ```
 [EPIC-1: Research & Requirements Specification] (18 pts)
@@ -39,21 +40,23 @@ The product backlog consists of **29 tasks** totaling **156 story points**, dist
   ├── SSAI-103: Design Simple 3-Tier System Architecture & Database Tables (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
   └── SSAI-104: Write Plain-English Project Requirements & 4-Sprint Schedule (Priority: Medium | Est: 5 pts | Assignee: Aarti)
 
-[EPIC-2: UI/UX Design System & Frontend SPA] (33 pts)
+[EPIC-2: UI/UX Design System & Frontend SPA] (38 pts)
   ├── SSAI-201: Build Website Frame with Dark & Light Mode Switcher (Priority: Medium | Est: 5 pts | Assignee: Rohan)
   ├── SSAI-202: Build Reusable UI Buttons, Cards & Offline Mock Data (Priority: Medium | Est: 5 pts | Assignee: Rohan)
   ├── SSAI-203: Create User Login Page with 1-Click Persona Testing Buttons (Priority: Medium | Est: 5 pts | Assignee: Yash)
   ├── SSAI-204: Build Ticket Workspace with Chat Thread & Live AI Helper Drawer (Priority: Medium | Est: 8 pts | Assignee: Yash)
   ├── SSAI-301: Connect All Website Screens to the Real Live Backend Server (Priority: Medium | Est: 5 pts | Assignee: Rohan)
-  └── SSAI-407: Build 1-Click AI Response Tone Polisher for Support Agents (Priority: Medium | Est: 5 pts | Assignee: Rohan)
+  ├── SSAI-407: Build 1-Click AI Response Tone Polisher for Support Agents (Priority: Medium | Est: 5 pts | Assignee: Rohan)
+  └── SSAI-410: Real-Time Knowledge Base FAQ Integration & Ticket Deflection (Priority: Medium | Est: 5 pts | Assignee: Rohan)
 
-[EPIC-3: Core Backend Architecture & Database Engine] (30 pts)
+[EPIC-3: Core Backend Architecture & Database Engine] (35 pts)
   ├── SSAI-206: Set Up Express Backend Server, Security Headers & Rate Limiter (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
   ├── SSAI-207: Create PostgreSQL Database Tables & Starter Test Data (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
   ├── SSAI-208: Build Secure User Registration, Password Encryption & Login Tokens (Priority: Medium | Est: 5 pts | Assignee: Aarti)
   ├── SSAI-209: Build Ticket Management APIs & Connect to AI Microservice (Priority: Medium | Est: 8 pts | Assignee: Aarti)
   ├── SSAI-305: Enforce Strict Ticket Status Rules & Concurrency Testing (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
-  └── SSAI-408: Migrate Database from Render to Supabase Cloud with Pooling (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
+  ├── SSAI-408: Migrate Database from Render to Supabase Cloud with Pooling (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
+  └── SSAI-409: Prevent Duplicate Resolved Tickets & Enable Follow-up Linking (Priority: Medium | Est: 5 pts | Assignee: Shrujan)
 
 [EPIC-4: AI/LLM Microservice & Gemini Decision Support] (37 pts)
   ├── SSAI-205: Set Up Python AI Microservice with Google Gemini & Caching (Priority: Medium | Est: 8 pts | Assignee: Yash)
@@ -79,18 +82,20 @@ The product backlog consists of **29 tasks** totaling **156 story points**, dist
 
 ## 8. Sprint Backlog Distribution
 
-- **Sprint 1 (Research, Learning & Planning)**: 4 tasks, **18 Story Points**
+- **Sprint 1 (Research, Learning & Planning)**: 4 tasks, **18 Story Points** [Status: Closed]
   - Tasks: `SSAI-101`, `SSAI-102`, `SSAI-103`, `SSAI-104`
+  - Burndown: 18 pts burned to 0 pts (Completed on Aug 16, 2026).
   - Team Focus: Domain research, Gemini speed tests, 3-tier architecture design, and sprint roadmap.
-- **Sprint 2 (Prototype Build & Architecture)**: 10 tasks, **59 Story Points**
+- **Sprint 2 (Prototype Build & Architecture)**: 10 tasks, **59 Story Points** [Status: Closed]
   - Tasks: `SSAI-201`, `SSAI-202`, `SSAI-203`, `SSAI-204`, `SSAI-205`, `SSAI-206`, `SSAI-207`, `SSAI-208`, `SSAI-209`, `SSAI-210`
+  - Burndown: 59 pts burned to 0 pts (Completed on Aug 29, 2026).
   - Team Focus: Scaffolding frontend UI, Express backend, JWT auth, PostgreSQL tables, FastAPI service, and Docker compose.
-- **Sprint 3 (AI & Integration)**: 7 tasks, **38 Story Points**
+- **Sprint 3 (AI & Integration)**: 7 tasks, **38 Story Points** [Status: Active]
   - Tasks: `SSAI-301`, `SSAI-302`, `SSAI-303`, `SSAI-304`, `SSAI-305`, `SSAI-306`, `SSAI-307`
   - Team Focus: Live REST integration, Gemini triage & mood detection, interactive checklists, tone checker, status machine, and reopened banner.
-- **Sprint 4 (Advanced AI, Cloud Migration & Hardening)**: 8 tasks, **41 Story Points**
-  - Tasks: `SSAI-401`, `SSAI-402`, `SSAI-403`, `SSAI-404`, `SSAI-405`, `SSAI-406`, `SSAI-407`, `SSAI-408`
-  - Team Focus: AI Concierge chatbot, 1-click tone polisher, Supabase cloud database migration, accessibility, benchmarks, test suites, and Render deployment.
+- **Sprint 4 (Advanced AI, Cloud Migration & Hardening)**: 10 tasks, **51 Story Points** [Status: Future/In-Progress]
+  - Tasks: `SSAI-401`, `SSAI-402`, `SSAI-403`, `SSAI-404`, `SSAI-405`, `SSAI-406`, `SSAI-407`, `SSAI-408`, `SSAI-409`, `SSAI-410`
+  - Team Focus: AI Concierge chatbot, 1-click tone polisher, Supabase cloud database migration, duplicate prevention & linking, FAQ deflection, and Render deployment.
 
 ---
 

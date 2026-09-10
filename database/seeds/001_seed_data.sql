@@ -8,10 +8,16 @@
 -- ----------------------------------------------------------------------------
 -- 1. SEED USERS (Passwords hashed using bcrypt for 'Password123!')
 -- ----------------------------------------------------------------------------
-INSERT INTO users (id, name, email, password_hash, role, avatar_url) VALUES
-('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Admin User', 'admin@supportsense.ai', '$2a$10$I8VaAVy7Jkqg87tXPHyRCe3tA2aXgFHiGwPZa9if1WaJ34HVBeD7m', 'ADMIN', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin'),
-('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'Sarah Agent', 'agent.sarah@supportsense.ai', '$2a$10$I8VaAVy7Jkqg87tXPHyRCe3tA2aXgFHiGwPZa9if1WaJ34HVBeD7m', 'AGENT', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah'),
-('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', 'Alex Rivera', 'alex.rivera@customer.com', '$2a$10$I8VaAVy7Jkqg87tXPHyRCe3tA2aXgFHiGwPZa9if1WaJ34HVBeD7m', 'CUSTOMER', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex')
+INSERT INTO users (id, name, email, password_hash, role, avatar_url, department) VALUES
+('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Admin User', 'admin@supportsense.ai', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'ADMIN', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', 'Operations & Governance'),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'Sarah Agent', 'agent.sarah@supportsense.ai', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'AGENT', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah', 'Tier 1 Support & AI Triage'),
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', 'Alex Rivera', 'alex.rivera@customer.com', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'CUSTOMER', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex', 'Acme Corp'),
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44', 'Samantha Reed', 'samantha.reed@globex.com', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'CUSTOMER', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Samantha', 'Globex Systems'),
+('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55', 'David Kim', 'david.kim@nexus.io', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'CUSTOMER', 'https://api.dicebear.com/7.x/avataaars/svg?seed=David', 'Nexus Technologies'),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a66', 'Elena Rostova', 'elena.r@supportsense.ai', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'AGENT', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena', 'Finance & Billing'),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a77', 'Marcus Vance', 'marcus.vance@supportsense.ai', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'AGENT', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus', 'Technical Support'),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a88', 'Liam Scott', 'liam.scott@supportsense.ai', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'AGENT', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Liam', 'Identity & Access'),
+('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a99', 'Priya Sharma', 'priya.sharma@supportsense.ai', '$2a$10$FBLhHX7RCAJ1XUbATW0WNu058jal/0iNztj6Lyrq1ZIawJQyukZyG', 'AGENT', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya', 'API Platform Team')
 ON CONFLICT (email) DO NOTHING;
 
 -- ----------------------------------------------------------------------------

@@ -32,4 +32,8 @@ router.post('/concierge', aiProxyController.chatConcierge);
 // 1-Click AI Response Tone Polishing
 router.post('/polish-tone', authorizeRoles('AGENT', 'ADMIN'), aiProxyController.polishTone);
 
+// FAQs & Knowledge Base Search (Accessible to all users for issue deflection)
+router.get('/faqs', aiProxyController.getFaqs);
+router.get('/faqs/search', aiProxyController.searchFaqs);
+
 module.exports = router;

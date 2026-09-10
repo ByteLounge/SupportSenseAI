@@ -6,9 +6,10 @@
 > **Audience**: Engineering Team, Project Mentors, Evaluators, and Agile Beginners  
 > **Target Jira Project**: `SCRUM` / `SSAI` (SupportSense AI)  
 > **Total Sprints**: 4 Sprints (8 Weeks)  
-> **Total User Stories & Tasks**: 29 Tasks  
-> **Total Story Points**: 156 Story Points  
+> **Total User Stories & Tasks**: 31 Tasks (0 in Backlog, 100% assigned to Sprints)  
+> **Total Story Points**: 166 Story Points  
 > **Sprint Cadence**: 2-week iterations  
+> **Burndown Status**: Sprint 1 (18 pts) & Sprint 2 (59 pts) 100% burned & closed; Sprint 3 active; Sprint 4 scheduled  
 
 ---
 
@@ -178,11 +179,11 @@ The team consists of 4 specialized engineering leads. Workload is balanced based
 
 | Team Member | Engineering Role | Sprint 1 | Sprint 2 | Sprint 3 | Sprint 4 | Total Points | Workload Share |
 |:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Rohan Salkar** | Frontend Lead (Member 1) | 3 pts | 10 pts | 10 pts | 10 pts | **33 pts** | 21.2% |
-| **Yash Sanikop** | Frontend & AI Lead (Member 2) | 5 pts | 21 pts | 13 pts | 13 pts | **52 pts** | 33.3% |
-| **Shrujan Mitbavkar** | Backend & Database Lead (Member 3) | 5 pts | 10 pts | 5 pts | 10 pts | **30 pts** | 19.2% |
-| **Aarti Singh** | DevOps, Testing & QA Lead (Member 4) | 5 pts | 18 pts | 10 pts | 8 pts | **41 pts** | 26.3% |
-| **TOTALS** | **Entire Team** | **18 pts** | **59 pts** | **38 pts** | **41 pts** | **156 pts** | **100.0%** |
+| **Rohan Salkar** | Frontend Lead (Member 1) | 3 pts | 10 pts | 10 pts | 15 pts | **38 pts** | 22.9% |
+| **Yash Sanikop** | Frontend & AI Lead (Member 2) | 5 pts | 21 pts | 13 pts | 13 pts | **52 pts** | 31.3% |
+| **Shrujan Mitbavkar** | Backend & Database Lead (Member 3) | 5 pts | 10 pts | 5 pts | 15 pts | **35 pts** | 21.1% |
+| **Aarti Singh** | DevOps, Testing & QA Lead (Member 4) | 5 pts | 18 pts | 10 pts | 8 pts | **41 pts** | 24.7% |
+| **TOTALS** | **Entire Team** | **18 pts** | **59 pts** | **38 pts** | **51 pts** | **166 pts** | **100.0%** |
 
 ### Workload Balance Explanation:
 - **Yash Sanikop (52 pts)** handled heavy cross-cutting AI microservice features, Gemini integration, caching, conversational concierge, and frontend ticket drawers.

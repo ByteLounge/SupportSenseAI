@@ -381,7 +381,7 @@ let MOCK_USERS = [
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah'
   },
   {
-    id: 'u-elena',
+    id: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a66',
     name: 'Elena Rostova',
     email: 'elena.r@supportsense.ai',
     role: 'AGENT',
@@ -391,7 +391,7 @@ let MOCK_USERS = [
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena'
   },
   {
-    id: 'u-marcus',
+    id: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a77',
     name: 'Marcus Vance',
     email: 'marcus.vance@supportsense.ai',
     role: 'AGENT',
@@ -399,6 +399,26 @@ let MOCK_USERS = [
     status: 'Active',
     last_login: '2026-08-23 09:30',
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus'
+  },
+  {
+    id: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a88',
+    name: 'Liam Scott',
+    email: 'liam.scott@supportsense.ai',
+    role: 'AGENT',
+    department: 'Identity & Access',
+    status: 'Active',
+    last_login: '2026-08-23 10:15',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Liam'
+  },
+  {
+    id: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a99',
+    name: 'Priya Sharma',
+    email: 'priya.sharma@supportsense.ai',
+    role: 'AGENT',
+    department: 'API Platform Team',
+    status: 'Active',
+    last_login: '2026-08-23 11:45',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya'
   },
   {
     id: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
@@ -411,11 +431,21 @@ let MOCK_USERS = [
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex'
   },
   {
-    id: 'u-david',
-    name: 'David Chen',
-    email: 'd.chen@enterprise.net',
+    id: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
+    name: 'Samantha Reed',
+    email: 'samantha.reed@globex.com',
     role: 'CUSTOMER',
-    department: 'Chen Logistics',
+    department: 'Globex Systems',
+    status: 'Active',
+    last_login: '2026-08-23 08:45',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Samantha'
+  },
+  {
+    id: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55',
+    name: 'David Kim',
+    email: 'david.kim@nexus.io',
+    role: 'CUSTOMER',
+    department: 'Nexus Technologies',
     status: 'Active',
     last_login: '2026-08-23 06:10',
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David'
@@ -428,8 +458,12 @@ async function safeApiCall(apiFunc, mockFallbackProducer) {
     const res = await apiFunc();
     return res;
   } catch (err) {
+    // If error contains domain rejection payload (such as duplicate resolved ticket or follow-up linking), rethrow
+    if (err && (err.is_duplicate || err.code === 'DUPLICATE_RESOLVED_TICKET' || err.linked_to_existing)) {
+      throw err;
+    }
     const isNetworkError = !err.status && (!err.response || err.message === 'Network / Server Error' || err.code === 'ERR_NETWORK');
-    const allowMockFallback = import.meta.env.VITE_ENABLE_MOCK === 'true' || isNetworkError || true;
+    const allowMockFallback = import.meta.env.VITE_ENABLE_MOCK === 'true' || isNetworkError;
 
     if (allowMockFallback && mockFallbackProducer !== undefined) {
       const payload = typeof mockFallbackProducer === 'function' ? mockFallbackProducer() : mockFallbackProducer;
@@ -548,6 +582,57 @@ export const createTicketApi = (data) =>
         email: 'alex.rivera@customer.com'
       };
 
+      const queryText = `${data.title || ''} ${data.description || ''}`.toLowerCase();
+      const isFollowUp = /\b(update|status|follow\s*up|following\s*up|any\s*news|check\s*status|progress|still\s*waiting)\b/i.test(queryText);
+
+      // Check for matching resolved ticket or active ticket
+      const userTickets = MOCK_TICKETS.filter(t => t.customer_id === currentUser.id || t.customer_email === currentUser.email);
+      
+      if (!data.forceCreate) {
+        for (const t of userTickets) {
+          const tText = `${t.title} ${t.description}`.toLowerCase();
+          const words = (data.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
+          const matchWords = words.filter(w => tText.includes(w));
+          const isMatch = words.length > 0 && matchWords.length / words.length >= 0.5;
+
+          // 1. If resolved ticket exists, reject as duplicate
+          if (isMatch && (t.status === 'RESOLVED' || t.status === 'CLOSED')) {
+            const err = new Error(`A resolved ticket for this issue already exists: #${t.ticket_number} - "${t.title}". This issue was already resolved.`);
+            err.is_duplicate = true;
+            err.code = 'DUPLICATE_RESOLVED_TICKET';
+            err.data = {
+              resolved_ticket: t,
+              resolution_summary: t.messages?.[t.messages.length - 1]?.message_body || 'Issue was investigated and resolved by support specialists.'
+            };
+            throw err;
+          }
+
+          // 2. If follow-up on active open ticket, link message to existing ticket
+          if ((isFollowUp || isMatch) && ['OPEN', 'IN_PROGRESS', 'PENDING'].includes(t.status)) {
+            const followUpMsg = {
+              id: `m-followup-${Date.now()}`,
+              sender_name: currentUser.name,
+              sender_role: currentUser.role || 'CUSTOMER',
+              sender_avatar: currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name}`,
+              message_body: `[Follow-up Inquiry from Customer]:\n${data.description || data.title}`,
+              created_at: new Date().toISOString(),
+              is_internal_note: false
+            };
+            t.messages = [...(t.messages || []), followUpMsg];
+            t.updated_at = new Date().toISOString();
+            return {
+              linked_to_existing: true,
+              ticket: t,
+              id: t.id,
+              ticket_number: t.ticket_number
+            };
+          }
+        }
+      }
+
+      // Collect related tickets by category
+      const relatedTickets = userTickets.filter(t => t.category === data.category);
+
       const newId = `tck-${Date.now()}`;
       const ticketNum = `TCK-${Math.floor(1000 + Math.random() * 9000)}`;
 
@@ -570,6 +655,8 @@ export const createTicketApi = (data) =>
         category: data.category || 'Technical',
         priority: data.priority || 'MEDIUM',
         status: 'OPEN',
+        linked_ticket_id: (relatedTickets && relatedTickets[0]?.id) || null,
+        linked_tickets: relatedTickets || [],
         customer_id: currentUser.id,
         customer_name: currentUser.name,
         customer_email: currentUser.email,
@@ -755,10 +842,24 @@ export const getFaqsApi = (category = '') =>
   safeApiCall(
     () => API.get('/ai/faqs', { params: { category } }),
     () => {
-      if (category) {
+      if (category && category !== 'All') {
         return MOCK_FAQS.filter(f => f.category === category);
       }
       return MOCK_FAQS;
+    }
+  );
+
+export const searchFaqsApi = (query = '') =>
+  safeApiCall(
+    () => API.get('/ai/faqs/search', { params: { q: query } }),
+    () => {
+      const q = (query || '').toLowerCase().trim();
+      if (!q) return MOCK_FAQS.slice(0, 3);
+      return MOCK_FAQS.filter(f =>
+        f.question.toLowerCase().includes(q) ||
+        f.answer.toLowerCase().includes(q) ||
+        (f.tags && f.tags.some(tag => tag.toLowerCase().includes(q)))
+      ).slice(0, 4);
     }
   );
 
@@ -1007,28 +1108,50 @@ export const polishToneApi = (payload) =>
   safeApiCall(
     () => API.post('/ai/polish-tone', payload),
     () => {
-      const { draft = '', tone = 'empathetic' } = payload;
+      const { draft = '', tone = 'empathetic', variation = 1 } = payload;
       const cleanDraft = draft.trim();
+      const varIdx = Math.max(1, variation || 1);
       let polished = cleanDraft;
       let rationale = '';
 
       if (tone === 'empathetic') {
-        polished = `Hello! Thank you for your patience while we investigate this. I completely understand how frustrating this disruption is for you and your team. ${cleanDraft} Please rest assured we are actively prioritizing your case and I will provide you with another update shortly.`;
-        rationale = 'Added compassionate acknowledgement of user frustration and reassurance.';
+        const emps = [
+          `Hello! Thank you for your patience while we investigate this. I completely understand how frustrating this disruption is for you and your team. ${cleanDraft} Please rest assured we are actively prioritizing your case and I will provide you with another update shortly.`,
+          `Hi there, thank you for reaching out. We deeply appreciate your partnership and hear your concerns loud and clear. Regarding this matter: ${cleanDraft} Our senior engineering team is prioritized on this to ensure your service is restored smoothly.`,
+          `Greetings! I want to personally apologize for any disruption this issue has caused to your day. Here is where things stand: ${cleanDraft} We are tracking this closely and I will follow up with another milestone update shortly.`
+        ];
+        polished = emps[(varIdx - 1) % emps.length];
+        rationale = `Empathy Tone Polishing (Variation ${((varIdx - 1) % emps.length) + 1} of 3)`;
       } else if (tone === 'concise') {
-        polished = `Update:\n• Status: In progress\n• Action taken: ${cleanDraft}\n• Next update: Within 2 hours.`;
-        rationale = 'Converted into high-clarity bullet points removing conversational filler.';
+        const concs = [
+          `Update:\n• Status: In progress\n• Action taken: ${cleanDraft}\n• Next update: Within 2 hours.`,
+          `Status: In Progress.\nDetails: ${cleanDraft}\nETA: Next update scheduled in under 2 hours.`,
+          `Action Item Summary:\n1. Triage: Verified reported incident.\n2. Work in progress: ${cleanDraft}\n3. Checkpoint: Direct update will follow once patch is validated.`
+        ];
+        polished = concs[(varIdx - 1) % concs.length];
+        rationale = `Concise TL;DR Formatting (Variation ${((varIdx - 1) % concs.length) + 1} of 3)`;
       } else if (tone === 'formal') {
-        polished = `Dear Client,\n\nThank you for contacting SupportSense Enterprise Support. With regards to your recent inquiry: ${cleanDraft}\n\nOur team continues to address the issue in strict adherence to our standard Service Level Agreement. We appreciate your valued patience.\n\nSincerely,\nSupportSense Enterprise Support`;
-        rationale = 'Structured as formal enterprise correspondence with professional salutation.';
+        const forms = [
+          `Dear Client,\n\nThank you for contacting SupportSense Enterprise Support. With regards to your recent inquiry: ${cleanDraft}\n\nOur team continues to address the issue in strict adherence to our standard Service Level Agreement. We appreciate your valued patience.\n\nSincerely,\nSupportSense Enterprise Support`,
+          `Dear Valued Customer,\n\nWe acknowledge receipt of your service request. In alignment with our enterprise support commitments: ${cleanDraft}\n\nOur technical operations group has initiated formal incident diagnostics and will furnish an official progress report shortly.\n\nRespectfully,\nSupportSense Enterprise Operations`,
+          `Official Support Advisory:\n\nPlease be advised that SupportSense Client Solutions has accepted and prioritized your ticket: ${cleanDraft}\n\nAll subsequent measures conform strictly to enterprise resolution protocols. We remain dedicated to your success.\n\nSincerely,\nSupportSense Global Support`
+        ];
+        polished = forms[(varIdx - 1) % forms.length];
+        rationale = `Formal Enterprise Correspondence (Variation ${((varIdx - 1) % forms.length) + 1} of 3)`;
       } else if (tone === 'technical') {
-        polished = `Diagnostic Status Report:\n${cleanDraft}\nTelemetry Check: Verifying API gateway latency metrics, TLS handshakes, and database replica synchronization logs. Sandbox reproduction underway.`;
-        rationale = 'Enhanced technical precision with diagnostic telemetry references.';
+        const techs = [
+          `Diagnostic Status Report:\n${cleanDraft}\nTelemetry Check: Verifying API gateway latency metrics, TLS handshakes, and database replica synchronization logs. Sandbox reproduction underway.`,
+          `Engineering Triage Status:\nObserved Behavior: ${cleanDraft}\nRoot Cause Investigation: Inspecting API gateway latency percentiles (p95/p99), database connection pool utilization, and replica lag metrics.`,
+          `Technical Incident Report:\nContext: ${cleanDraft}\nDiagnostic Protocol: Correlating distributed trace spans across microservice mesh, evaluating Redis cache eviction rates, and testing hotfix in container sandbox.`
+        ];
+        polished = techs[(varIdx - 1) % techs.length];
+        rationale = `Deep Technical Diagnostic Phrasing (Variation ${((varIdx - 1) % techs.length) + 1} of 3)`;
       }
 
       return {
         polished_text: polished,
         tone,
+        variation: varIdx,
         rationale,
         confidence_score: 0.96
       };

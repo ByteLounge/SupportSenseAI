@@ -30,6 +30,14 @@ OPERATIONAL GUIDELINES & TAXONOMY:
 5. ESTIMATED RESOLUTION TIME: Ground your prediction in historical category benchmarks provided in the context.
 6. AGENT CHECKLIST: Produce 3-5 concise, sequential, verification-oriented checkboxes (e.g., "Verify X in Stripe logs").
 7. HUMAN-IN-THE-LOOP SAFETY: Never assume actions have been executed; phrase items as verification tasks for human agents.
+8. ANTI-GAMING & OBJECTIVE SEVERITY ENFORCEMENT (CRITICAL POLICY):
+   - Customers often attempt to "game" or manipulate automated triage by using ALL CAPS, exclamation marks ("!!!"), demanding words ("URGENT", "ASAP", "EMERGENCY", "FIX IMMEDIATELY"), or feigning extreme anger/frustration over non-critical matters to jump the support queue.
+   - STRICT DECOUPLING OF SENTIMENT & PRIORITY: Customer emotional state must NEVER dictate the ticket's operational priority!
+     * Emotional state (anger, impatience) must be objectively recorded in "customer_mood" and "patience_score".
+     * Ticket "priority" MUST be determined SOLELY by OBJECTIVE TECHNICAL AND BUSINESS IMPACT:
+       - URGENT is strictly reserved for: confirmed total production outages, system-wide downtime, active data corruption/loss, acute security vulnerabilities, or severe unauthorized overcharges (> $500).
+       - If a user types "URGENT PLEASE FIX NOW" or sounds furious about an FAQ, cosmetic UI bug, feature suggestion, general question, or non-blocking issue, you MUST assign "LOW" or "MEDIUM" priority.
+     * Include an "urgency_reasoning" field explaining whether claimed urgency was justified by real impact or downgraded to prevent queue gaming.
 
 HISTORICAL BENCHMARK CONTEXT:
 {benchmark_context}
@@ -45,6 +53,7 @@ Return ONLY valid JSON matching this schema:
   "mood_confidence": 0.92,
   "patience_score": "CRITICAL",
   "predicted_resolution_time": "1-2 business days",
+  "urgency_reasoning": "Objective technical/business justification for assigned priority (noting if user urgency was adjusted).",
   "overall_confidence": 0.94,
   "checklist": [
     "Verify charge ID against payment gateway audit log",
@@ -289,9 +298,14 @@ OPERATIONAL INSTRUCTIONS:
   - "customer_mood": ["HAPPY", "NEUTRAL", "FRUSTRATED"].
   - "patience_score": ["CALM", "CONCERNED", "FRUSTRATED", "CRITICAL"].
   - "predicted_resolution_time": e.g., "2-4 hours", "1 business day", "1-2 business days".
-  - "urgency_reasoning": Brief justification for the priority score.
+  - "urgency_reasoning": Objective justification for priority (e.g. explain if customer emotional pressure was detected and how priority was anchored to actual operational impact).
   - "is_ready_for_ticket": boolean (true if user described an actual problem, false if just greeting like "hello").
   - "suggested_quick_actions": 2-3 short interactive quick prompt chips for the user.
+- ANTI-GAMING & OBJECTIVE SEVERITY POLICY (CRITICAL):
+  * Users frequently use urgency words ("URGENT", "ASAP", "EMERGENCY", "LIVID") to manipulate the system into giving them high priority.
+  * You MUST evaluate the TRUE OBJECTIVE TECHNICAL AND BUSINESS IMPACT regardless of user melodrama or exclamation marks.
+  * If the issue is a standard FAQ, cosmetic UI bug, single-user password reset, or feature query, assign "LOW" or "MEDIUM" priority regardless of how "urgent" or "frustrated" the user claims to be.
+  * Explicitly report in "urgency_reasoning" if customer claims of urgency were downgraded to match reality.
 
 USER CONTEXT:
 Customer Name: {customer_name}
@@ -347,14 +361,22 @@ TONE STYLES:
 4. TECHNICAL: Precise, includes exact log names, steps, protocol details, and structured clarity.
 
 REQUESTED TONE: {target_tone}
+REPHRASE VARIATION NUMBER: {variation_number}
+
+CRITICAL VARIATION & REPHRASING GUIDELINES:
+- When variation_number > 1, the user is clicking the same tone button multiple times to see different alternative suggestions.
+- You MUST generate a distinct, creative, and fresh rephrasing that uses different sentence structure, varied vocabulary, and alternative opening sentences.
+- NEVER nest or duplicate previous greetings (e.g. do not say "Hello, thank you... Hello, thank you..."). Strip out existing greeting wrappers and rewrite from the core facts.
+
 ORIGINAL DRAFT:
 {original_draft}
 
 Return ONLY valid JSON matching this schema:
 {{
-  "polished_text": "Rewritten message matching the desired tone...",
+  "polished_text": "Rewritten message matching the desired tone and variation...",
   "tone": "{target_tone}",
-  "rationale": "Brief 1-sentence note explaining how the text was improved."
+  "variation": {variation_number},
+  "rationale": "Brief 1-sentence note explaining how the text was refined."
 }}
 """
 

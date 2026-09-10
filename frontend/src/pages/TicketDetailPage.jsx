@@ -85,6 +85,13 @@ export default function TicketDetailPage() {
   // AI Tone Polishing State
   const [isPolishingTone, setIsPolishingTone] = useState(false);
   const [activePolishedTone, setActivePolishedTone] = useState(null);
+  const [baseDraft, setBaseDraft] = useState('');
+  const [toneVariations, setToneVariations] = useState({
+    empathetic: 1,
+    concise: 1,
+    formal: 1,
+    technical: 1,
+  });
 
   // AI Reopened/Timeline Summary State
   const [timelineSummary, setTimelineSummary] = useState(null);
@@ -92,18 +99,34 @@ export default function TicketDetailPage() {
   const [showSummaryBanner, setShowSummaryBanner] = useState(false);
 
   const handlePolishTone = async (tone) => {
-    if (!replyText.trim()) {
+    const textToPolish = baseDraft.trim() || replyText.trim();
+    if (!textToPolish) {
       addToast('Type or paste a draft response first to polish tone', 'info');
       return;
     }
+    if (!baseDraft.trim()) {
+      setBaseDraft(replyText.trim());
+    }
+
+    // Determine variation number (1, 2, 3 cycling)
+    const nextVariation = activePolishedTone === tone ? ((toneVariations[tone] % 3) + 1) : 1;
+    setToneVariations((prev) => ({ ...prev, [tone]: nextVariation }));
+
     setIsPolishingTone(true);
     try {
-      const res = await polishToneApi({ draft: replyText, tone });
+      const res = await polishToneApi({
+        draft: textToPolish,
+        tone,
+        variation: nextVariation,
+      });
       const data = res.data || res;
       if (data && data.polished_text) {
         setReplyText(data.polished_text);
         setActivePolishedTone(tone);
-        addToast(`Refined tone to ${tone.toUpperCase()}: ${data.rationale || 'Enhanced clarity'}`, 'success');
+        addToast(
+          `Refined tone (${tone.toUpperCase()} v${nextVariation}): ${data.rationale || 'Enhanced clarity'}`,
+          'success'
+        );
       }
     } catch (err) {
       console.error('Failed to polish tone:', err);
@@ -176,6 +199,8 @@ export default function TicketDetailPage() {
         isInternalNote: isCustomer ? false : isInternalNote,
       });
       setReplyText('');
+      setBaseDraft('');
+      setActivePolishedTone(null);
       addToast(isInternalNote ? 'Internal note saved' : 'Response sent', 'success');
       fetchTicket();
     } catch (err) {
@@ -392,7 +417,67 @@ export default function TicketDetailPage() {
             <div className="text-xs sm:text-sm text-token-text-primary leading-relaxed whitespace-pre-line p-4 bg-token-muted/60 border border-token-border rounded-xl font-medium">
               {ticket.description}
             </div>
+
+            {/* If this ticket was linked as a follow-up to another ticket */}
+            {ticket.linked_ticket_id && (
+              <div className="mt-3 p-3 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-blue-900 dark:text-blue-200 font-medium">
+                  <span className="text-sm">🔗</span>
+                  <span>
+                    This ticket is linked as a follow-up inquiry.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/tickets/${ticket.linked_ticket_id}`)}
+                  className="px-2.5 py-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-white dark:bg-blue-900/50 border border-blue-300 dark:border-blue-750 rounded-lg hover:bg-blue-50"
+                >
+                  View Original Ticket
+                </button>
+              </div>
+            )}
           </Card>
+
+          {/* Linked & Related Customer Inquiries */}
+          {ticket.linked_tickets && ticket.linked_tickets.length > 0 && (
+            <Card
+              title={`Linked & Related Inquiries (${ticket.linked_tickets.length})`}
+              actions={
+                <span className="text-[11px] font-semibold text-[#FD451B] bg-[#FD451B]/10 px-2 py-0.5 rounded-full">
+                  Same Topic / User
+                </span>
+              }
+            >
+              <div className="space-y-2 text-xs">
+                <p className="text-[11px] text-token-text-secondary">
+                  Past and follow-up inquiries submitted by this user in <span className="font-semibold text-token-text-primary">{ticket.category}</span>:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  {ticket.linked_tickets.map((lt) => (
+                    <div
+                      key={lt.id}
+                      onClick={() => navigate(`/tickets/${lt.id}`)}
+                      className="p-3 bg-token-card hover:bg-token-muted border border-token-border hover:border-[#FD451B]/40 rounded-xl cursor-pointer transition-all shadow-2xs group"
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-[11px] font-mono font-bold text-[#FD451B]">
+                          {lt.ticket_number || lt.id.slice(0, 8)}
+                        </span>
+                        <StatusBadge status={lt.status} size="xs" />
+                      </div>
+                      <div className="text-xs font-semibold text-token-text-primary group-hover:text-[#FD451B] transition-colors line-clamp-1">
+                        {lt.title}
+                      </div>
+                      <div className="text-[10px] text-token-text-muted mt-1 flex items-center justify-between">
+                        <span>{lt.category}</span>
+                        <span>{formatDate(lt.created_at)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Conversation Thread */}
           <Card
@@ -489,7 +574,11 @@ export default function TicketDetailPage() {
                   {ticket.ai_suggested_reply && (
                     <button
                       type="button"
-                      onClick={() => setReplyText(ticket.ai_suggested_reply)}
+                      onClick={() => {
+                        setReplyText(ticket.ai_suggested_reply);
+                        setBaseDraft(ticket.ai_suggested_reply);
+                        setActivePolishedTone(null);
+                      }}
                       className="text-xs text-[#FD451B] font-bold hover:underline flex items-center gap-1.5"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
@@ -501,9 +590,9 @@ export default function TicketDetailPage() {
 
               {/* AI 1-Click Tone Refiner Bar for Agents */}
               {!isCustomer && (
-                <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-token-secondary/60 border border-token-border text-[11px]">
+                <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-token-secondary/60 border border-token-border text-[11px]">
                   <span className="text-token-text-muted flex items-center gap-1 font-medium">
-                    <Sparkles className="w-3 h-3 text-moonrow-primary" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#FD451B]" />
                     <span>AI 1-Click Tone Polisher:</span>
                   </span>
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -512,22 +601,30 @@ export default function TicketDetailPage() {
                       { key: 'concise', label: 'Concise TL;DR', icon: '⚡' },
                       { key: 'formal', label: 'Formal Enterprise', icon: '👔' },
                       { key: 'technical', label: 'Deep Technical', icon: '🛠️' },
-                    ].map((t) => (
-                      <button
-                        key={t.key}
-                        type="button"
-                        onClick={() => handlePolishTone(t.key)}
-                        disabled={isPolishingTone || !replyText.trim()}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all flex items-center gap-1 ${
-                          activePolishedTone === t.key
-                            ? 'bg-moonrow-primary text-white border-moonrow-primary shadow-xs'
-                            : 'bg-token-card text-token-text-secondary hover:text-moonrow-primary hover:border-moonrow-primary/50 border-token-border'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        <span>{t.icon}</span>
-                        <span>{t.label}</span>
-                      </button>
-                    ))}
+                    ].map((t) => {
+                      const isActive = activePolishedTone === t.key;
+                      return (
+                        <button
+                          key={t.key}
+                          type="button"
+                          onClick={() => handlePolishTone(t.key)}
+                          disabled={isPolishingTone || (!replyText.trim() && !baseDraft.trim())}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all flex items-center gap-1.5 ${
+                            isActive
+                              ? 'bg-[#FD451B] text-white border-[#FD451B] shadow-xs ring-1 ring-[#FD451B]/40'
+                              : 'bg-token-card text-token-text-secondary hover:text-[#FD451B] hover:border-[#FD451B]/50 border-token-border'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <span>{t.icon}</span>
+                          <span>{t.label}</span>
+                          {isActive && (
+                            <span className="text-[10px] px-1 rounded bg-white/25 text-white font-mono font-bold">
+                              v{toneVariations[t.key] || 1}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -535,7 +632,11 @@ export default function TicketDetailPage() {
               <Textarea
                 rows={3}
                 value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
+                onChange={(e) => {
+                  setReplyText(e.target.value);
+                  setBaseDraft(e.target.value);
+                  setActivePolishedTone(null);
+                }}
                 placeholder={
                   isInternalNote
                     ? 'Write an internal handover or technical note for your team...'

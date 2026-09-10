@@ -23,23 +23,69 @@ const ALLOWED_STATUS_TRANSITIONS = {
  */
 async function createTicket(req, res, next) {
   try {
-    const { title, description, category, priority } = req.body;
+    const { title, description, category, priority, forceCreate } = req.body;
 
     if (!title || !description) {
       return sendError(res, 400, 'Ticket title and description are required.');
     }
 
-    // 1. Create ticket and initial customer message atomically
+    const customerId = req.user.id;
+
+    // Check for duplicate issues or follow-ups
+    const dupCheck = await ticketModel.findDuplicateOrRelatedTickets({
+      customerId,
+      title,
+      description,
+      category: category || 'General'
+    });
+
+    // 1. If exact/similar issue was ALREADY RESOLVED, inform user instead of creating duplicate
+    if (dupCheck.isDuplicate && !forceCreate) {
+      return res.status(409).json({
+        success: false,
+        is_duplicate: true,
+        code: 'DUPLICATE_RESOLVED_TICKET',
+        message: `A resolved ticket for this issue already exists: #${dupCheck.duplicateTicket.ticket_number} — "${dupCheck.duplicateTicket.title}". This issue was previously resolved.`,
+        data: {
+          resolved_ticket: dupCheck.duplicateTicket,
+          resolution_summary: dupCheck.duplicateTicket.resolution_summary || 'Issue was investigated and resolved by support engineering.'
+        }
+      });
+    }
+
+    // 2. If user is issuing a new ticket as a follow-up on an active open ticket, link message to that ticket
+    if (dupCheck.isFollowUp && dupCheck.existingTicket && !forceCreate) {
+      const followUpMsg = await ticketModel.createMessage({
+        ticketId: dupCheck.existingTicket.id,
+        senderId: customerId,
+        messageBody: `[Follow-up Inquiry from Customer]:\n${description}`,
+        isInternalNote: false
+      });
+
+      return sendSuccess(res, 200, `Your follow-up has been linked to your existing active ticket #${dupCheck.existingTicket.ticket_number}.`, {
+        linked_to_existing: true,
+        ticket: dupCheck.existingTicket,
+        message: followUpMsg
+      });
+    }
+
+    // Determine linked ticket ID from related category tickets
+    const linkedTicketId = (dupCheck.relatedTickets && dupCheck.relatedTickets[0]?.id) || null;
+
+    // 3. Create ticket and initial customer message atomically
     const transactionResult = await ticketModel.createTicketWithInitialMessage({
-      customerId: req.user.id,
+      customerId,
       title,
       description,
       category,
-      priority
+      priority,
+      linkedTicketId
     });
 
     const newTicket = transactionResult.ticket;
-    // 3. Trigger AI Triage microservice with role-based prompting & dataset benchmarks
+    newTicket.linked_tickets = dupCheck.relatedTickets || [];
+
+    // 4. Trigger AI Triage microservice with role-based prompting & dataset benchmarks
     const aiResult = await aiService.performAITriage(title, description);
 
     // 4. Save AI decision metadata & generated checklist items

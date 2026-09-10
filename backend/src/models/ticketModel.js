@@ -38,7 +38,8 @@ async function createTicketWithInitialMessage({
   title,
   description,
   category = 'General',
-  priority = 'MEDIUM'
+  priority = 'MEDIUM',
+  linkedTicketId = null
 }) {
   const client = await db.pool.connect();
 
@@ -61,12 +62,13 @@ async function createTicketWithInitialMessage({
           description,
           category,
           priority,
-          status
+          status,
+          linked_ticket_id
         )
-        VALUES ($1, $2, $3, $4, $5, $6, 'OPEN')
+        VALUES ($1, $2, $3, $4, $5, $6, 'OPEN', $7)
         RETURNING *;
       `,
-      [ticketNumber, customerId, title, description, category, priority]
+      [ticketNumber, customerId, title, description, category, priority, linkedTicketId]
     );
 
     const ticket = ticketResult.rows[0];
@@ -191,6 +193,22 @@ async function getTicketById(ticketId, userRole = null) {
   const checkRes = await db.query(checkSql, [ticketId]);
   ticket.checklists = checkRes.rows;
 
+  // 5. Fetch linked and related tickets for this user and ticket
+  const linkedSql = `
+    SELECT id, ticket_number, title, status, category, priority, created_at
+    FROM tickets
+    WHERE (linked_ticket_id = $1 OR id = $2 OR (customer_id = $3 AND id != $1 AND category = $4))
+    ORDER BY created_at DESC
+    LIMIT 6;
+  `;
+  const linkedRes = await db.query(linkedSql, [
+    ticketId,
+    ticket.linked_ticket_id || ticketId,
+    ticket.customer_id,
+    ticket.category
+  ]);
+  ticket.linked_tickets = linkedRes.rows.filter(r => r.id !== ticket.id);
+
   return ticket;
 }
 
@@ -282,6 +300,96 @@ async function toggleChecklistItem(itemId, isCompleted) {
   return result.rows[0];
 }
 
+/**
+ * Detect duplicate tickets or related tickets from the same user.
+ * Prevents submitting duplicate tickets when an issue was already resolved.
+ * Links follow-up requests to existing active tickets.
+ */
+async function findDuplicateOrRelatedTickets({ customerId, title, description, category }) {
+  if (!customerId) return { isDuplicate: false, isFollowUp: false, relatedTickets: [] };
+
+  const sql = `
+    SELECT t.*,
+      (SELECT message_body FROM ticket_messages WHERE ticket_id = t.id AND is_internal_note = FALSE ORDER BY created_at DESC LIMIT 1) as resolution_summary
+    FROM tickets t
+    WHERE t.customer_id = $1
+    ORDER BY t.created_at DESC
+    LIMIT 20;
+  `;
+  const result = await db.query(sql, [customerId]);
+  const userTickets = result.rows;
+
+  if (userTickets.length === 0) {
+    return { isDuplicate: false, isFollowUp: false, relatedTickets: [] };
+  }
+
+  const queryText = `${title || ''} ${description || ''}`.toLowerCase();
+  
+  const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need']);
+  const getKeywords = (text) => {
+    return (text || '').toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopWords.has(w));
+  };
+
+  const queryKeywords = new Set(getKeywords(queryText));
+  const isFollowUpIntent = /\b(update|status|follow\s*up|following\s*up|any\s*news|check\s*status|progress|still\s*waiting|any\s*update)\b/i.test(queryText);
+
+  let duplicateMatch = null;
+  let followUpMatch = null;
+  const relatedTickets = [];
+
+  for (const t of userTickets) {
+    const ticketText = `${t.title} ${t.description}`.toLowerCase();
+    const tKeywords = getKeywords(ticketText);
+    
+    // Keyword match calculation
+    let matchCount = 0;
+    for (const kw of tKeywords) {
+      if (queryKeywords.has(kw)) matchCount++;
+    }
+    const overlapRatio = queryKeywords.size > 0 ? matchCount / Math.min(queryKeywords.size, tKeywords.length || 1) : 0;
+    const isCategoryMatch = category && t.category && category.toLowerCase() === t.category.toLowerCase();
+    const isExactTitle = (title || '').trim().toLowerCase() === (t.title || '').trim().toLowerCase();
+
+    // Check for follow-up on active tickets
+    if (isFollowUpIntent && ['OPEN', 'IN_PROGRESS', 'PENDING'].includes(t.status)) {
+      if (!followUpMatch && (isCategoryMatch || overlapRatio > 0.2 || userTickets.length === 1)) {
+        followUpMatch = t;
+      }
+    }
+
+    // Check for duplicate issue
+    if (isExactTitle || overlapRatio >= 0.5) {
+      if (!duplicateMatch) {
+        duplicateMatch = t;
+      }
+    }
+
+    // Related tickets
+    if (isCategoryMatch || overlapRatio >= 0.3) {
+      relatedTickets.push({
+        id: t.id,
+        ticket_number: t.ticket_number,
+        title: t.title,
+        status: t.status,
+        category: t.category,
+        priority: t.priority,
+        created_at: t.created_at
+      });
+    }
+  }
+
+  return {
+    isDuplicate: !!duplicateMatch && ['RESOLVED', 'CLOSED'].includes(duplicateMatch.status),
+    duplicateTicket: duplicateMatch,
+    isFollowUp: !!followUpMatch,
+    existingTicket: followUpMatch,
+    relatedTickets
+  };
+}
+
 module.exports = {
   createTicket,
   createTicketWithInitialMessage,
@@ -291,5 +399,6 @@ module.exports = {
   modifyTicket,
   deleteTicket,
   createMessage,
-  toggleChecklistItem
+  toggleChecklistItem,
+  findDuplicateOrRelatedTickets
 };

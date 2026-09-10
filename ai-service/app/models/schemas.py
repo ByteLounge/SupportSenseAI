@@ -129,10 +129,12 @@ class ConciergeChatResponse(BaseModel):
 class TonePolishRequest(BaseModel):
     draft: str = Field(..., description="Original draft response text")
     tone: str = Field(default="empathetic", description="Desired tone: empathetic, concise, formal, or technical")
+    variation: int = Field(default=1, description="Variation index for rephrasing variety")
 
 class TonePolishResponse(BaseModel):
     polished_text: str = Field(..., description="Polished response text")
     tone: str = Field(..., description="Target tone applied")
+    variation: int = Field(default=1, description="Variation index applied")
     rationale: str = Field(..., description="Brief explanation of adjustments made")
     confidence_score: float = Field(default=0.95, ge=0.0, le=1.0)
 

@@ -196,39 +196,99 @@ async def process_concierge_chat_async(
         return fallback
 
 
-async def process_tone_polish_async(draft: str, tone: str = "empathetic") -> Dict[str, Any]:
+async def process_tone_polish_async(draft: str, tone: str = "empathetic", variation: int = 1) -> Dict[str, Any]:
     """
-    Rewrites an agent's draft message according to the specified tone style.
+    Rewrites an agent's draft message according to the specified tone style and variation index.
     """
     normalized_tone = tone.lower().strip()
+    var_idx = max(1, variation)
+    clean_draft = draft.strip()
     
-    # Fallback heuristic polishes
+    # Strip any accidental nested greetings if re-polishing
+    import re
+    cleaned = re.sub(r'^(Hello|Hi|Dear Client|Update on your inquiry|Diagnostic Status Report|Diagnostic Update)[^\n]*\n*', '', clean_draft, flags=re.IGNORECASE).strip()
+    base_content = cleaned if cleaned else clean_draft
+
+    # Diverse Fallback heuristic varieties (3 distinct variations per tone)
     if normalized_tone == "empathetic":
-        fallback_polished = f"Hello, thank you for your patience and for bringing this to our attention. I completely understand how frustrating this disruption is for your workflow. {draft.strip()} Please rest assured we are actively working on this, and I will keep you updated every step of the way."
-        rationale = "Added warm, reassuring validation of customer frustration and proactive follow-up commitment."
+        variations_pool = [
+            (
+                f"Hello, thank you for your patience and for bringing this to our attention. I completely understand how frustrating this disruption is for your workflow. {base_content} Please rest assured we are actively working on this, and I will keep you updated every step of the way.",
+                "Added warm, reassuring validation of customer frustration and proactive follow-up commitment (Variation 1: Compassionate & Reassuring)."
+            ),
+            (
+                f"Hi there, thank you for reaching out. We deeply appreciate your partnership and hear your concerns loud and clear. Regarding this matter: {base_content} Our senior engineering team is prioritized on this to ensure your service is restored smoothly.",
+                "Focused on active partnership acknowledgment and direct operational advocacy (Variation 2: Proactive Partnership)."
+            ),
+            (
+                f"Greetings! I want to personally apologize for any disruption this issue has caused to your day. Here is where things stand: {base_content} We are tracking this closely and I will follow up with another milestone update shortly.",
+                "Direct personal ownership, transparent milestone checkpointing, and sincere empathy (Variation 3: Personal Ownership)."
+            )
+        ]
     elif normalized_tone == "concise":
-        fallback_polished = f"Update on your inquiry:\n• Action taken: {draft.strip()}\n• Next steps: Reviewing logs and monitoring system stability.\n• Expected follow-up: Within 2 hours."
-        rationale = "Streamlined into clean bullet points with fluff removed and explicit next steps."
+        variations_pool = [
+            (
+                f"Update on your inquiry:\n• Action taken: {base_content}\n• Next steps: Reviewing logs and monitoring system stability.\n• Expected follow-up: Within 2 hours.",
+                "Streamlined into clean bullet points with fluff removed and explicit next steps (Variation 1: Bulleted Action Plan)."
+            ),
+            (
+                f"Status: In Progress.\nDetails: {base_content}\nETA: Next update scheduled in under 2 hours.",
+                "High-density executive summary minimizing reader cognitive load (Variation 2: Micro Status)."
+            ),
+            (
+                f"Action Item Summary:\n1. Triage: Verified reported incident.\n2. Work in progress: {base_content}\n3. Checkpoint: Direct update will follow once patch is validated.",
+                "Numbered chronological milestone layout for instant scanning (Variation 3: Chronological Milestones)."
+            )
+        ]
     elif normalized_tone == "formal":
-        fallback_polished = f"Dear Client,\n\nThank you for contacting SupportSense Enterprise Support. Regarding your reported issue, {draft.strip()}\n\nOur engineering and operations teams are actively reviewing the matter under our standard Service Level Agreement. We appreciate your partnership.\n\nSincerely,\nSupportSense Team"
-        rationale = "Transformed into dignified corporate correspondence adhering to enterprise standards."
+        variations_pool = [
+            (
+                f"Dear Client,\n\nThank you for contacting SupportSense Enterprise Support. Regarding your reported issue: {base_content}\n\nOur engineering and operations teams are actively reviewing the matter under our standard Service Level Agreement. We appreciate your partnership.\n\nSincerely,\nSupportSense Support Directorate",
+                "Dignified corporate correspondence adhering to standard SLA governance (Variation 1: Standard Enterprise)."
+            ),
+            (
+                f"Dear Valued Customer,\n\nWe acknowledge receipt of your service request. In alignment with our enterprise support commitments: {base_content}\n\nOur technical operations group has initiated formal incident diagnostics and will furnish an official progress report shortly.\n\nRespectfully,\nSupportSense Enterprise Operations",
+                "Executive formal memorandum emphasizing incident diagnostics and client commitment (Variation 2: Formal Operations Memorandum)."
+            ),
+            (
+                f"Official Support Advisory:\n\nPlease be advised that SupportSense Client Solutions has accepted and prioritized your ticket: {base_content}\n\nAll subsequent measures conform strictly to enterprise resolution protocols. We remain dedicated to your success.\n\nSincerely,\nSupportSense Global Support",
+                "Authoritative institutional advisory structure suitable for compliance and governance (Variation 3: Institutional Advisory)."
+            )
+        ]
     elif normalized_tone == "technical":
-        fallback_polished = f"Diagnostic Update:\n{draft.strip()}\nTelemetry & Stack Trace Status: Verifying endpoint ingress, TLS certificates, and service worker logs. Reproducing under staging environment."
-        rationale = "Emphasized precision, diagnostic telemetry, and architectural terminology."
+        variations_pool = [
+            (
+                f"Diagnostic Update:\n{base_content}\nTelemetry & Stack Trace Status: Verifying endpoint ingress, TLS certificates, and service worker logs. Reproducing under staging environment.",
+                "Emphasized precision, diagnostic telemetry, and architectural terminology (Variation 1: Telemetry & Ingress)."
+            ),
+            (
+                f"Engineering Triage Status:\nObserved Behavior: {base_content}\nRoot Cause Investigation: Inspecting API gateway latency percentiles (p95/p99), database connection pool utilization, and replica lag metrics.",
+                "Deep systems engineering triage focusing on gateway latency percentiles and database replica synchronization (Variation 2: Systems Architecture)."
+            ),
+            (
+                f"Technical Incident Report:\nContext: {base_content}\nDiagnostic Protocol: Correlating distributed trace spans across microservice mesh, evaluating Redis cache eviction rates, and testing hotfix in container sandbox.",
+                "Distributed systems observability format citing trace spans and container sandbox verification (Variation 3: Distributed Observability)."
+            )
+        ]
     else:
-        fallback_polished = draft
-        rationale = "Original draft maintained."
+        variations_pool = [(clean_draft, "Original draft maintained.")]
+
+    chosen_variation_tuple = variations_pool[(var_idx - 1) % len(variations_pool)]
+    fallback_polished = chosen_variation_tuple[0]
+    rationale = chosen_variation_tuple[1]
 
     fallback_payload = {
         "polished_text": fallback_polished,
         "tone": normalized_tone,
+        "variation": var_idx,
         "rationale": rationale,
         "confidence_score": 0.95
     }
 
     prompt = AI_TONE_POLISH_PROMPT.format(
         target_tone=normalized_tone.upper(),
-        original_draft=draft
+        variation_number=var_idx,
+        original_draft=base_content
     )
 
     try:
@@ -236,8 +296,10 @@ async def process_tone_polish_async(draft: str, tone: str = "empathetic") -> Dic
             prompt_text=prompt,
             fallback_payload=fallback_payload,
             max_output_tokens=512,
-            temperature=0.2
+            temperature=0.6
         )
+        if "variation" not in response_data:
+            response_data["variation"] = var_idx
         return response_data
     except Exception as e:
         logger.error(f"Error in process_tone_polish_async: {e}")

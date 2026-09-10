@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import Button from '../common/Button';
 import Badge from '../common/Badge';
-import { chatConciergeApi, createTicketApi } from '../../services/api';
+import { chatConciergeApi, createTicketApi, searchFaqsApi } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import logoImg from '../../assets/logo.png';
@@ -62,6 +62,9 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
   const [showFullMarkdown, setShowFullMarkdown] = useState(false);
   const [isEditingDraft, setIsEditingDraft] = useState(false);
   const [editableDraft, setEditableDraft] = useState(null);
+  const [duplicateAlert, setDuplicateAlert] = useState(null);
+  const [faqSolved, setFaqSolved] = useState(false);
+  const [expandedFaqId, setExpandedFaqId] = useState(null);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -89,12 +92,25 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
     setInputMessage('');
     setIsLoading(true);
     setCreatedTicketResult(null);
+    setDuplicateAlert(null);
 
     // Format previous turns for API
     const historyPayload = messages.map((m) => ({
       role: m.role,
       content: m.content
     }));
+
+    // Search FAQs concurrently to deflect recurring tickets
+    let foundFaqs = [];
+    try {
+      const faqRes = await searchFaqsApi(query);
+      const faqData = faqRes.data || faqRes;
+      if (Array.isArray(faqData) && faqData.length > 0) {
+        foundFaqs = faqData.slice(0, 2);
+      }
+    } catch (e) {
+      console.warn('FAQ search fallback in concierge:', e);
+    }
 
     try {
       const response = await chatConciergeApi({
@@ -113,6 +129,7 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
         role: 'assistant',
         content: assistantReply,
         ticket_draft: draft,
+        matched_faqs: foundFaqs,
         quick_actions: aiData.suggested_quick_actions || [],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -131,7 +148,7 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
     }
   };
 
-  const handleConfirmAndDispatch = async () => {
+  const handleConfirmAndDispatch = async (force = false) => {
     const draft = editableDraft || activeTicketDraft;
     if (!draft) return;
 
@@ -145,6 +162,7 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
         assigned_department: draft.target_department || 'Technical Support',
         customer_name: user?.name || 'Customer User',
         customer_email: user?.email || 'customer@acme.corp',
+        forceCreate: force,
         ai_metadata: {
           customer_mood: draft.customer_mood || 'NEUTRAL',
           patience_score: draft.patience_score || 'CONCERNED',
@@ -153,8 +171,27 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
       };
 
       const res = await createTicketApi(payload);
-      const ticket = res.data || res;
+      const resData = res.data || res;
+
+      // Handle follow-up linking to existing open ticket (Requirement 2)
+      if (resData.linked_to_existing) {
+        const linkedTicket = resData.ticket || resData;
+        setCreatedTicketResult({
+          ...linkedTicket,
+          is_linked_follow_up: true
+        });
+        setDuplicateAlert(null);
+        addToast(
+          `Linked to active ticket #${linkedTicket.ticket_number || linkedTicket.id}!`,
+          'success'
+        );
+        if (onTicketCreated) onTicketCreated(linkedTicket);
+        return;
+      }
+
+      const ticket = resData;
       setCreatedTicketResult(ticket);
+      setDuplicateAlert(null);
       addToast(`Ticket ${ticket.ticket_number || 'created'} dispatched successfully!`, 'success');
 
       if (onTicketCreated) {
@@ -162,7 +199,16 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
       }
     } catch (err) {
       console.error('Failed to dispatch ticket:', err);
-      addToast('Failed to dispatch ticket. Please try again.', 'error');
+      const errData = err.data || err.response?.data?.data || err;
+      if (err.is_duplicate || err.code === 'DUPLICATE_RESOLVED_TICKET' || errData.resolved_ticket) {
+        setDuplicateAlert({
+          resolvedTicket: errData.resolved_ticket || { ticket_number: 'Previous Ticket', title: draft.title },
+          resolutionSummary: errData.resolution_summary || err.message || 'This issue was previously resolved.'
+        });
+        addToast('Duplicate ticket detected: This issue was already resolved!', 'info');
+      } else {
+        addToast('Failed to dispatch ticket. Please try again.', 'error');
+      }
     } finally {
       setIsSubmittingTicket(false);
     }
@@ -174,6 +220,9 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
     setCreatedTicketResult(null);
     setShowFullMarkdown(false);
     setIsEditingDraft(false);
+    setDuplicateAlert(null);
+    setFaqSolved(false);
+    setExpandedFaqId(null);
     setMessages([
       {
         id: `welcome-${Date.now()}`,
@@ -289,6 +338,63 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                 }`}
               >
                 <div className="whitespace-pre-line font-normal">{msg.content}</div>
+
+                {/* Instant FAQ Deflection Knowledge Base Card (Requirement 3) */}
+                {msg.matched_faqs && msg.matched_faqs.length > 0 && !faqSolved && (
+                  <div className="mt-3 p-3 rounded-xl bg-token-card border border-token-border text-xs space-y-2">
+                    <div className="flex items-center gap-1.5 font-semibold text-token-text-primary text-[11px]">
+                      <Sparkles className="w-3.5 h-3.5 text-[#FD451B]" />
+                      <span>Suggested Self-Serve Solutions (FAQs):</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {msg.matched_faqs.map((faq) => (
+                        <div key={faq.id} className="p-2 bg-token-secondary/70 border border-token-border rounded-lg text-xs space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-semibold text-token-text-primary text-[11px] leading-snug">
+                              Q: {faq.question}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedFaqId(expandedFaqId === faq.id ? null : faq.id)}
+                              className="text-[10px] text-[#FD451B] font-bold shrink-0 hover:underline"
+                            >
+                              {expandedFaqId === faq.id ? 'Hide' : 'Read Solution'}
+                            </button>
+                          </div>
+                          {expandedFaqId === faq.id && (
+                            <p className="text-[11px] text-token-text-secondary whitespace-pre-line pt-1 border-t border-token-border">
+                              {faq.answer}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-token-border/50">
+                      <span className="text-[10px] text-token-text-muted">Did this resolve your issue?</span>
+                      <Button
+                        variant="secondary"
+                        size="xs"
+                        onClick={() => {
+                          setFaqSolved(true);
+                          setActiveTicketDraft(null);
+                          setMessages((prev) => [
+                            ...prev,
+                            {
+                              id: `faq-solved-${Date.now()}`,
+                              role: 'assistant',
+                              content: '✅ Excellent! Your inquiry was resolved directly using our verified Knowledge Base FAQ. No ticket was registered in the queue.',
+                              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            }
+                          ]);
+                          addToast('Inquiry resolved via Knowledge Base FAQ!', 'success');
+                        }}
+                      >
+                        ✅ Solved My Issue
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div
                   className={`text-[10px] mt-1.5 flex items-center gap-1 ${
                     msg.role === 'user' ? 'text-white/75 justify-end' : 'text-token-text-muted justify-start'
@@ -300,7 +406,7 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
               </div>
 
               {/* Quick Action Suggestion Chips for AI messages */}
-              {msg.quick_actions && msg.quick_actions.length > 0 && !activeTicketDraft && !createdTicketResult && (
+              {msg.quick_actions && msg.quick_actions.length > 0 && !activeTicketDraft && !createdTicketResult && !faqSolved && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {msg.quick_actions.map((qa, idx) => (
                     <button
@@ -336,6 +442,52 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                 <span className="w-1.5 h-1.5 rounded-full bg-moonrow-primary animate-bounce"></span>
               </span>
               <span>Synthesizing formal enterprise ticket & checking diagnostics...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Duplicate Ticket Interception Banner (Requirement 1) */}
+        {duplicateAlert && (
+          <div className="my-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs space-y-3">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1.5 flex-1">
+                <h4 className="font-bold text-amber-900 dark:text-amber-200">
+                  Duplicate Ticket Detected: Issue Previously Resolved
+                </h4>
+                <p className="text-token-text-secondary leading-relaxed">
+                  You previously submitted a ticket for this exact issue:{' '}
+                  <strong className="text-token-text-primary">
+                    Ticket #{duplicateAlert.resolvedTicket?.ticket_number || duplicateAlert.resolvedTicket?.id}: {duplicateAlert.resolvedTicket?.title}
+                  </strong>{' '}
+                  (Status: <span className="font-semibold text-emerald-600">RESOLVED</span>).
+                </p>
+                <div className="p-2.5 bg-token-card border border-token-border rounded-xl text-[11px] space-y-1">
+                  <span className="font-semibold text-token-text-muted uppercase text-[9px]">
+                    Previous Resolution Notes:
+                  </span>
+                  <p className="text-token-text-primary leading-relaxed font-medium">
+                    {duplicateAlert.resolutionSummary}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-amber-500/20">
+              <Button
+                variant="secondary"
+                size="xs"
+                onClick={() => navigate(`/tickets/${duplicateAlert.resolvedTicket?.id || duplicateAlert.resolvedTicket?.ticket_number}`)}
+              >
+                View Resolved Ticket
+              </Button>
+              <Button
+                variant="primary"
+                size="xs"
+                onClick={() => handleConfirmAndDispatch(true)}
+              >
+                Issue Still Persists (Submit Anyway)
+              </Button>
             </div>
           </div>
         )}
@@ -504,7 +656,7 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                 size="sm"
                 icon={ArrowRight}
                 loading={isSubmittingTicket}
-                onClick={handleConfirmAndDispatch}
+                onClick={() => handleConfirmAndDispatch(false)}
               >
                 Confirm & Dispatch Formal Ticket
               </Button>
@@ -512,12 +664,29 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
           </div>
         )}
 
-        {/* Success Confirmation Card upon creation */}
+        {/* Success Confirmation Card upon creation (or follow-up linking) */}
         {createdTicketResult && (
-          <div className="my-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-xs space-y-3">
-            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-semibold">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              <span>Formal Ticket Created & Dispatched to {createdTicketResult.assigned_department}!</span>
+          <div className={`my-4 p-4 rounded-2xl text-xs space-y-3 ${
+            createdTicketResult.is_linked_follow_up
+              ? 'bg-blue-500/10 border border-blue-500/30'
+              : 'bg-emerald-500/10 border border-emerald-500/30'
+          }`}>
+            <div className="flex items-center gap-2 font-semibold">
+              {createdTicketResult.is_linked_follow_up ? (
+                <>
+                  <span className="text-base">🔗</span>
+                  <span className="text-blue-900 dark:text-blue-300">
+                    Follow-Up Linked to Active Ticket #{createdTicketResult.ticket_number || createdTicketResult.id}!
+                  </span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <span className="text-emerald-800 dark:text-emerald-300">
+                    Formal Ticket Created & Dispatched to {createdTicketResult.assigned_department}!
+                  </span>
+                </>
+              )}
             </div>
 
             <div className="p-3 bg-token-card border border-token-border rounded-xl space-y-1.5">
@@ -525,11 +694,16 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                 <span className="font-bold text-token-text-primary text-xs">
                   {createdTicketResult.ticket_number || createdTicketResult.id}
                 </span>
-                <Badge variant="success" size="xs">
+                <Badge variant={createdTicketResult.is_linked_follow_up ? 'info' : 'success'} size="xs">
                   {createdTicketResult.status || 'OPEN'}
                 </Badge>
               </div>
               <p className="text-token-text-primary font-medium">{createdTicketResult.title}</p>
+              {createdTicketResult.is_linked_follow_up && (
+                <p className="text-[11px] text-blue-700 dark:text-blue-300">
+                  Your inquiry was automatically linked to your existing active ticket under <strong>{createdTicketResult.category}</strong>. No duplicate ticket was registered.
+                </p>
+              )}
               <div className="text-[11px] text-token-text-secondary flex items-center gap-3 pt-1">
                 <span>Category: <strong>{createdTicketResult.category}</strong></span>
                 <span>Priority: <strong>{createdTicketResult.priority}</strong></span>

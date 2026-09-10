@@ -172,8 +172,12 @@ async def polish_tone_endpoint(request: TonePolishRequest):
     formal, or technical styles.
     """
     try:
-        result = await process_tone_polish_async(draft=request.draft, tone=request.tone)
-        return {"success": True, "message": f"Response polished with {request.tone} tone", "data": result}
+        result = await process_tone_polish_async(
+            draft=request.draft,
+            tone=request.tone,
+            variation=request.variation
+        )
+        return {"success": True, "message": f"Response polished with {request.tone} tone (Var {request.variation})", "data": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -33,13 +33,30 @@ def _build_triage_context(title: str, description: str):
         description=description
     )
 
+    full_text = f"{title} {description}".lower()
+    has_severe_impact = any(k in full_text for k in ["outage", "downtime", "data loss", "breach", "security exploit", "overcharge", "double charged"])
+    is_minor_inquiry = any(k in full_text for k in ["how to", "faq", "question", "typo", "button", "color", "feature request", "where can i"])
+    claimed_urgent = any(k in full_text for k in ["urgent", "immediately", "asap", "emergency", "hurry", "right now", "livid"])
+
+    # Determine objective priority decoupled from emotion
+    if has_severe_impact:
+        priority = "URGENT" if ("outage" in full_text or "data loss" in full_text) else "HIGH"
+        urgency_reasoning = "Verified high operational impact based on technical severity keywords."
+    elif is_minor_inquiry:
+        priority = "LOW"
+        urgency_reasoning = "User expressed urgency, but underlying issue is an informational query or cosmetic item. Calibrated to LOW per SLA anti-gaming policy." if claimed_urgent else "Standard low-severity informational inquiry."
+    else:
+        priority = "MEDIUM"
+        urgency_reasoning = "Emotional urgency claims detected without proof of production stoppage. Assigned standard MEDIUM priority." if claimed_urgent else "Standard operational troubleshooting priority."
+
     fallback = {
-        "category": "Billing" if "charge" in description.lower() or "billing" in description.lower() else "General",
-        "priority": "HIGH" if "urgent" in description.lower() or "immediately" in description.lower() else "MEDIUM",
-        "customer_mood": "FRUSTRATED" if "refund" in description.lower() or "wrong" in description.lower() else "NEUTRAL",
+        "category": "Billing" if ("charge" in full_text or "billing" in full_text or "invoice" in full_text) else "General",
+        "priority": priority,
+        "customer_mood": "FRUSTRATED" if ("refund" in full_text or "wrong" in full_text or "broken" in full_text or claimed_urgent) else "NEUTRAL",
         "mood_confidence": 0.88,
-        "patience_score": "CRITICAL" if "immediately" in description.lower() else "CONCERNED",
+        "patience_score": "CRITICAL" if ("cancel" in full_text or "legal" in full_text) else ("CONCERNED" if claimed_urgent else "CALM"),
         "predicted_resolution_time": "1-2 business days",
+        "urgency_reasoning": urgency_reasoning,
         "overall_confidence": 0.90,
         "checklist": [
             "Verify customer account & subscription status",

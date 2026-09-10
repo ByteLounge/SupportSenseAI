@@ -15,6 +15,8 @@ export default {
           300: '#FFAFA0',
           400: '#FF7E66',
           500: '#FD451B', // MoonRow Signature Vermilion Accent
+          primary: '#FD451B',
+          'primary-hover': '#E22610',
           600: '#E22610',
           700: '#B11006',
           800: '#8C120B',

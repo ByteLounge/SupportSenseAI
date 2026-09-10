@@ -161,17 +161,148 @@ async function chatConcierge(req, res, next) {
  */
 async function polishTone(req, res, next) {
   try {
-    const { draft, tone } = req.body;
+    const { draft, tone, variation } = req.body;
     if (!draft || !draft.trim()) {
       return sendError(res, 400, 'Draft message text is required.');
     }
 
     const result = await aiService.polishAgentTone({
       draft,
-      tone: tone || 'empathetic'
+      tone: tone || 'empathetic',
+      variation: parseInt(variation, 10) || 1
     });
 
     return sendSuccess(res, 200, 'Agent response tone polished', result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Rich FAQ Knowledge Base for Customer Deflection & Instant Help
+const FAQS_DATABASE = [
+  {
+    id: 'faq-1',
+    category: 'Billing & Payments',
+    question: 'How long do credit card refunds take to process?',
+    answer: 'Refunds typically take 3-5 business days to reflect in your financial institution statement after being approved and processed by our billing department.',
+    tags: ['billing', 'refund', 'credit card', 'charge', 'money', 'payment'],
+    popular: true
+  },
+  {
+    id: 'faq-2',
+    category: 'Identity & Access',
+    question: 'How do I rotate our Okta / Azure SAML signing certificate?',
+    answer: 'Navigate to Organization Settings > Security & SSO, click "Edit SAML Metadata", paste the new X.509 certificate XML, and click "Validate & Apply". We recommend updating 24 hours prior to expiration.',
+    tags: ['sso', 'saml', 'okta', 'azure', 'security', 'certificate', 'login', 'mfa'],
+    popular: true
+  },
+  {
+    id: 'faq-3',
+    category: 'API Platform',
+    question: 'What are the default API rate limits and how can I request an increase?',
+    answer: 'Standard API limits are 100 requests/minute. Enterprise tenants can request limits up to 1,000 req/minute by submitting an API Platform query with expected QPS projections.',
+    tags: ['api', 'rate limit', 'quota', '429', 'throttling', 'headers'],
+    popular: true
+  },
+  {
+    id: 'faq-4',
+    category: 'Billing & Payments',
+    question: 'Where can I download my itemized VAT or Tax invoices?',
+    answer: 'Invoices are available under Settings > Billing & Invoices. You can download monthly and annual PDF receipts with certified European and US VAT identification numbers.',
+    tags: ['billing', 'vat', 'tax', 'invoice', 'receipt', 'download', 'pdf'],
+    popular: false
+  },
+  {
+    id: 'faq-5',
+    category: 'Technical Support',
+    question: 'What is the recommended connection pool setting for PostgreSQL databases?',
+    answer: 'We recommend setting pool sizes between 20-50 connections per instance with pgBouncer transaction pooling enabled to prevent connection exhaustion during traffic spikes.',
+    tags: ['technical', 'database', 'postgresql', 'pool', 'timeout', 'supabase'],
+    popular: false
+  },
+  {
+    id: 'faq-6',
+    category: 'API Platform',
+    question: 'Why am I receiving 401 Unauthorized errors on API Webhooks?',
+    answer: 'HTTP 401 Unauthorized errors on webhooks occur when the signature header (X-Webhook-Signature) does not match the computed HMAC SHA-256 hash using your active webhook secret. Verify that your webhook signing secret in Developer Settings matches your consumer endpoint code.',
+    tags: ['api', 'webhook', '401', 'unauthorized', 'secret', 'signature', 'hmac'],
+    popular: true
+  },
+  {
+    id: 'faq-7',
+    category: 'Identity & Access',
+    question: 'How do I reset customer passwords or unlock suspended accounts?',
+    answer: 'Support agents can trigger secure password reset links directly from the Identity & Access panel. Customers receive an encrypted, single-use reset URL valid for 15 minutes.',
+    tags: ['account', 'password', 'reset', 'unlock', 'suspended', 'login'],
+    popular: false
+  }
+];
+
+/**
+ * Fetch list of FAQs with optional category filter.
+ * GET /api/v1/ai/faqs
+ */
+async function getFaqs(req, res, next) {
+  try {
+    const { category } = req.query;
+    if (category && category !== 'All') {
+      const filtered = FAQS_DATABASE.filter(f => 
+        f.category.toLowerCase().includes(category.toLowerCase()) ||
+        category.toLowerCase().includes(f.category.toLowerCase())
+      );
+      return sendSuccess(res, 200, 'FAQs retrieved', filtered);
+    }
+    return sendSuccess(res, 200, 'FAQs retrieved', FAQS_DATABASE);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Search FAQs based on query text for instant customer issue deflection.
+ * GET /api/v1/ai/faqs/search?q=...
+ */
+async function searchFaqs(req, res, next) {
+  try {
+    const query = (req.query.q || req.query.query || '').trim().toLowerCase();
+    if (!query) {
+      return sendSuccess(res, 200, 'Empty query, returning top FAQs', FAQS_DATABASE.slice(0, 3));
+    }
+
+    const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need']);
+    const terms = query
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopWords.has(w));
+
+    const scored = FAQS_DATABASE.map(faq => {
+      let score = 0;
+      const qLower = faq.question.toLowerCase();
+      const aLower = faq.answer.toLowerCase();
+      const catLower = faq.category.toLowerCase();
+      const tags = (faq.tags || []).map(t => t.toLowerCase());
+
+      // Exact phrase match
+      if (qLower.includes(query)) score += 10;
+      if (aLower.includes(query)) score += 5;
+
+      // Term overlaps
+      for (const t of terms) {
+        if (qLower.includes(t)) score += 3;
+        if (tags.some(tag => tag.includes(t))) score += 4;
+        if (aLower.includes(t)) score += 1;
+        if (catLower.includes(t)) score += 2;
+      }
+
+      return { ...faq, relevance_score: score };
+    });
+
+    const matching = scored
+      .filter(f => f.relevance_score > 0)
+      .sort((a, b) => b.relevance_score - a.relevance_score)
+      .slice(0, 4);
+
+    return sendSuccess(res, 200, 'FAQ search results', matching);
   } catch (error) {
     next(error);
   }
@@ -184,6 +315,8 @@ module.exports = {
   getDepartmentRules,
   getBenchmarks,
   chatConcierge,
-  polishTone
+  polishTone,
+  getFaqs,
+  searchFaqs
 };
 

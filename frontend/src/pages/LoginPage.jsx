@@ -89,42 +89,144 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        {/* 1-Click Persona Selection */}
+        {/* Multi-User & Department Testing Switcher */}
         <div className="pt-4 border-t border-token-border space-y-3">
-          <div className="text-center text-[10px] font-bold text-token-text-muted uppercase tracking-wider">
-            Quick Persona Demo Sign-in
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-token-text-muted uppercase tracking-wider">
+              Quick Persona Sign-in
+            </span>
+            <span className="text-[10px] text-token-text-muted">
+              Select persona to test roles
+            </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickPersona('customer')}
-              className="p-3 rounded-xl border border-token-border bg-token-muted/50 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/30 transition-all text-center group"
-            >
-              <User className="w-4 h-4 mx-auto text-emerald-600 mb-1" />
-              <div className="text-xs font-bold text-token-text-primary">Customer</div>
-              <div className="text-[10px] text-token-text-muted">Alex Rivera</div>
-            </button>
+          {/* Department Agents */}
+          <div className="space-y-1">
+            <div className="text-[10px] font-semibold text-token-text-secondary uppercase">Support Agents by Department</div>
+            <div className="grid grid-cols-3 gap-1.5 text-left">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('agent.sarah@supportsense.ai');
+                  setPassword('Password123!');
+                  handleQuickPersona('agent');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-[#FD451B]/10 hover:border-[#FD451B]/30 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">Sarah Agent</div>
+                <div className="text-[9px] text-[#FD451B] font-medium truncate">Tier 1 & Triage</div>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => handleQuickPersona('agent')}
-              className="p-3 rounded-xl border border-token-border bg-token-muted/50 hover:bg-[#FD451B]/10 hover:border-[#FD451B]/30 dark:hover:bg-[#FD451B]/20 transition-all text-center group"
-            >
-              <Headphones className="w-4 h-4 mx-auto text-[#FD451B] mb-1" />
-              <div className="text-xs font-bold text-token-text-primary">Agent</div>
-              <div className="text-[10px] text-token-text-muted">Sarah Agent</div>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('elena.r@supportsense.ai');
+                  setPassword('Password123!');
+                  handleQuickPersona('finance_agent');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/20 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">Elena Rostova</div>
+                <div className="text-[9px] text-emerald-600 font-medium truncate">Finance & Billing</div>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => handleQuickPersona('admin')}
-              className="p-3 rounded-xl border border-token-border bg-token-muted/50 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950/30 transition-all text-center group"
-            >
-              <Shield className="w-4 h-4 mx-auto text-purple-600 mb-1" />
-              <div className="text-xs font-bold text-token-text-primary">Admin</div>
-              <div className="text-[10px] text-token-text-muted">Admin User</div>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('marcus.vance@supportsense.ai');
+                  setPassword('Password123!');
+                  handleQuickPersona('tech_agent');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950/20 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">Marcus Vance</div>
+                <div className="text-[9px] text-blue-600 font-medium truncate">Tech Support</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('liam.scott@supportsense.ai');
+                  setPassword('Password123!');
+                  handleQuickPersona('identity_agent');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-indigo-50 hover:border-indigo-300 dark:hover:bg-indigo-950/20 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">Liam Scott</div>
+                <div className="text-[9px] text-indigo-600 font-medium truncate">Identity & Access</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('priya.sharma@supportsense.ai');
+                  setPassword('Password123!');
+                  handleQuickPersona('api_agent');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-amber-50 hover:border-amber-300 dark:hover:bg-amber-950/20 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">Priya Sharma</div>
+                <div className="text-[9px] text-amber-600 font-medium truncate">API Platform</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('admin@supportsense.ai');
+                  setPassword('Password123!');
+                  handleQuickPersona('admin');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950/20 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">Admin User</div>
+                <div className="text-[9px] text-purple-600 font-medium truncate">Governance</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Customers */}
+          <div className="space-y-1">
+            <div className="text-[10px] font-semibold text-token-text-secondary uppercase">Enterprise Customers</div>
+            <div className="grid grid-cols-3 gap-1.5 text-left">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('alex.rivera@customer.com');
+                  setPassword('Password123!');
+                  handleQuickPersona('customer');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-teal-50 hover:border-teal-300 dark:hover:bg-teal-950/20 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">Alex Rivera</div>
+                <div className="text-[9px] text-teal-600 font-medium truncate">Acme Corp</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('samantha.reed@globex.com');
+                  setPassword('Password123!');
+                  handleQuickPersona('customer_samantha');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-teal-50 hover:border-teal-300 dark:hover:bg-teal-950/20 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">Samantha Reed</div>
+                <div className="text-[9px] text-teal-600 font-medium truncate">Globex Systems</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('david.kim@nexus.io');
+                  setPassword('Password123!');
+                  handleQuickPersona('customer_david');
+                }}
+                className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-teal-50 hover:border-teal-300 dark:hover:bg-teal-950/20 transition-all text-left"
+              >
+                <div className="text-[11px] font-bold text-token-text-primary leading-tight">David Kim</div>
+                <div className="text-[9px] text-teal-600 font-medium truncate">Nexus Tech</div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
