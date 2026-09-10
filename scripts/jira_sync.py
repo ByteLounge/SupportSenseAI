@@ -41,7 +41,7 @@ SPRINT_CONFIGS = [
         "name": "Sprint 2: Prototype Build",
         "key": "Sprint 2",
         "startDate": "2026-08-17T09:00:00.000Z",
-        "endDate": "2026-08-29T18:00:00.000Z",
+        "endDate": "2026-08-30T18:00:00.000Z",
         "state": "closed",
         "goal": "Figma-based UI implementation, Express MVC backend, PostgreSQL schema & seed data, and FastAPI microservice scaffold."
     },
@@ -1174,7 +1174,7 @@ class JiraSyncManager:
         self.log("Finalizing sprint states and validating zero backlog items...")
         if self.dry_run:
             self.log("Sprint 1 (ID: 1): Closed with completeDate 2026-08-16T18:00:00.000Z (Burndown: 18 pts -> 0 pts)", "DRY")
-            self.log("Sprint 2 (ID: 35): Closed with completeDate 2026-08-29T18:00:00.000Z (Burndown: 59 pts -> 0 pts)", "DRY")
+            self.log("Sprint 2 (ID: 35): Closed with completeDate 2026-08-30T18:00:00.000Z (Burndown: 59 pts -> 0 pts)", "DRY")
             self.log("Sprint 3 (ID: 68): Active (current sprint in progress)", "DRY")
             self.log("Sprint 4 (ID: 69): Future (upcoming sprint scheduled)", "DRY")
             self.log(f"Verified Backlog: 0 issues remaining. All {len(TASKS)} tasks assigned to Sprints 1-4.", "DRY")

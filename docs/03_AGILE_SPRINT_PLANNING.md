@@ -86,9 +86,9 @@ The product backlog consists of **31 tasks** totaling **166 story points**, dist
   - Tasks: `SSAI-101`, `SSAI-102`, `SSAI-103`, `SSAI-104`
   - Burndown: 18 pts burned to 0 pts (Completed on Aug 16, 2026).
   - Team Focus: Domain research, Gemini speed tests, 3-tier architecture design, and sprint roadmap.
-- **Sprint 2 (Prototype Build & Architecture)**: 10 tasks, **59 Story Points** [Status: Closed]
+- **Sprint 2 (Prototype Build & Architecture)**: 10 tasks, **59 Story Points** [Status: Closed | Aug 17 – Aug 30, 2026]
   - Tasks: `SSAI-201`, `SSAI-202`, `SSAI-203`, `SSAI-204`, `SSAI-205`, `SSAI-206`, `SSAI-207`, `SSAI-208`, `SSAI-209`, `SSAI-210`
-  - Burndown: 59 pts burned to 0 pts (Completed on Aug 29, 2026).
+  - Burndown: 59 pts burned to 0 pts (Completed on Aug 30, 2026).
   - Team Focus: Scaffolding frontend UI, Express backend, JWT auth, PostgreSQL tables, FastAPI service, and Docker compose.
 - **Sprint 3 (AI & Integration)**: 7 tasks, **38 Story Points** [Status: Active]
   - Tasks: `SSAI-301`, `SSAI-302`, `SSAI-303`, `SSAI-304`, `SSAI-305`, `SSAI-306`, `SSAI-307`
