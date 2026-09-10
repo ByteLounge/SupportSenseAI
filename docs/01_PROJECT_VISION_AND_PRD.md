@@ -14,19 +14,22 @@
 ### 1.3 Strategic Business Value
 1. **Reduce First Response Time (FRT)** by up to 75% via instant automated department confirmation replies, AI Concierge conversational intake, and automated classification.
 2. **Increase First Contact Resolution (FCR)** by supplying agents with context-aware timeline summaries, dataset benchmarks, and verified checklists.
-3. **Elevate Customer Satisfaction (CSAT)** through AI Response Quality Checks and 1-Click Tone Polishing (verifying empathy, clarity, and professionalism prior to dispatch).
-4. **Prevent Agent Burnout** by highlighting customer patience degradation early so team leads can proactively reassign critical cases.
-5. **Continuous Organizational Learning** via weekly AI Learning Insights that detect emerging issues and recommend new KB articles.
+3. **Deflect up to 35% of Repetitive Inquiries** through real-time Knowledge Base FAQ suggestions and proactive duplicate ticket interception with previous verified resolution notes.
+4. **Elevate Customer Satisfaction (CSAT)** through AI Response Quality Checks and 1-Click Tone Polishing (3 cycling variations, anti-nesting).
+5. **Protect SLA Fairness via Anti-Gaming Triage**: Objectively decoupling emotional shouting ("URGENT", "EMERGENCY") from technical priority while recording true customer distress in mood analytics.
+6. **Prevent Agent Burnout** by highlighting customer patience degradation early so team leads can proactively reassign critical cases.
+7. **Continuous Organizational Learning** via weekly AI Learning Insights that detect emerging issues and recommend new KB articles.
 
 ---
 
 ## 2. Product Requirements Document (PRD)
 
 ### 2.1 Product Goals & Objectives
-- **Target Audience**: Customers, Support Agents, Support Team Leads, Customer Support Managers, System Administrators.
-- **Primary Objective**: Build a robust, scalable multi-tier web application consisting of a React SPA frontend, a Node.js/Express core backend API, PostgreSQL relational database, and a Python FastAPI AI Microservice powered by Google Gemini API.
+- **Target Audience**: Customers, Support Agents, Support Team Leads, Customer Support Managers, System Administrators across 4 core departments (Technical Support, Finance & Billing, Identity & Access, API Platform).
+- **Primary Objective**: Build a robust, scalable multi-tier web application consisting of a React SPA frontend, a Node.js/Express core backend API, Supabase PostgreSQL 17 relational database with SSL connection pooling, and a Python FastAPI AI Microservice powered by Google Gemini API.
 - **Success Metrics**:
   - Triage accuracy ≥ 90% for classification and priority predictions.
+  - Zero duplicate tickets created for previously resolved issues without explicit user override (`forceCreate: true`).
   - API P95 latency < 200ms for core backend routes, < 1.5s for Gemini-assisted AI processing with in-memory TTL caching.
   - Zero unhandled server crashes during stress loads (100 concurrent agent requests, tested via Jest connection pooling suite).
 
@@ -35,18 +38,19 @@
 +-----------------------------------------------------------------------------------+
 |                                 SUPPORTSENSE AI                                   |
 +------------------------------------+----------------------------------------------+
-| Core Ticketing Engine              | AI Intelligence Engine (Gemini Microservice) |
+| Core Ticketing & Data Engine       | AI Intelligence Engine (Gemini Microservice) |
 +------------------------------------+----------------------------------------------+
 | • Transactional Ticket Creation    | • AI Concierge Conversational Ticket Crafter |
-| • Threaded Conversations & Notes   | • 1-Click AI Response Tone Polishing         |
-| • Status Transitions State Machine | • Ticket Auto-Classification & Priority      |
+| • Duplicate Ticket Interception    | • 1-Click Tone Polisher (3 Variations)       |
+| • Same-User Follow-Up Linking      | • Ticket Auto-Classification & Priority      |
+| • Status Transitions State Machine | • Anti-Gaming Mood vs Priority Decoupling    |
 | • Inter-Department Forwarding      | • AI Mood & Customer Patience Score          |
-| • Role-Based Access Control (RBAC) | • Resolution Time Predictor (Dataset Ground) |
-| • Connection Pooling & Concurrency | • Actionable Agent Assist Checklist          |
-| • Analytics & SLA Tracking         | • Pre-send Response Quality Checker          |
-| • Render Blueprint & Docker Ops    | • Reopened Timeline Summarizer (Async Worker)|
-|                                    | • Department Automated Response Engine       |
-|                                    | • Weekly Organizational Learning Insights    |
+| • 4-Department Routing & Agents    | • Resolution Time Predictor (Dataset Ground) |
+| • Real-Time FAQ Search Endpoints   | • Actionable Agent Assist Checklist          |
+| • Connection Pooling (Supabase)    | • Pre-send Response Quality Checker          |
+| • Analytics & SLA Tracking         | • Reopened Timeline Summarizer (Async Worker)|
+| • Render Blueprint & Docker Ops    | • Department Automated Response Engine       |
+| • 9 Multi-Department Test Personas | • Weekly Organizational Learning Insights    |
 +------------------------------------+----------------------------------------------+
 ```
 

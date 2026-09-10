@@ -69,15 +69,20 @@ Welcome to the central documentation repository for **SupportSense AI**, an ente
 ## 🚀 Novel Enterprise Features Overview
 
 1. **AI Concierge Chatbot & Conversational Ticket Crafter**: Conversational intake widget turning informal natural customer queries into structured enterprise tickets ready for 1-click dispatch.
-2. **1-Click AI Response Tone Polishing**: Multi-style agent response transformer offering 1-click rewrites into Empathetic, Concise, Formal, or Technical styles with rationale.
-3. **Reopened Ticket Timeline Summary & Banner**: 5–6 bullet executive summary generated via an async fire-and-forget worker upon reopening (`RESOLVED` ➔ `OPEN`), presented in a prominent top banner.
-4. **Transactional Ticket & Message Creation (SCRUM-112)**: Atomic PostgreSQL transaction wrapping ticket insertion and initial customer message to prevent data divergence.
-5. **Strict Status Transition State Machine (SCRUM-111)**: Strict validation engine enforcing legal state progressions (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED` or `OPEN`).
-6. **Department Automated Replies & Rules**: Pre-configured departmental policies (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform`) dispatching automated confirmations and diagnostics.
-7. **Model Instance Pooling & TTL Response Caching**: In-memory `GenerativeModel` pooling and 300s SHA256 hashed cache delivering sub-millisecond response times for repeated queries.
-8. **AI Mood Indicator & Sentiment Confidence**: Real-time customer emotion categorization (`🙂 HAPPY`, `😐 NEUTRAL`, `😠 FRUSTRATED`) with numerical confidence ratings (`0.00` to `1.00`).
-9. **Customer Patience Score & SLA Guardrail**: Tracks customer patience degradation (`CALM`, `CONCERNED`, `FRUSTRATED`, `CRITICAL`) to guide agent tone and trigger escalation alerts.
-10. **Dataset-Grounded Resolution Predictor & Checklists**: Forecasts resolution timeframes and generates dynamic step-by-step verification checklists calibrated against Kaggle & Hugging Face benchmarks.
-11. **Response Quality & Empathy Checker**: Pre-send reply evaluation scoring agent drafts for Professionalism, Empathy, Clarity, and Actionability.
-12. **Weekly Organizational Learning Insights**: Analyzes historical ticket resolution patterns to generate top repeated issues, recurring agent mistakes, and suggested Knowledge Base FAQs.
+2. **1-Click AI Response Tone Polishing (3-Variation Cycling)**: Multi-style agent response transformer offering 1-click rewrites into Empathetic, Concise, Formal, or Technical styles with 3 cycling variations (`v1`, `v2`, `v3`) without nesting or repetitive salutations.
+3. **Duplicate Resolved Ticket Interception (SSAI-409)**: Proactively checks for previous resolved issues and returns `HTTP 409 DUPLICATE_RESOLVED_TICKET` with past resolution notes and override options (`forceCreate: true`).
+4. **Follow-Up Ticket Linking for Same Users (SSAI-409)**: Detects follow-up inquiries from the same user and automatically links them to active parent tickets (`linked_ticket_id`), rendering a dedicated "Linked & Related Inquiries" card in UI.
+5. **Real-Time Knowledge Base FAQ Integration & Deflection (SSAI-410)**: Searches verified FAQs in real time as tickets are drafted, deflecting common questions with interactive deflection cards and "Solved My Issue" actions.
+6. **Anti-Gaming Mood & Urgency AI Prompting**: Decouples customer emotion or shouting ("URGENT", "EMERGENCY", exclamation marks) from technical SLA priority, capturing emotion in `customer_mood` while protecting queue fairness.
+7. **Reopened Ticket Timeline Summary & Banner**: 5–6 bullet executive summary generated via an async fire-and-forget worker upon reopening (`RESOLVED` ➔ `OPEN`), presented in a prominent top banner.
+8. **Transactional Ticket & Message Creation (SCRUM-112)**: Atomic PostgreSQL transaction wrapping ticket insertion and initial customer message to prevent data divergence.
+9. **Strict Status Transition State Machine (SCRUM-111)**: Strict validation engine enforcing legal state progressions (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED` or `OPEN`).
+10. **Department Automated Replies & Routing**: Pre-configured departmental policies (`Technical Support`, `Finance & Billing`, `Identity & Access`, `API Platform`) dispatching automated confirmations and diagnostics.
+11. **Model Instance Pooling & TTL Response Caching**: In-memory `GenerativeModel` pooling and 300s SHA256 hashed cache delivering sub-millisecond response times for repeated queries.
+12. **AI Mood Indicator & Sentiment Confidence**: Real-time customer emotion categorization (`🙂 HAPPY`, `😐 NEUTRAL`, `😠 FRUSTRATED`) with numerical confidence ratings (`0.00` to `1.00`).
+13. **Customer Patience Score & SLA Guardrail**: Tracks customer patience degradation (`CALM`, `CONCERNED`, `FRUSTRATED`, `CRITICAL`) to guide agent tone and trigger escalation alerts.
+14. **Dataset-Grounded Resolution Predictor & Checklists**: Forecasts resolution timeframes and generates dynamic step-by-step verification checklists calibrated against Kaggle & Hugging Face benchmarks.
+15. **Response Quality & Empathy Checker**: Pre-send reply evaluation scoring agent drafts for Professionalism, Empathy, Clarity, and Actionability.
+16. **Weekly Organizational Learning Insights**: Analyzes historical ticket resolution patterns to generate top repeated issues, recurring agent mistakes, and suggested Knowledge Base FAQs.
+17. **Multi-Department Personas & Supabase Migration (SSAI-408)**: 9 pre-seeded multi-department customer and agent personas with 1-click login switching, backed by Supabase PostgreSQL 17 with SSL connection pooling.
 

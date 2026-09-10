@@ -139,15 +139,20 @@ Located in [`frontend/src/components/ai/`](file:///D:/Projects/SupportSenseAI/fr
 1. **[`AIConciergeWidget.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIConciergeWidget.jsx) & [`AIConciergeChatbot.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIConciergeChatbot.jsx)**
    - Floating interactive concierge widget available on all authenticated views.
    - Converses with customers in natural language, guides troubleshooting, and synthesizes complete enterprise support ticket drafts.
+   - **Real-Time FAQ Deflection Cards:** Matches customer queries against domain FAQs, displaying expandable solution cards with a "✅ Solved My Issue" deflection button.
+   - **Duplicate Ticket Interceptor:** Alerts if a matching issue was previously resolved, offering direct navigation to the resolved ticket or an override button ("Issue Still Persists").
    - Provides 1-click submission directly into the ticket queue via `createTicketApi`.
 
 2. **[`TimelineSummaryBanner.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/TimelineSummaryBanner.jsx)**
    - Automatically mounts at the top of [`TicketDetailPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/TicketDetailPage.jsx) when a ticket is reopened (`RESOLVED -> OPEN`) or has >3 conversation turns.
    - Summarizes thread history into 5-6 chronological bullets identifying past attempts and root escalation blockers.
 
-3. **[`AIToneCheckerModal.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIToneCheckerModal.jsx)**
-   - 1-Click tone polisher accessible from the ticket reply composer.
-   - Rewrites draft responses into **Empathetic**, **Concise**, **Formal**, or **Technical** styles with instant insertion into the editor.
+3. **[`AIToneCheckerModal.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIToneCheckerModal.jsx) & Reply Polisher**
+   - 1-Click tone polisher accessible from the ticket reply composer in [`TicketDetailPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/TicketDetailPage.jsx).
+   - Rewrites draft responses into **Empathetic**, **Concise**, **Formal**, or **Technical** styles.
+   - **3 Distinct Cycling Variations:** Clicking the same tone button cycles through `Variation 1`, `Variation 2`, and `Variation 3`, offering distinct phrasing angles.
+   - **Anti-Nesting & Base Draft Caching:** Caches `baseDraft` to prevent repetitive or nested greeting prefixes (`"Dear John, Hello John..."`).
+   - **Button Contrast Hardening:** Built with explicit vermilion styling (`bg-[#FD451B] text-white`) and `moonrow.primary` in `tailwind.config.js` so labels never disappear.
 
 4. [`AIMoodBadge.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIMoodBadge.jsx)
    - Visualizes customer sentiment:
@@ -178,7 +183,7 @@ Located in [`frontend/src/components/ai/`](file:///D:/Projects/SupportSenseAI/fr
 Located in [`frontend/src/pages/`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/):
 
 1. [`LoginPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/LoginPage.jsx)
-   - Features standard email/password login and 1-click **"Demo Persona Quick-Login"** buttons (Customer, Lead Agent, Billing Agent, DBA, Admin) for instant grading and demonstrations.
+   - Features standard email/password login and 1-click **"Demo Persona Quick-Login"** buttons organized into Customers, Department Agents (Tech, Finance, Identity, API), and Admin.
 
 2. [`DashboardPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/DashboardPage.jsx)
    - **Role-Aware Views:**
@@ -190,15 +195,16 @@ Located in [`frontend/src/pages/`](file:///D:/Projects/SupportSenseAI/frontend/s
 
 4. [`TicketDetailPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/TicketDetailPage.jsx)
    - The central workspace for support agents:
-     - Multi-turn conversation thread.
+     - Multi-turn conversation thread with customer replies, agent notes, and internal staff notes.
      - Reopened timeline summary banner (`TimelineSummaryBanner.jsx`).
-     - Internal agent-only notes (highlighted with distinct yellow/amber styling).
+     - **Linked & Related Inquiries Card:** Shows parent and follow-up tickets for the user.
      - Interactive AI checklist with checkboxes that persist to PostgreSQL.
-     - Reply composition box with **1-Click Tone Polisher** (`AIToneCheckerModal.jsx`) and **AI Quality Check** (`QualityCheckModal.jsx`).
+     - Reply composition box with **1-Click Tone Polisher** (3 variations, anti-nesting) and **AI Quality Check** (`QualityCheckModal.jsx`).
      - Inter-department forwarding modal.
 
 5. [`CreateTicketPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/CreateTicketPage.jsx)
-   - Guided submission form. Customers get automatic Knowledge Base tips; agents/admins get department assignment and priority overrides.
+   - Guided submission form with **Real-Time FAQ Suggestions Panel** that auto-queries FAQs as the user types to deflect common questions.
+   - **Duplicate Resolved Ticket Interception Warning:** Alerts if a matching issue was previously solved with verified resolution notes and an override button ("Issue Still Persists").
    - Embedded launcher for the AI Concierge Chatbot.
 
 6. [`DepartmentsPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/DepartmentsPage.jsx)
@@ -236,15 +242,18 @@ API.interceptors.request.use((config) => {
 ```
 
 ### 2. Built-in Standalone Mock Layer & Resilient Wrapper
-Every API function wraps its HTTP call in `safeApiCall(apiFn, mockFallbackFn)`. If the backend is offline or returns an error, the function gracefully falls back to local in-memory mock records (`MOCK_TICKETS`, `DEMO_PERSONAS`, `MOCK_FAQS`).
+Every API function wraps its HTTP call in `safeApiCall(apiFn, mockFallbackFn)`. If the backend is offline, the function gracefully falls back to local in-memory mock records (`MOCK_TICKETS`, `DEMO_PERSONAS`, `MOCK_FAQS`).
+- **Domain Error Preservation**: If the backend responds with domain business exceptions (e.g. `HTTP 409 DUPLICATE_RESOLVED_TICKET`, `code: 'DUPLICATE_RESOLVED_TICKET'`, or `linked_to_existing: true`), `safeApiCall` re-throws the error payload intact so that frontend interceptor cards and duplicate resolution prompts render accurately.
 
 ### 3. Key Exported API Methods
 - **`chatConciergeApi(payload)`**: Interacts with the AI Concierge chatbot service.
-- **`polishToneApi(payload)`**: Polishes response drafts into Empathetic, Concise, Formal, or Technical styles.
+- **`polishToneApi(payload)`**: Polishes response drafts into Empathetic, Concise, Formal, or Technical styles with 3 cycling variations.
 - **`summarizeTimelineApi(messages)`**: Condenses message history into an executive TL;DR.
 - **`verifyQualityApi(payload)`**: Runs 4-pillar response quality auditing.
 - **`getWeeklyInsightsApi()`**: Retrieves aggregated weekly learning metrics and FAQ recommendations.
-- **`createTicketApi(ticketData)`**: Dispatches atomic ticket creation.
+- **`getFaqsApi()`**: Retrieves pre-seeded domain FAQs for knowledge base views.
+- **`searchFaqsApi(query)`**: Fuzzy search across FAQs for real-time ticket deflection.
+- **`createTicketApi(ticketData)`**: Dispatches atomic ticket creation with duplicate check and linking support.
 
 ---
 

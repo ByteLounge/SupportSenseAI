@@ -102,7 +102,14 @@ All 8 prompt templates in [`ai-service/app/prompts/templates.py`](file:///D:/Pro
 1. **Explicit Role Framing**: E.g. *"You are SupportSense AI Concierge — an empathetic, ultra-smart enterprise customer support assistant."*
 2. **Strict JSON Constraints**: Prompts require exact key schemas with escaped delimiters (`{{ ... }}`).
 3. **Deterministic Generation Parameters**: `temperature: 0.1` and `top_p: 0.95` to eliminate hallucination and formatting drift.
-4. **Human-in-the-Loop Safeguards**: Prompt rules strictly prevent the model from promising irreversible financial refunds or system changes without human verification.
+4. **Anti-Gaming Urgency Defense**: Prompts explicitly decouple customer emotion or uppercase shouting ("URGENT", "EMERGENCY", "HELP NOW!!!") from technical priority. A customer shouting about a profile photo change is triaged as `MOOD: Frustrated`, `PATIENCE: Concerned`, but `PRIORITY: LOW`. Priority is reserved strictly for verifiable business outages, financial errors, or security breaches.
+5. **Tone Polisher 3-Variation Cycling & Anti-Nesting**:
+   - Accepts `variation_number: 1, 2, or 3` in `AI_TONE_POLISH_PROMPT`.
+   - Variation 1 provides a direct, structured solution.
+   - Variation 2 provides a warm, consultative partnership response.
+   - Variation 3 provides an action-oriented, proactive next-step plan.
+   - Strips existing customer or agent greetings/sign-offs before generating output to prevent recursive nesting (e.g. *"Dear Sarah, Hi Sarah, Hello Sarah"*).
+6. **Human-in-the-Loop Safeguards**: Prompt rules strictly prevent the model from promising irreversible financial refunds or system changes without human verification.
 
 ---
 

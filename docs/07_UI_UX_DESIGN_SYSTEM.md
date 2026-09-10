@@ -32,6 +32,8 @@ SupportSense AI utilizes a modern, sleek, enterprise-grade design system enginee
 | `--color-text-secondary` | `hsl(215, 16%, 47%)` | `hsl(215, 20%, 65%)` | Subtitles, timestamps, metadata |
 | `--color-brand-primary` | `hsl(234, 89%, 74%)` | `hsl(234, 89%, 74%)` | Primary buttons, active tabs, brand accents |
 | `--color-brand-hover` | `hsl(234, 89%, 65%)` | `hsl(234, 89%, 80%)` | Interactive hover states |
+| `--color-vermilion-primary` | `#FD451B` | `#FD451B` | High-visibility primary action buttons & active tone filters (`moonrow.primary`) |
+| `--color-vermilion-hover` | `#E22610` | `#E22610` | Vermilion button hover & active press states (`moonrow['primary-hover']`) |
 
 ### 2.2 Novel AI Status & Mood Color System
 
@@ -138,21 +140,21 @@ Powered by Google Fonts: **Inter** (Body & Controls) and **Outfit** (Display Hea
 +-----------------------------------------------------------------------------------+
 | ✨ 1-Click AI Response Tone Polisher                                        [ X ]|
 +-----------------------------------------------------------------------------------+
-| Select Desired Style:                                                             |
-| [ 💖 Empathetic ]   [ ⚡ Concise ]   [ 👔 Formal ]   [ 🔧 Technical ]              |
+| Select Desired Style (Click again to cycle through 3 distinct variations):        |
+| [ 💖 Empathetic  (v1) ]  [ ⚡ Concise ]  [ 👔 Formal ]  [ 🔧 Technical ]            |
 |                                                                                   |
 | Original Draft:                                                                   |
 | "We are investigating the charge. Will let you know when refund settles."          |
 |                                                                                   |
-| AI Polished Output (Empathetic):                                                  |
-| "Hello Alex! Thank you so much for your patience. I completely understand how     |
-| concerning unexpected duplicate charges are for your team. We have escalated      |
-| transaction ch_3N9x821a with our payment processor, and I will keep you updated  |
-| every step of the way until it is fully resolved."                                |
+| AI Polished Output (Empathetic - Variation 1 of 3):                               |
+| "Hello Alex! Thank you so much for reaching out. I completely understand how      |
+| frustrating unexpected duplicate charges are for your team. We have escalated     |
+| transaction ch_3N9x821a directly to our payments lead, and I will personally track|
+| it until the $1,200 is back in your account."                                     |
 |                                                                                   |
-| Rationale: Added warm validation of user frustration and clear accountability.    |
+| Rationale: Validates user distress warmly, provides direct owner accountability.  |
 |                                                                                   |
-|                                               [ Apply to Reply Box ]  [ Discard ] |
+|                                 [ 🔄 Next Variation (2/3) ]  [ Apply to Reply Box ]|
 +-----------------------------------------------------------------------------------+
 ```
 
@@ -174,6 +176,67 @@ Powered by Google Fonts: **Inter** (Body & Controls) and **Outfit** (Display Hea
 | customer feels reassured about resolution timing."                                |
 |                                                                                   |
 | [ Apply AI Enhancement ]  [ Keep Draft ]                                          |
++-----------------------------------------------------------------------------------+
+```
+
+### 4.6 Duplicate Resolved Ticket Warning Card Wireframe (`CreateTicketPage.jsx`)
+
+```
++-----------------------------------------------------------------------------------+
+| ⚠️ PROBABLE DUPLICATE ISSUE DETECTED (Already Resolved)                           |
+| We noticed you previously submitted an issue that matches this description:       |
+| • Ticket: T-1040 - "SSL Handshake Failure on Production API Gateway"              |
+| • Resolved On: Aug 15, 2026 | Category: Technical Support                         |
+| • Verified Resolution Notes:                                                      |
+|   "Upgraded CA bundle and renewed intermediate cert on AWS ALB. Client TLS 1.3    |
+|    handshake restored immediately."                                               |
+|                                                                                   |
+| [ 🔍 View Resolved Ticket (T-1040) ]    [ ⚠️ Issue Still Persists (Submit Anyway) ] |
++-----------------------------------------------------------------------------------+
+```
+
+### 4.7 Real-Time FAQ Ticket Deflection Card Wireframe (`AIConciergeChatbot.jsx`)
+
+```
++-----------------------------------------------------------------------------------+
+| 💡 Relevant Knowledge Base Answers Found                                          |
+| We found a verified solution that might answer your question immediately:         |
+|                                                                                   |
+| 📘 How do I download official VAT invoices for past monthly billing cycles? [ v ] |
+|    To download tax invoices: Go to Account Settings > Billing > Invoices, select   |
+|    the billing month, and click 'Download Official PDF Invoice'.                  |
+|                                                                                   |
+|                             [ ✅ Solved My Issue ]   [ Continue Submitting Ticket]|
++-----------------------------------------------------------------------------------+
+```
+
+### 4.8 Linked & Related Inquiries Card Wireframe (`TicketDetailPage.jsx`)
+
+```
++-----------------------------------------------------------------------------------+
+| 🔗 Linked & Related Inquiries                                                     |
+| This customer has previous or follow-up inquiries in Technical Support:           |
+| • [Parent Inquiry] T-1039: API Gateway Rate Limit Exceeded (Status: RESOLVED)     |
+| • [Current Follow-up] T-1042: Rate limit still occurring on webhook cluster      |
+|   Linked automatically based on customer conversation thread history.             |
++-----------------------------------------------------------------------------------+
+```
+
+### 4.9 Multi-Department Persona Selector Wireframe (`LoginPage.jsx`)
+
+```
++-----------------------------------------------------------------------------------+
+| SupportSense AI — Quick Demo Login Persona Switcher                               |
++-----------------------------------------------------------------------------------+
+| CUSTOMER PERSONAS:                                                                |
+| [ 👤 Sarah Jenkins (Acme Corp) ]  [ 👤 David Chen (FinTech) ]  [ 👤 Priya Patel ] |
+|                                                                                   |
+| SPECIALIZED DEPARTMENT AGENTS:                                                    |
+| [ 💻 Alex Rivera (Tech Support) ]  [ 💳 Elena Rostova (Finance & Billing) ]       |
+| [ 🔐 Marcus Brody (Identity & SSO) ]  [ ⚡ Liam Vance (API Platform) ]            |
+|                                                                                   |
+| SYSTEM ADMINISTRATOR:                                                             |
+| [ 🛡️ IT Operations Admin (admin@example.com) ]                                    |
 +-----------------------------------------------------------------------------------+
 ```
 

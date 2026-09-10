@@ -114,6 +114,7 @@ erDiagram
     TICKETS ||--o{ TICKET_MESSAGES : "contains"
     TICKETS ||--o{ AGENT_CHECKLISTS : "has"
     TICKETS ||--o{ AI_METADATA : "possesses"
+    TICKETS ||--o{ TICKETS : "links / follow-up"
     USERS ||--o{ WEEKLY_INSIGHTS : "generates/reviews"
 
     USERS {
@@ -122,6 +123,7 @@ erDiagram
         string email
         string password_hash
         string role "CUSTOMER | AGENT | ADMIN"
+        string department "Technical Support | Finance & Billing | Identity & Access | API Platform"
         timestamp created_at
     }
 
@@ -130,6 +132,7 @@ erDiagram
         string ticket_number
         uuid customer_id FK
         uuid assigned_agent_id FK
+        uuid linked_ticket_id FK "References parent ticket for follow-ups"
         string title
         text description
         string status "OPEN | IN_PROGRESS | PENDING | RESOLVED | CLOSED"
@@ -264,8 +267,8 @@ sequenceDiagram
 
 #### Ticket APIs (`/api/v1/tickets`)
 - `GET /`: List tickets with filters (`status`, `priority`, `category`, `search`).
-- `POST /`: Submit new ticket atomically with its initial message (triggers AI triage & department auto-reply).
-- `GET /:id`: Fetch single ticket with messages, checklist, and AI metadata.
+- `POST /`: Submit new ticket atomically with its initial message. Proactively intercepts duplicate resolved issues (`HTTP 409 DUPLICATE_RESOLVED_TICKET`) unless `forceCreate: true`, links follow-up inquiries to active tickets, and triggers AI triage & department auto-reply.
+- `GET /:id`: Fetch single ticket with messages, checklist, linked tickets, and AI metadata.
 - `PATCH /:id/status`: Enforce status transitions (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED` or `OPEN`). Reopening triggers async timeline summarizer.
 - `POST /:id/forward`: Forward ticket to department with agent comments and internal note.
 - `PATCH /:id`: Modify ticket attributes (Admin/Agent escalation override).
@@ -275,12 +278,14 @@ sequenceDiagram
 
 #### AI Proxy APIs (`/api/v1/ai`)
 - `POST /concierge`: AI Concierge Chatbot & Formal Ticket Crafter (accessible to all authenticated roles).
-- `POST /polish-tone`: 1-Click AI Response Tone Polishing (`empathetic`, `concise`, `formal`, `technical` — Agent/Admin).
+- `POST /polish-tone`: 1-Click AI Response Tone Polishing (`empathetic`, `concise`, `formal`, `technical` — with 3 cycling variations and anti-nesting).
 - `POST /verify-response`: Evaluates agent draft reply for Professionalism, Empathy, Clarity, Actionability (Agent/Admin).
 - `POST /department-auto-reply`: Evaluates auto-reply eligibility and generates department confirmation (Agent/Admin).
 - `GET /departments`: Returns department definitions, handled categories, and active auto-reply rules (Agent/Admin).
 - `GET /benchmarks`: Returns historical category SLA duration and priority benchmarks (Agent/Admin).
 - `GET /insights`: Fetches weekly AI analytics, top repeated issues, and recommended FAQs (Agent/Admin).
+- `GET /faqs`: Retrieves domain knowledge base FAQs.
+- `GET /faqs/search`: Real-time fuzzy keyword search over FAQs for instant deflection.
 
 ### 19.2 AI Microservice APIs (`FastAPI REST`)
 

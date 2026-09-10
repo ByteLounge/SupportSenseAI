@@ -59,6 +59,11 @@ SupportSenseAI/
 │   ├── docker-compose.yml
 │   └── nginx.conf
 │
+├── scripts/                      # Automation & Migration Tooling
+│   ├── jira_sync.py              # Automated Jira 4-Sprint & 31-Task Synchronizer
+│   ├── migrate_to_supabase.js    # Automated Supabase Database Migration Tool
+│   └── seed_multi_users.js       # Multi-Department User Persona Seeder
+│
 ├── .github/                      # CI/CD Automation Workflows
 │   └── workflows/
 │       └── ci.yml                # GitHub Actions: PostgreSQL 15, Jest, Vite build & Pytest

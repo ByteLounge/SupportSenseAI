@@ -94,6 +94,7 @@ erDiagram
         string email UK
         string password_hash
         string role "CUSTOMER | AGENT | ADMIN"
+        string department "Technical Support | Finance & Billing | Identity & Access | API Platform"
         string avatar_url
         timestamp created_at
         timestamp updated_at
@@ -104,6 +105,7 @@ erDiagram
         string ticket_number UK "e.g. T-1042"
         uuid customer_id FK
         uuid assigned_agent_id FK
+        uuid linked_ticket_id FK "References parent ticket for follow-ups"
         string title
         text description
         string status "OPEN | IN_PROGRESS | PENDING | RESOLVED | CLOSED"
@@ -211,7 +213,8 @@ To keep search and filtering instantaneous, indexes are placed on:
 2. [`backend/src/models/ticketModel.js`](file:///D:/Projects/SupportSenseAI/backend/src/models/ticketModel.js)
    - **Functions:**
      - `generateTicketNumber()`: Generates human-friendly identifiers from PostgreSQL sequence (e.g. `T-1001`, `T-1002`).
-     - `createTicketWithInitialMessage({ customerId, title, description, category, priority })` (SCRUM-112): Atomic PostgreSQL transaction that wraps ticket creation and initial message insertion in a single `BEGIN` ... `COMMIT` block with automatic `ROLLBACK` on error.
+     - `createTicketWithInitialMessage({ customerId, title, description, category, priority, linkedTicketId })` (SCRUM-112): Atomic PostgreSQL transaction that wraps ticket creation and initial message insertion in a single `BEGIN` ... `COMMIT` block with automatic `ROLLBACK` on error. Supports optional `linked_ticket_id`.
+     - `findDuplicateOrRelatedTickets({ customerId, title, description, category })` (SSAI-409): Queries previous tickets for the same user using keyword similarity and category matching to identify duplicate resolved issues or related active tickets.
      - `createTicket({ customerId, title, description, category, priority })`: Fallback ticket inserter with status `OPEN`.
      - `ALLOWED_STATUS_TRANSITIONS` (SCRUM-111): Strict state machine map:
        - `OPEN` -> `['IN_PROGRESS', 'RESOLVED', 'CLOSED']`
@@ -220,7 +223,7 @@ To keep search and filtering instantaneous, indexes are placed on:
        - `RESOLVED` -> `['OPEN', 'CLOSED']` (Reopened transition triggers async timeline summarizer)
        - `CLOSED` -> `[]` (Terminal immutable state)
      - `getAllTickets({ status, priority, search, userRole, userId })`: Queries tickets with dynamic SQL filtering and role guard (Customers only see their own tickets).
-     - `getTicketById(ticketId, userRole)`: Queries ticket details, sender info, threaded messages (excluding internal notes if `userRole === 'CUSTOMER'`), AI metadata, and checklists.
+     - `getTicketById(ticketId, userRole)`: Queries ticket details, sender info, threaded messages (excluding internal notes if `userRole === 'CUSTOMER'`), AI metadata, checklists, and linked tickets.
      - `updateTicketStatus(ticketId, { status, assignedAgentId })`: Validates transition against `ALLOWED_STATUS_TRANSITIONS`, modifies status, and updates assigned agent.
      - `modifyTicket(ticketId, fields)`: Safe dynamic SQL updater for administrative overrides.
      - `deleteTicket(ticketId)`: Deletes ticket by UUID.
@@ -239,8 +242,8 @@ To keep search and filtering instantaneous, indexes are placed on:
 ### Middleware Layer
 
 1. [`backend/src/middleware/authMiddleware.js`](file:///D:/Projects/SupportSenseAI/backend/src/middleware/authMiddleware.js)
-   - **`authenticateToken(req, res, next)`:** Extracts Bearer token from `Authorization` header, verifies signature using `jwt.verify()`, and attaches payload to `req.user`. Returns 401 if missing and 403 if expired or invalid.
-   - **`authorizeRoles(...allowedRoles)`:** Checks if `req.user.role` matches the required permission levels (e.g., `authorizeRoles('AGENT', 'ADMIN')`).
+   - **`authenticateJWT`:** Verifies Bearer JWT tokens, extracts claims (`id`, `email`, `role`, `department`), and attaches to `req.user`.
+   - **`authorizeRoles(...roles)`:** Role-based access control guard that rejects unauthorized callers with HTTP 403 Forbidden.
 
 2. [`backend/src/middleware/errorHandler.js`](file:///D:/Projects/SupportSenseAI/backend/src/middleware/errorHandler.js)
    - **What it does:** Catches uncaught synchronous and asynchronous errors from controllers.
@@ -261,13 +264,16 @@ To keep search and filtering instantaneous, indexes are placed on:
    - **`getUsers` & `updateUserRole`:** Admin-only endpoints for viewing and managing user roles.
 
 2. [`backend/src/controllers/ticketController.js`](file:///D:/Projects/SupportSenseAI/backend/src/controllers/ticketController.js)
-   - **`createTicket` Workflow (SCRUM-112):**
-     1. Executes atomic `createTicketWithInitialMessage` to guarantee ticket and customer message are created together.
-     2. Dispatches `aiService.performAITriage(title, description)` asynchronously.
-     3. Persists AI metadata and agent checklists to PostgreSQL using atomic upserts.
-     4. Calls `aiService.evaluateDepartmentAutoReply(...)`. If confidence >= 75% and auto-reply is enabled, posts an automated response message to the ticket thread.
-     5. Returns complete ticket object with metadata and checklists.
-   - **`getTickets` & `getTicketById`:** Retrieves list and details with role-based filtering.
+   - **`createTicket` Workflow (SCRUM-112 & SSAI-409):**
+     1. Calls `ticketModel.findDuplicateOrRelatedTickets` to inspect customer's previous tickets.
+     2. **Duplicate Prevention:** If a matching issue in `RESOLVED`/`CLOSED` exists and `forceCreate !== true`, responds with `HTTP 409 DUPLICATE_RESOLVED_TICKET` with past resolution notes.
+     3. **Follow-Up Linking:** If customer has an active ticket in the same category or intent indicates a follow-up, appends the inquiry to the active ticket or links it via `linked_ticket_id`.
+     4. Executes atomic `createTicketWithInitialMessage` to guarantee ticket and customer message are created together.
+     5. Dispatches `aiService.performAITriage(title, description)` asynchronously.
+     6. Persists AI metadata and agent checklists to PostgreSQL using atomic upserts.
+     7. Calls `aiService.evaluateDepartmentAutoReply(...)`. If confidence >= 75% and auto-reply is enabled, posts an automated response message to the ticket thread.
+     8. Returns complete ticket object with metadata, checklists, and linkage info.
+   - **`getTickets` & `getTicketById`:** Retrieves list and details with role-based filtering and linked inquiries.
    - **`updateStatus` (SCRUM-111 & SCRUM-113):**
      1. Enforces state transitions via `ALLOWED_STATUS_TRANSITIONS` (returns 400 Bad Request on illegal jumps).
      2. When transitioning from `RESOLVED` to `OPEN` (ticket reopened), returns HTTP 200 immediately to client and triggers `triggerReopenedTimelineSummary` in the background as a fire-and-forget worker, updating `ai_metadata.timeline_summary`.
@@ -278,12 +284,13 @@ To keep search and filtering instantaneous, indexes are placed on:
 
 3. [`backend/src/controllers/aiProxyController.js`](file:///D:/Projects/SupportSenseAI/backend/src/controllers/aiProxyController.js)
    - **`chatConcierge`:** Proxies interactive customer queries and natural language ticket formulation to `/api/v1/ai/concierge/chat`.
-   - **`polishTone`:** Proxies agent response drafts for 1-click rewriting to `/api/v1/ai/polish-tone`.
+   - **`polishTone`:** Proxies agent response drafts for 1-click rewriting to `/api/v1/ai/polish-tone` with 3-variation cycling and anti-nesting.
    - **`verifyResponse`:** Takes ticket context and draft reply, forwards to AI service, and returns 4-pillar quality scores (Professionalism, Empathy, Clarity, Actionability).
    - **`getWeeklyInsights`:** Returns aggregated friction points, common mistakes, and recommended FAQs.
    - **`evaluateAutoReply`:** Manually tests auto-reply policies for a given ticket.
    - **`getDepartmentRules`:** Fetches configured departments and categories.
    - **`getBenchmarks`:** Returns SLA duration metrics grounded in historical datasets.
+   - **`getFaqs` & `searchFaqs` (SSAI-410):** Serves domain FAQs and executes fuzzy keyword searches for real-time deflection.
 
 ---
 

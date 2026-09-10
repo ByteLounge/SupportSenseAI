@@ -46,15 +46,16 @@ SupportSense AI is built as an enterprise Single Page Application (SPA) using **
 
 ### 2.1 AuthContext (`frontend/src/context/AuthContext.jsx`)
 - **JWT Lifecycle**: Manages `supportsense_token` in `localStorage`, decodes claims, and provides reactive login/logout states.
-- **1-Click Demo Personas**: Pre-configured switcher between:
-  - **Sarah Agent** (`sarah@supportsense.io` / `AGENT` / Support Specialist)
-  - **Alex Rivera** (`alex.rivera@customer.com` / `CUSTOMER` / Acme Corp)
-- **Protected Routing**: Enforces role boundaries; customer personas are redirected away from agent-restricted administrative actions.
+- **1-Click Multi-Department Demo Personas**: Pre-configured selector for 9 distinct test users:
+  - **Customers**: Sarah Jenkins (`sarah.jenkins@acme.com`), David Chen (`david.chen@fintech.io`), Priya Patel (`priya.patel@globalcorp.com`).
+  - **Department Agents**: Alex Rivera (Technical Support), Elena Rostova (Finance & Billing), Marcus Brody (Identity & Access), Liam Vance (API Platform).
+  - **Administrator**: IT Operations Admin (`admin@example.com`).
+- **Protected Routing**: Enforces role boundaries; customer personas are restricted from viewing agent queues, internal staff notes, and administrative settings.
 
 ### 2.2 ThemeContext (`frontend/src/context/ThemeContext.jsx`)
 - Controls application-wide visual theme (`light` vs `dark`).
 - Toggles the `dark` class on document root `<html>` element and persists preference in `localStorage`.
-- Deep MoonRow Enterprise Dark theme uses `#0F172A` (Slate 900) canvas with `#1E293B` (Slate 800) container elevation and indigo/violet brand highlights.
+- Deep MoonRow Enterprise Dark theme uses `#0F172A` (Slate 900) canvas with `#1E293B` (Slate 800) container elevation and vermilion primary brand highlights (`#FD451B`).
 
 ---
 
@@ -64,22 +65,20 @@ SupportSense AI is built as an enterprise Single Page Application (SPA) using **
 - **Launcher Widget ([`AIConciergeWidget.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIConciergeWidget.jsx))**: Floating badge button anchored to the bottom-right corner across all authenticated pages.
 - **Interactive Chatbot Modal ([`AIConciergeChatbot.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIConciergeChatbot.jsx))**:
   - Converses empathetically with users describing problems in natural language.
-  - Generates interactive suggestion quick-chips (e.g. *"Check status page"*, *"Submit ticket immediately"*).
-  - Automatically synthesizes a formal enterprise ticket draft with executive summary, observed error details, business impact, reproduction steps, and diagnostic assessment.
-  - One-click submission directly dispatches the formulated ticket via `createTicketApi`.
+  - **Real-Time FAQ Deflection**: Searches domain FAQs as the customer chats, offering collapsible answer cards and a "✅ Solved My Issue" button that deflects ticket creation.
+  - **Duplicate Ticket Interception**: Warns if a matching issue was previously resolved for the user, offering direct navigation to the resolved ticket or an override ("Issue Still Persists").
+  - **Ticket Synthesis**: Formulates formal enterprise ticket specifications ready for 1-click dispatch.
 
 ### 3.2 Reopened Timeline Summary Banner ([`TimelineSummaryBanner.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/TimelineSummaryBanner.jsx))
 - Automatically mounts at the top of the conversation view in [`TicketDetailPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/TicketDetailPage.jsx) whenever a ticket is reopened (`RESOLVED -> OPEN`) or has extended conversation turns.
 - Displays a 5–6 bullet chronological history, identifying key actions taken and highlighting root failure causes for incoming senior agents.
 
-### 3.3 1-Click AI Response Tone Polisher ([`AIToneCheckerModal.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/AIToneCheckerModal.jsx))
+### 3.3 1-Click AI Response Tone Polisher ([`TicketDetailPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/TicketDetailPage.jsx))
 - Accessible directly from the ticket reply composer.
-- Enables agents to select between 4 tone styles:
-  - **Empathetic**: Reassuring and compassionate language validating user frustration.
-  - **Concise**: High-clarity bullet points stripping unnecessary conversational filler.
-  - **Formal**: Structured enterprise correspondence suitable for corporate executives.
-  - **Technical**: Diagnostic precision referencing telemetry, gateway logs, and API codes.
-- Previews the rewritten response alongside AI rationale before 1-click injection into the composer.
+- Enables agents to select between 4 tone styles: `Empathetic`, `Concise`, `Formal`, and `Technical`.
+- **3 Distinct Cycling Variations**: Agents can click a tone button repeatedly to cycle through `Variation 1`, `Variation 2`, and `Variation 3` without nesting greetings or appending repetitive salutations.
+- **Base Draft State Caching**: Caches the original text so variations iterate cleanly on the base draft.
+- **Bulletproof Button Styling**: Hardened with explicit vermilion active classes (`bg-[#FD451B] text-white border-[#FD451B]`) and `moonrow.primary` in `tailwind.config.js` to ensure button labels remain visible and never turn blank.
 
 ### 3.4 Pre-Send Response Quality Checker ([`QualityCheckModal.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/components/ai/QualityCheckModal.jsx))
 - Performs a 4-axis pre-send audit evaluating:
@@ -102,6 +101,14 @@ SupportSense AI is built as an enterprise Single Page Application (SPA) using **
 - Displays predicted resolution duration grounded in category benchmarks.
 - Provides interactive verification checklist checkboxes with local completion state tracking.
 - Offers 1-click insertion of the AI-drafted suggested response into the reply box.
+
+### 3.7 Linked & Related Inquiries Card ([`TicketDetailPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/TicketDetailPage.jsx))
+- Automatically mounts in the ticket detail workbench when a ticket is linked to a parent ticket or has child follow-up inquiries.
+- Displays ticket numbers, categories, status badges, and direct navigation links so agents have immediate access to complete inquiry context.
+
+### 3.8 Real-Time Knowledge Base FAQ Suggestion Panel ([`CreateTicketPage.jsx`](file:///D:/Projects/SupportSenseAI/frontend/src/pages/CreateTicketPage.jsx))
+- Debounces user input in the title and description fields to query `/api/v1/ai/faqs/search`.
+- Renders suggested FAQ cards with expandable solutions directly beside the creation form to encourage self-service resolution before ticket dispatch.
 
 ---
 

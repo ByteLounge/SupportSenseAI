@@ -11,6 +11,9 @@
 - **FR-104 (Agent Assignment & Forwarding)**: Agents/Admins can reassign tickets or forward tickets between departments (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform Team`) with internal handover notes.
 - **FR-105 (Atomic Transactional Ticket Creation - SCRUM-112)**: System must create the ticket record and its initial customer message within a single atomic PostgreSQL transaction (`BEGIN` / `COMMIT` / `ROLLBACK`). If initial message creation fails, the ticket is rolled back completely.
 - **FR-106 (Database Concurrency & Pooling - SCRUM-110)**: Backend must handle burst submissions using PostgreSQL connection pooling and the `ticket_number_seq` sequence to guarantee non-colliding human-readable ticket numbers (`T-1001`, `T-1002`, ...).
+- **FR-107 (Duplicate Resolved Ticket Interception - SSAI-409)**: Before creating a new ticket, system inspects the customer's previous tickets for matching resolved/closed issues. If found and `forceCreate` is false, returns `HTTP 409 DUPLICATE_RESOLVED_TICKET` with past resolution notes, offering the user a choice to view the resolved ticket or submit anyway.
+- **FR-108 (Same-User Ticket Linking & Follow-Up Detection - SSAI-409)**: Detects when a customer submits an inquiry following up on an active ticket (`linked_ticket_id`). Links the message directly to the existing ticket thread to prevent queue fragmentation.
+- **FR-109 (Multi-Department Agent Routing & Assignment)**: Organizes agents and tickets into 4 core departments: `Technical Support`, `Finance & Billing`, `Identity & Access`, and `API Platform`, storing the department in `users.department`.
 
 ### 4.2 AI Intelligence & Decision Support (FR-200 series)
 - **FR-201 (AI Classification & Priority)**: System calls the AI service upon ticket creation to automatically tag category (`Billing`, `Technical`, `Account`, `Bug`, `General`) and priority (`LOW`, `MEDIUM`, `HIGH`, `URGENT`) with confidence ratings.
@@ -20,12 +23,14 @@
 - **FR-205 (Response Quality Checker)**: Agents can evaluate proposed draft replies across 4 key pillars: Professionalism, Empathy, Clarity, and Actionability (0–100 scales) with instant improvement suggestions.
 - **FR-206 (Reopened Ticket Timeline Summary - SCRUM-113)**: When a ticket is reopened (`RESOLVED` ➔ `OPEN`), an asynchronous fire-and-forget worker queries the AI service to condense the entire message history into a 5-6 bullet executive summary and persists it to `ai_metadata.timeline_summary`.
 - **FR-207 (AI Concierge Chatbot & Ticket Crafter)**: Conversational assistant widget where users describe issues in simple language; the AI converses empathetically, diagnoses initial obstacles, and synthesizes a formal enterprise ticket specification ready for 1-click dispatch.
-- **FR-208 (1-Click AI Response Tone Polishing)**: Agents can rewrite draft responses into specialized styles: `Empathetic`, `Concise`, `Formal`, or `Technical` with instant preview and rationale.
+- **FR-208 (1-Click AI Response Tone Polishing with 3-Variation Cycling)**: Agents can rewrite draft responses into specialized styles: `Empathetic`, `Concise`, `Formal`, or `Technical`. Supports cycling through 3 distinct variations (`v1`, `v2`, `v3`) with strict anti-nesting rules stripping duplicate greetings.
 - **FR-209 (Department Automated Responses)**: AI evaluates incoming tickets against department rules and dispatches immediate confirmations with automated diagnostics if confidence meets the department threshold (80%–90%).
 - **FR-210 (Weekly Learning Insights)**: AI aggregates closed ticket data weekly to compute top recurring customer pain points, common agent handling errors, and recommended Knowledge Base additions.
+- **FR-211 (Real-Time Knowledge Base FAQ Integration & Deflection - SSAI-410)**: Backend exposes `/api/v1/ai/faqs` and `/api/v1/ai/faqs/search`. Frontend dynamically matches FAQs against customer input in forms and concierge chat, offering 1-click deflection.
+- **FR-212 (Anti-Gaming Urgency & Mood Decoupling)**: System prompts explicitly decouple customer emotional state / shouting from technical priority. Shouting "URGENT" or "EMERGENCY" without verified business impact does not raise technical priority.
 
 ### 4.3 Administration & Analytics (FR-300 series)
-- **FR-301 (Role-Based Access Control)**: Three distinct roles: `CUSTOMER`, `AGENT`, `ADMIN`. Public registration strictly enforces `CUSTOMER` role.
+- **FR-301 (Role-Based Access Control & Personas)**: Three distinct roles: `CUSTOMER`, `AGENT`, `ADMIN` with 9 pre-seeded multi-department testing personas. Public registration strictly enforces `CUSTOMER` role.
 - **FR-302 (Analytics & SLA Dashboard)**: Real-time graphs and metrics showing ticket volume, resolution times, average CSAT, SLA breach risks, and customer mood distributions.
 - **FR-303 (Department Rules & Policies View)**: Dedicated interface displaying supported departments, categories, target SLAs, and active auto-reply templates.
 
@@ -144,3 +149,32 @@ graph TD
   3. Fire-and-forget worker calls `/api/v1/ai/summarize-timeline` with full thread history.
   4. AI microservice condenses thread into 5-6 chronological bullets and upserts into `ai_metadata`.
   5. Next ticket detail view displays the prominent `TimelineSummaryBanner` at the top of the workbench.
+
+### UC-06: Duplicate Resolved Ticket Interception & Customer Override
+- **Primary Actor**: Customer / System Backend
+- **Pre-conditions**: Customer has previously submitted and resolved an identical/similar issue.
+- **Main Success Scenario**:
+  1. Customer fills in ticket creation form or sends message to AI Concierge.
+  2. Backend scans customer's past resolved tickets via `findDuplicateOrRelatedTickets`.
+  3. Backend detects high-similarity match and returns `HTTP 409 DUPLICATE_RESOLVED_TICKET` with past ticket number, title, and resolution notes.
+  4. UI renders a warning card presenting previous resolution steps and two actions:
+     - **"View Resolved Ticket"**: Navigates directly to the resolved ticket.
+     - **"Issue Still Persists (Submit Anyway)"**: Dispatches ticket creation with `forceCreate: true`, creating a new ticket with link reference.
+
+### UC-07: Real-Time Knowledge Base FAQ Deflection
+- **Primary Actor**: Customer
+- **Pre-conditions**: Customer enters text into ticket title, description, or AI Concierge prompt.
+- **Main Success Scenario**:
+  1. Frontend debounces text input and calls `/api/v1/ai/faqs/search?q=...`.
+  2. System returns top matching verified FAQ articles with solutions.
+  3. Customer expands the FAQ answer card and resolves their question immediately.
+  4. Customer clicks **"✅ Solved My Issue"**, deflecting ticket submission and preventing ticket queue inflation.
+
+### UC-08: Follow-up Ticket Linking for Same User
+- **Primary Actor**: Customer / System Backend
+- **Pre-conditions**: Customer already has an active ticket (`OPEN` or `IN_PROGRESS`).
+- **Main Success Scenario**:
+  1. Customer submits a new message asking for an update or additional detail on their issue.
+  2. Backend identifies existing active ticket under same category or detects follow-up intent keywords.
+  3. Backend links the inquiry by either appending the message directly to the existing thread or setting `linked_ticket_id` on the new ticket record.
+  4. Agent workbench renders the **"🔗 Linked & Related Inquiries"** card linking all related inquiries together.

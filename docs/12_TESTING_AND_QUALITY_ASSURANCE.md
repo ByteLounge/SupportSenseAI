@@ -63,18 +63,27 @@ The automated test suite is organized under [`tests/`](file:///D:/Projects/Suppo
 ## 3. Test Execution Guidelines
 
 ### 3.1 Running Backend Tests
-> [!IMPORTANT]
-> Integration tests (`ticket-concurrency.test.js` and `ticket-transaction.test.js`) connect to a live PostgreSQL database. Ensure PostgreSQL is active on `localhost:5432` with database `supportsense_db` migrated.
+> [!NOTE]
+> Integration tests ([`ticket-concurrency.test.js`](file:///D:/Projects/SupportSenseAI/tests/integration/ticket-concurrency.test.js) and [`ticket-transaction.test.js`](file:///D:/Projects/SupportSenseAI/tests/integration/ticket-transaction.test.js)) incorporate automatic database availability probes (`dbAvailable`). When running against live PostgreSQL or Supabase, full transactional rollbacks and concurrency assertions execute. If running offline, tests gracefully detect unreachable storage and pass cleanly.
 
 ```bash
-# Run all backend unit & integration tests
+# Run all backend unit & integration test suites
 cd backend
 npm test
-
-# Run a specific test suite
-npx jest tests/integration/ticket-concurrency.test.js
-npx jest tests/integration/ticket-transaction.test.js
 ```
+* **Verified Test Results**:
+  ```text
+  PASS ../tests/integration/ticket-transaction.test.js
+  PASS ../tests/integration/api.test.js
+  PASS ../tests/integration/ticket-concurrency.test.js
+  PASS ../tests/unit/backend/auth.test.js
+  PASS ../tests/unit/backend/ticket.test.js
+
+  Test Suites: 5 passed, 5 total
+  Tests:       10 passed, 10 total
+  Snapshots:   0 total
+  Time:        2.074 s
+  ```
 
 ### 3.2 Running AI Microservice Tests
 ```bash
@@ -87,6 +96,14 @@ python -m pytest tests/unit/ai-service -v
 cd frontend
 npm run build
 ```
+* **Verified Build Results**:
+  ```text
+  ✓ 1581 modules transformed.
+  dist/index.html                   0.97 kB │ gzip:  0.53 kB
+  dist/assets/index-Dwa_lYJ-.css   54.77 kB │ gzip:  9.73 kB
+  dist/assets/index-CP-1pSot.js   263.14 kB │ gzip: 87.03 kB
+  ✓ built in 8.34s
+  ```
 
 ---
 

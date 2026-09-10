@@ -50,9 +50,9 @@ The SupportSense AI backend is built using Node.js and Express 4.x following str
 - `PATCH /users/:id/role`: Modifies user role (`CUSTOMER`, `AGENT`, `ADMIN` — Admin only).
 
 ### 3.2 Ticket Management Endpoints (`/api/v1/tickets`)
-- `POST /`: Atomically creates ticket and customer message via transaction (`createTicketWithInitialMessage`), triggers AI triage and department auto-reply evaluation.
+- `POST /`: Atomically creates ticket and customer message via transaction (`createTicketWithInitialMessage`), triggers AI triage and department auto-reply evaluation. Proactively scans for duplicates; returns `HTTP 409 DUPLICATE_RESOLVED_TICKET` if a similar resolved issue exists, unless `forceCreate: true` is supplied. Automatically links follow-up inquiries to active tickets.
 - `GET /`: Returns tickets filtered by `status`, `priority`, or `search` term (role-guarded: Customers only view their own tickets).
-- `GET /:id`: Retrieves complete ticket details with messages, AI metadata, and checklists.
+- `GET /:id`: Retrieves complete ticket details with messages, AI metadata, checklists, and linked parent/child tickets.
 - `PATCH /:id/status`: Enforces state machine transitions (`ALLOWED_STATUS_TRANSITIONS`). Reopening (`RESOLVED` ➔ `OPEN`) asynchronously triggers the AI timeline summarizer.
 - `POST /:id/forward`: Forwards ticket to a target department (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform Team`) with internal handover notes.
 - `PATCH /:id`: Modifies ticket attributes such as title, category, priority, status, or assigned agent (Admin/Agent escalation override).
@@ -62,12 +62,14 @@ The SupportSense AI backend is built using Node.js and Express 4.x following str
 
 ### 3.3 AI Decision Assistance Proxy (`/api/v1/ai`)
 - `POST /concierge`: AI Concierge Chatbot & Formal Ticket Crafter (accessible to all authenticated roles).
-- `POST /polish-tone`: 1-Click AI Response Tone Polishing into `empathetic`, `concise`, `formal`, or `technical` styles (Agent/Admin).
+- `POST /polish-tone`: 1-Click AI Response Tone Polishing into `empathetic`, `concise`, `formal`, or `technical` styles with 3 distinct cycling variations and anti-nesting.
 - `POST /verify-response`: Forwards draft reply to AI microservice for 4-pillar quality & empathy analysis (Agent/Admin).
 - `POST /department-auto-reply`: Evaluates auto-reply eligibility and generates department confirmation response (Agent/Admin).
 - `GET /departments`: Returns configured departments, categories, target SLAs, and active auto-reply rules (Agent/Admin).
-- `GET /benchmarks`: Fetches category SLA resolution durations and priority distributions (Agent/Admin).
+- `GET /benchmarks`: Fetches category SLA resolution durations and priority benchmarks (Agent/Admin).
 - `GET /insights`: Fetches weekly organizational learning insights and FAQ suggestions (Agent/Admin).
+- `GET /faqs`: Retrieves domain knowledge base FAQs across Technical, Billing, Identity, and API categories.
+- `GET /faqs/search?q=...`: Real-time fuzzy keyword search over FAQs for instant deflection.
 
 ---
 
@@ -103,3 +105,23 @@ When an agent updates ticket status from `RESOLVED` to `OPEN`:
 - Configured in [`db.js`](file:///D:/Projects/SupportSenseAI/backend/src/config/db.js) with 20 max clients and idle timeouts.
 - Tested in [`ticket-concurrency.test.js`](file:///D:/Projects/SupportSenseAI/tests/integration/ticket-concurrency.test.js) under 10 concurrent requests without sequence number collisions.
 
+### 4.5 Duplicate Resolved Ticket Interception (SSAI-409)
+Implemented via [`findDuplicateOrRelatedTickets`](file:///D:/Projects/SupportSenseAI/backend/src/models/ticketModel.js#L50-L95) in `ticketModel.js`:
+- Searches previous tickets for the same customer using keyword similarity and category matching.
+- If a matching ticket in `RESOLVED` or `CLOSED` status is found and `forceCreate` is false:
+  - Halts creation and returns `HTTP 409` with code `DUPLICATE_RESOLVED_TICKET`.
+  - Transmits previous ticket number, title, resolution date, and resolution summary notes.
+  - Allows client to bypass with `{ forceCreate: true }` if the problem has recurred.
+
+### 4.6 Same-User Follow-Up Ticket Linking (SSAI-409)
+- If the customer already has an `OPEN` or `IN_PROGRESS` ticket in the same category or their message indicates follow-up intent (`"status"`, `"update"`, `"follow up"`):
+  - Backend links the inquiry to the active ticket via `linked_ticket_id` or appends the message directly into the thread.
+  - Returns `linked_to_existing: true` and ticket details to ensure single-source conversation history.
+
+### 4.7 Multi-Department Routing Architecture
+- Organizes agents and tickets across 4 departments:
+  - **Technical Support**: Infrastructure, bugs, performance, hardware.
+  - **Finance & Billing**: Invoices, charges, refunds, subscription plans.
+  - **Identity & Access**: Passwords, 2FA/MFA, SSO, permissions.
+  - **API Platform**: Endpoints, SDKs, webhooks, rate limits.
+- Persisted in `users.department` and evaluated for intelligent ticket assignment.

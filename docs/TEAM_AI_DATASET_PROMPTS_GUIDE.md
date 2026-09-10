@@ -151,6 +151,7 @@ All system prompts are maintained in [`ai-service/app/prompts/templates.py`](fil
 ### 1. Senior Support Triage Officer & SLA Risk Assessor
 - **Prompt Constant:** `TRIAGE_AND_CATEGORIZATION_ROLE_PROMPT`
 - **Role:** Analyzes incoming ticket title and description, maps to a strict taxonomy (`Billing`, `Technical`, `Account`, `Feature Request`, `Bug`, `General`), assigns priority (`LOW`, `MEDIUM`, `HIGH`, `URGENT`), detects sentiment (`HAPPY`, `NEUTRAL`, `FRUSTRATED`), evaluates customer patience (`CALM`, `CONCERNED`, `FRUSTRATED`, `CRITICAL`), and generates an agent checklist.
+- **Anti-Gaming Rule:** Explicitly decouples emotional shouting, exclamation marks, or words like `"URGENT"` from technical priority. A customer shouting about minor profile adjustments is classified with `customer_mood: FRUSTRATED` and `patience_score: CONCERNED`, but `priority: LOW`. Priority is reserved strictly for verifiable business disruption (production outage, financial error, security breach).
 - **Context Injected:** Historical resolution benchmarks from local Kaggle datasets.
 
 ### 2. Customer Communications Strategist & Empathy Lead
@@ -181,10 +182,16 @@ All system prompts are maintained in [`ai-service/app/prompts/templates.py`](fil
 ### 7. AI Concierge & Natural Language Ticket Crafter
 - **Prompt Constant:** `AI_CONCIERGE_TICKET_CRAFTER_PROMPT`
 - **Role:** Interactive conversational assistant that speaks empathetically to the customer in natural language, troubleshoots quick issues, and synthesizes unstructured complaints into complete enterprise ticket drafts with executive summaries, observed errors, business impact, reproduction steps, and diagnostic assessment.
+- **Anti-Gaming Guardrail:** Protects against aggressive tone inflating technical urgency; evaluates system severity based on objective functionality loss.
 
 ### 8. Enterprise Communications Editor & Tone Coach
 - **Prompt Constant:** `AI_TONE_POLISH_PROMPT`
 - **Role:** 1-Click tone refiner that rewrites agent draft responses into Empathetic, Concise, Formal, or Technical styles while maintaining core technical facts, links, and action items.
+- **3-Variation Cycling (`v1`, `v2`, `v3`):** Supports cycling through 3 distinct variations on repeated clicks, providing diverse phrasing angles:
+  - *Variation 1:* Direct, structured, clear solution.
+  - *Variation 2:* Consultative, warm partnership tone.
+  - *Variation 3:* Action-oriented next-steps and diagnostic roadmap.
+- **Anti-Nesting Directive:** Automatically cleans and strips pre-existing salutations/sign-offs from input text before generating the polished version to prevent recursive greetings (e.g. *"Dear John, Hello John, Hi John"*).
 
 ---
 

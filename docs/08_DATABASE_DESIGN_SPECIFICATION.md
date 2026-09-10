@@ -11,6 +11,7 @@ erDiagram
     TICKETS ||--o{ TICKET_MESSAGES : "contains"
     TICKETS ||--o{ AGENT_CHECKLISTS : "has"
     TICKETS ||--|| AI_METADATA : "possesses"
+    TICKETS ||--o{ TICKETS : "parent_of / follow_up"
 
     USERS {
         uuid id PK
@@ -18,6 +19,7 @@ erDiagram
         string email UK
         string password_hash
         string role
+        string department "Technical Support | Finance & Billing | Identity & Access | API Platform"
         string avatar_url
         timestamp created_at
     }
@@ -27,6 +29,7 @@ erDiagram
         string ticket_number UK
         uuid customer_id FK
         uuid assigned_agent_id FK
+        uuid linked_ticket_id FK "References parent ticket for follow-ups"
         string title
         text description
         string status
@@ -92,6 +95,8 @@ erDiagram
 2. **`idx_tickets_customer_id` (`tickets(customer_id)`)**: Speeds up customer dashboard queries (`WHERE customer_id = $1`).
 3. **`idx_ticket_messages_ticket_created` (`ticket_messages(ticket_id, created_at ASC)`)**: Ensures instant threaded messaging retrieval ordered chronologically.
 4. **`idx_ai_metadata_ticket_id` (`ai_metadata(ticket_id)`)**: Unique 1:1 join lookup for AI decision drawer data.
+5. **`idx_tickets_linked_ticket_id` (`tickets(linked_ticket_id)`)**: Speeds up parent/child inquiry lookups and thread history correlation.
+6. **`idx_users_department` (`users(department)`)**: Enables instant department-based ticket queue routing and agent assignment.
 
 ---
 

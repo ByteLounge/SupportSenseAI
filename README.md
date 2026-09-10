@@ -61,17 +61,21 @@
 ## 🔥 Novel Enterprise Features
 
 1. **AI Concierge Chatbot & Conversational Ticket Crafter**: Interactive assistant widget allowing customers and agents to describe issues in natural, everyday language. Automatically performs empathetic diagnosis, answers questions, and generates a structured enterprise ticket specification ready for 1-click dispatch.
-2. **1-Click AI Response Tone Polishing**: Multi-style tone transformer for support agents offering 1-click rewrites into **Empathetic**, **Concise**, **Formal**, or **Technical** styles with instant preview and rationale.
-3. **AI Mood Indicator & Sentiment Score**: Real-time customer emotion categorization (`🙂 HAPPY`, `😐 NEUTRAL`, `😠 FRUSTRATED`) paired with confidence metrics (`0.00` to `1.00`).
-4. **Customer Patience Score & SLA Guardrail**: Tracks customer frustration levels (`CALM`, `CONCERNED`, `FRUSTRATED`, `CRITICAL`) to guide tone and trigger supervisor escalation warnings.
-5. **Dataset-Grounded Resolution Predictor**: Forecasts estimated completion timeframes (e.g., *"1–2 business days"*) calibrated against historical Kaggle & Hugging Face support benchmarks.
-6. **Dynamic Agent Assist Checklists**: Auto-generates step-by-step action items tailored to the specific problem (e.g., `[ ] Verify Stripe payment logs`, `[ ] Issue $1,200 refund`, `[ ] Send apology email`).
-7. **Department Automated Replies & Routing**: Evaluates category qualification per department (`Finance & Billing`, `Technical Support`, `Identity & Access`, `API Platform Team`) to dispatch immediate confirmations and trigger automated diagnostic tasks.
-8. **Response Quality & Empathy Checker**: Pre-send reply evaluation scoring agent drafts for **Professionalism**, **Empathy**, **Clarity**, and **Actionability** with instant correction hints.
-9. **Reopened Ticket Timeline Summarizer & Banner**: Condenses lengthy, multi-agent thread histories into a 5-6 bullet executive summary via an asynchronous fire-and-forget worker upon reopening (`RESOLVED` ➔ `OPEN`), rendered as a prominent TL;DR banner.
-10. **Transactional Ticket & Message Creation (SCRUM-112)**: Atomic PostgreSQL transaction wrapping ticket record and initial customer message to guarantee database consistency.
-11. **Enforced Status Transition Validation (SCRUM-111)**: Strict state machine enforcing valid progression (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED` or `OPEN`), rejecting illegal state skips.
-12. **Weekly Organizational Learning Insights**: Analyzes historical ticket resolution patterns to generate top repeated issues, recurring agent mistakes, and suggested Knowledge Base FAQs.
+2. **1-Click AI Response Tone Polishing (3-Variation Cycling)**: Multi-style tone transformer for support agents offering 1-click rewrites into **Empathetic**, **Concise**, **Formal**, or **Technical** styles with 3 distinct rephrasing variations (`v1`, `v2`, `v3`) without nesting or repetitive salutations.
+3. **Duplicate Resolved Ticket Interception (SSAI-409)**: Proactively intercepts incoming tickets if an identical or similar issue has already been resolved for the customer (`HTTP 409 DUPLICATE_RESOLVED_TICKET`). Displays previous verified resolution notes and allows customer override (`forceCreate: true`) if the issue still persists.
+4. **Automatic Ticket Linking for Follow-up Inquiries (SSAI-409)**: Seamlessly links follow-up queries from the same user to their existing active ticket thread (`linked_ticket_id`), maintaining ticket history and preventing queue fragmentation.
+5. **Real-Time Knowledge Base FAQ Integration & Ticket Deflection (SSAI-410)**: Scans domain FAQs in real time as the customer drafts their inquiry in the form or concierge chat, providing instant verified answers to deflect unnecessary tickets.
+6. **Anti-Gaming Mood & Urgency AI Prompting**: Decouples customer emotion or shouting ("URGENT", "EMERGENCY", exclamation marks) from technical SLA priority. Captures emotional distress in `customer_mood` while evaluating `priority` strictly by objective business impact.
+7. **AI Mood Indicator & Sentiment Score**: Real-time customer emotion categorization (`🙂 HAPPY`, `😐 NEUTRAL`, `😠 FRUSTRATED`) paired with confidence metrics (`0.00` to `1.00`).
+8. **Customer Patience Score & SLA Guardrail**: Tracks customer frustration levels (`CALM`, `CONCERNED`, `FRUSTRATED`, `CRITICAL`) to guide tone and trigger supervisor escalation warnings.
+9. **Dataset-Grounded Resolution Predictor**: Forecasts estimated completion timeframes (e.g., *"1–2 business days"*) calibrated against historical Kaggle & Hugging Face support benchmarks.
+10. **Dynamic Agent Assist Checklists**: Auto-generates step-by-step action items tailored to the specific problem (e.g., `[ ] Verify Stripe payment logs`, `[ ] Issue $1,200 refund`, `[ ] Send apology email`).
+11. **Department Automated Replies & Multi-Department Routing**: Evaluates category qualification across 4 core departments (`Technical Support`, `Finance & Billing`, `Identity & Access`, `API Platform`) to dispatch immediate confirmations and route tickets to specialized agents.
+12. **Response Quality & Empathy Checker**: Pre-send reply evaluation scoring agent drafts for **Professionalism**, **Empathy**, **Clarity**, and **Actionability** with instant correction hints.
+13. **Reopened Ticket Timeline Summarizer & Banner**: Condenses lengthy, multi-agent thread histories into a 5-6 bullet executive summary via an asynchronous fire-and-forget worker upon reopening (`RESOLVED` ➔ `OPEN`), rendered as a prominent TL;DR banner.
+14. **Transactional Ticket & Message Creation (SCRUM-112)**: Atomic PostgreSQL transaction wrapping ticket record and initial customer message to guarantee database consistency.
+15. **Enforced Status Transition Validation (SCRUM-111)**: Strict state machine enforcing valid progression (`OPEN` ➔ `IN_PROGRESS` ➔ `RESOLVED` ➔ `CLOSED` or `OPEN`), rejecting illegal state skips.
+16. **Weekly Organizational Learning Insights**: Analyzes historical ticket resolution patterns to generate top repeated issues, recurring agent mistakes, and suggested Knowledge Base FAQs.
 
 ---
 
@@ -228,6 +232,7 @@ erDiagram
     TICKETS ||--o{ TICKET_MESSAGES : "contains"
     TICKETS ||--o{ AGENT_CHECKLISTS : "has"
     TICKETS ||--o{ AI_METADATA : "possesses"
+    TICKETS ||--o{ TICKETS : "links / follow-up"
     USERS ||--o{ WEEKLY_INSIGHTS : "generates/reviews"
 
     USERS {
@@ -236,6 +241,7 @@ erDiagram
         string email
         string password_hash
         string role "CUSTOMER | AGENT | ADMIN"
+        string department "Technical Support | Finance & Billing | Identity & Access | API Platform"
         timestamp created_at
     }
 
@@ -244,6 +250,7 @@ erDiagram
         string ticket_number
         uuid customer_id FK
         uuid assigned_agent_id FK
+        uuid linked_ticket_id FK "References parent ticket for follow-ups"
         string title
         text description
         string status "OPEN | IN_PROGRESS | PENDING | RESOLVED | CLOSED"
@@ -464,12 +471,14 @@ SupportSenseAI/
 
 ### 🧠 AI Proxy APIs (`/api/v1/ai`)
 * `POST /api/v1/ai/concierge` — Interactive AI Concierge Chatbot & Formal Ticket Crafter (Accessible to all authenticated roles).
-* `POST /api/v1/ai/polish-tone` — 1-Click AI Response Tone Polishing (`empathetic`, `concise`, `formal`, `technical` — Agent/Admin).
+* `POST /api/v1/ai/polish-tone` — 1-Click AI Response Tone Polishing (`empathetic`, `concise`, `formal`, `technical` — 3 cycling variations with anti-nesting).
 * `POST /api/v1/ai/verify-response` — Evaluates agent draft reply for Professionalism, Empathy, Clarity, Actionability (Agent/Admin).
 * `POST /api/v1/ai/department-auto-reply` — Evaluates auto-reply eligibility and generates department-specific confirmation message (Agent/Admin).
 * `GET /api/v1/ai/departments` — Returns department definitions, handled categories, and active auto-reply rules (Agent/Admin).
 * `GET /api/v1/ai/benchmarks` — Returns historical category SLA duration and priority benchmarks (Agent/Admin).
 * `GET /api/v1/ai/insights` — Fetches weekly AI analytics, top repeated issues, and recommended FAQs (Agent/Admin).
+* `GET /api/v1/ai/faqs` — Retrieves all knowledge base FAQs across Technical, Billing, Account, and API categories.
+* `GET /api/v1/ai/faqs/search` — Performs real-time fuzzy keyword search over FAQs for instant deflection during ticket drafting.
 
 ---
 
@@ -505,15 +514,20 @@ Access the local services:
 
 ---
 
-### 🔑 Demo Accounts (Pre-Seeded)
+### 🔑 Demo Accounts & Personas (Pre-Seeded)
 
-All demo accounts share the password: **`Password123!`**
+All demo accounts share the password: **`Password123!`** (also selectable via 1-click quick-login buttons on the login page):
 
-| Role | Email | Password | Dashboard View |
-|---|---|---|---|
-| **Admin** | `admin@supportsense.ai` | `Password123!` | Executive Insights & Analytics |
-| **Support Agent** | `agent.sarah@supportsense.ai` | `Password123!` | Agent Assist Queue & Ticket Workbench |
-| **Customer** | `alex.rivera@customer.com` | `Password123!` | Customer Ticket Submission & Portal |
+| Persona / Role | Email | Password | Department | Dashboard View |
+|:---|:---|:---|:---|:---|
+| **Customer** (Sarah Jenkins) | `sarah.jenkins@acme.com` | `Password123!` | Customer | Customer Portal (Submit Tickets & Live Chat) |
+| **Customer** (David Chen) | `david.chen@fintech.io` | `Password123!` | Customer | Customer Portal (Active & Resolved Tickets) |
+| **Customer** (Priya Patel) | `priya.patel@globalcorp.com` | `Password123!` | Customer | Customer Portal (API & Technical Inquiries) |
+| **Agent** (Alex Rivera) | `alex.rivera@supportsense.ai` | `Password123!` | Technical Support | Agent Workbench (Technical Ticket Queue) |
+| **Agent** (Elena Rostova) | `elena.rostova@supportsense.ai` | `Password123!` | Finance & Billing | Agent Workbench (Billing & Invoices Queue) |
+| **Agent** (Marcus Brody) | `marcus.brody@supportsense.ai` | `Password123!` | Identity & Access | Agent Workbench (SSO & MFA Security Queue) |
+| **Agent** (Liam Vance) | `liam.vance@supportsense.ai` | `Password123!` | API Platform | Agent Workbench (Webhooks & SDK Errors) |
+| **Admin** (Administrator) | `admin@example.com` | `Password123!` | IT Operations | Executive Insights, User Management & SLA Analytics |
 
 ---
 
