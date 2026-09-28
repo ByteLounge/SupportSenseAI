@@ -3,12 +3,49 @@
  * Clean REST API client with Axios interceptors and rich multi-role mock fallback data.
  */
 
-import axios from 'axios';
+/**
+ * Normalizes the API base URL to ensure valid external resolution in browser runtimes.
+ * Resolves edge-cases where Render Blueprints or internal service names (e.g., 'supportsense-backend')
+ * are injected without FQDNs or without the required '/api/v1' path prefix.
+ */
+function getApiBaseUrl() {
+  let url = (import.meta.env.VITE_API_BASE_URL || '/api/v1').trim();
 
-const rawBaseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-const baseURL = (rawBaseURL.startsWith('http://') || rawBaseURL.startsWith('https://') || rawBaseURL.startsWith('/'))
-  ? rawBaseURL
-  : `https://${rawBaseURL}`;
+  // 1. Detect unresolvable internal hostnames without TLDs (e.g. 'supportsense-backend')
+  // Browsers cannot resolve internal cluster/Docker service names on the public internet.
+  if (!url.startsWith('/') && !url.startsWith('http://localhost') && !url.startsWith('https://localhost')) {
+    const hostPart = url.replace(/^https?:\/\//, '').split('/')[0];
+    if (!hostPart.includes('.')) {
+      const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+      if (currentHost.includes('onrender.com')) {
+        // Automatically map internal service name to the public Render domain
+        url = `https://${hostPart}.onrender.com/api/v1`;
+      } else {
+        // Fall back to relative path to leverage reverse proxies / static site rewrites
+        url = '/api/v1';
+      }
+    }
+  }
+
+  // 2. Ensure valid HTTP/HTTPS protocol for non-relative URLs
+  if (!url.startsWith('/') && !url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+
+  // 3. Ensure the mandatory '/api/v1' prefix is present
+  url = url.replace(/\/+$/, '');
+  if (!url.endsWith('/api/v1')) {
+    if (url.endsWith('/api')) {
+      url += '/v1';
+    } else if (!url.includes('/api/')) {
+      url += '/api/v1';
+    }
+  }
+
+  return url;
+}
+
+const baseURL = getApiBaseUrl();
 
 const API = axios.create({
   baseURL,

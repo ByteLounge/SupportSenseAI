@@ -94,7 +94,7 @@ services:
         fromService:
           type: web
           name: supportsense-ai-service
-          property: host
+          property: hostport
 
   # 3. React SPA Frontend (Static Site)
   - type: web
@@ -104,12 +104,11 @@ services:
     staticPublishPath: ./frontend/dist
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: supportsense-backend
-          property: host
-          append: /api/v1
+        value: https://supportsense-backend.onrender.com/api/v1
     routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://supportsense-backend.onrender.com/api/*
       - type: rewrite
         source: /*
         destination: /index.html

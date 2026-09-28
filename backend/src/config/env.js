@@ -33,5 +33,15 @@ module.exports = {
   DB_PASSWORD: process.env.DB_PASSWORD || 'postgres',
 
   // Python FastAPI AI Service URL
-  AI_SERVICE_URL: process.env.AI_SERVICE_URL || 'http://localhost:8000'
+  AI_SERVICE_URL: (() => {
+    let url = (process.env.AI_SERVICE_URL || 'http://localhost:8000').trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `http://${url}`;
+    }
+    // If referencing internal hostname without port on Render, ensure default FastAPI port 8000
+    if (url.includes('supportsense-ai-service') && !url.match(/:\d+$/)) {
+      url = `${url}:8000`;
+    }
+    return url.replace(/\/+$/, '');
+  })()
 };

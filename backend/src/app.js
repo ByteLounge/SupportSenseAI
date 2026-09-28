@@ -23,8 +23,13 @@ const env = require('./config/env');
 app.use(helmet());
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, server-to-server)
-    if (!origin || env.ALLOWED_ORIGINS.includes(origin) || env.NODE_ENV !== 'production') {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server) or Render deployments
+    if (
+      !origin || 
+      env.ALLOWED_ORIGINS.includes(origin) || 
+      origin.endsWith('.onrender.com') || 
+      env.NODE_ENV !== 'production'
+    ) {
       callback(null, true);
     } else {
       callback(new Error(`CORS policy does not allow access from origin ${origin}`));
