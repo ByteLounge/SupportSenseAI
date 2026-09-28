@@ -612,43 +612,43 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
             "Module 01 (PRD) and Module 02 (Requirements) completed.\nJira Backlog initialized with 31 user stories."
         ),
         (
-            "Week 2\n(10 Aug - 16 Aug)",
+            "Week 2\n(10 Aug - 17 Aug)",
             "• Evaluated LLM options (Gemini 1.5 Flash vs local open-source models).\n• Ingested Kaggle & Hugging Face support datasets (TWCS, Bitext, SAMSum).\n• Authored specialized ~40-line persona system prompts with domain bounds.\n• Measured token costs, inference latency, and few-shot classification accuracy.",
             "• LLM prompt engineering, few-shot grounding, and temperature tuning.\n• Dataset streaming APIs and conversational data tokenization.\n• Designing bounded Human-in-the-Loop (HITL) prompt guardrails.",
-            "Module 10 (AI Specification) completed.\nBaseline triage accuracy achieved >85% on 100 benchmark records."
+            "Completed Sprint 1 delivery (18 Story Points burned).\nModule 10 (AI Specification) completed.\nBaseline triage accuracy achieved >85% on 100 benchmark records."
         ),
         (
-            "Week 3\n(17 Aug - 23 Aug)",
+            "Week 3\n(18 Aug - 24 Aug)",
             "• Designed 3-tier distributed system topology and component interactions.\n• Modeled normalized PostgreSQL relational schema (6 core tables).\n• Created SQL migration scripts (001_init_schema.sql) and seed data generator.\n• Configured connection pooling parameters and UUID primary keys.",
             "• Relational database normalization & foreign key cascade constraints.\n• JSONB schema design for unstructured AI metadata.\n• Database connection pooling optimization and indexing strategies.",
             "Module 04 (Architecture) and Module 08 (Database) completed.\nSchema successfully initialized on PostgreSQL 15."
         ),
         (
-            "Week 4\n(24 Aug - 30 Aug)",
+            "Week 4\n(25 Aug - 31 Aug)",
             "• Built Node.js & Express REST API server with JWT authentication.\n• Implemented Role-Based Access Control (RBAC) middleware.\n• Scaffolding React 18 Single Page Application with Vite and Tailwind CSS.\n• Built MoonRow UI design system (dark/light mode) and 1-click persona logins.",
             "• Express middleware architecture, HTTP security headers, CORS guards.\n• JWT signing, token lifecycle management, and secure bcrypt hashing.\n• React component composition, Context API state management, responsive UI.",
             "Completed Sprint 2 delivery (59 Story Points burned).\nAuthentication flow and dual-pane workbench skeleton functional."
         ),
         (
-            "Week 5\n(31 Aug - 06 Sep)",
+            "Week 5\n(01 Sep - 07 Sep)",
             "• Developed Python FastAPI AI microservice with async HTTP endpoints.\n• Integrated Google Generative AI SDK with Pydantic JSON schema validators.\n• Implemented GenerativeModel instance pooling and SHA-256 TTL cache (300s).\n• Constructed heuristic deterministic fallback handlers for offline LLM resilience.",
             "• Asynchronous Python programming (async/await), FastAPI routing.\n• Pydantic v2 structured data parsing and schema validation.\n• In-memory caching mechanisms and microservice resilience patterns.",
             "AI microservice operational on port 8000.\nIn-memory cache demonstrated sub-15ms response on repeat queries."
         ),
         (
-            "Week 6\n(07 Sep - 13 Sep)",
+            "Week 6\n(08 Sep - 14 Sep)",
             "• Connected frontend React SPA to backend and AI microservice via Axios.\n• Implemented dual-pane Agent Workbench with chat bubbles and internal notes.\n• Integrated real-time customer mood badge and patience degradation score.\n• Built dynamic troubleshooting checklist generator and pre-send quality modal.",
             "• Full-stack asynchronous REST API integration with error handling.\n• Dual-pane UI state synchronization and reactive badge rendering.\n• Modal dialog accessibility, checklist state persistence, and tone evaluation.",
             "Completed Sprint 3 delivery (38 Story Points burned).\nLive AI triage, sentiment badges, and tone auditing working end-to-end."
         ),
         (
-            "Week 7\n(14 Sep - 20 Sep)",
+            "Week 7\n(15 Sep - 21 Sep)",
             "• Engineered AI Concierge Chatbot widget for natural language ticket intake.\n• Built 1-click multi-style tone polisher with 3 cycling variations.\n• Implemented duplicate resolved ticket interception (HTTP 409).\n• Added automatic follow-up ticket linking and real-time FAQ deflection panel.\n• Developed async fire-and-forget worker for reopened ticket timeline summary.",
             "• Conversational AI state handling and multi-turn prompt orchestration.\n• Duplicate detection algorithms and transactional consistency in PostgreSQL.\n• Non-blocking fire-and-forget background job execution in Node.js.",
             "Enterprise features completed (SSAI-406 to 410).\nReopened timeline banner and FAQ deflection successfully verified."
         ),
         (
-            "Week 8\n(21 Sep - 27 Sep)",
+            "Week 8\n(22 Sep - 27 Sep)",
             "• Migrated PostgreSQL database to managed Supabase Cloud with SSL pooling.\n• Containerized all tiers using Docker multi-stage builds and compose.\n• Configured Render Blueprint (render.yaml) for cloud orchestration and HTTPS.\n• Executed comprehensive automated test suite (Jest unit/concurrency + Pytest).\n• Compiled 13 technical documentation modules and finalized internship report.",
             "• Docker multi-stage image optimization and Nginx static reverse proxying.\n• Cloud database migration, SSL connection hygiene, and pooling.\n• Automated CI/CD pipeline configuration with GitHub Actions.",
             "Completed Sprint 4 delivery (51 Story Points burned).\nAll 31 Jira tasks burned to 0 pts (166 pts total). Production live on Render."
@@ -662,10 +662,10 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
         "The project maintained exceptional agile velocity across the 4 sprint iterations (strictly 2 weeks each):",
         space_after=4
     )
-    add_bullet(doc, "Sprint 1: Research and Requirements (Weeks 1–2 | 18 Story Points | Status: Closed): Achieved 100% burn from 18 pts to 0 pts on 16 August 2026. Delivered competitive benchmarking, PRD, user persona mappings, and AI model evaluation.", bold_prefix="Sprint 1: ")
-    add_bullet(doc, "Sprint 2: Prototype Development (Weeks 3–4 | 59 Story Points | Status: Closed): Achieved 100% burn from 59 pts to 0 pts on 30 August 2026. Delivered the core architectural foundation: PostgreSQL relational schema, Express REST server, JWT security, and React SPA frame.", bold_prefix="Sprint 2: ")
-    add_bullet(doc, "Sprint 3: Development and Improvements (Weeks 5–6 | 38 Story Points | Status: Closed): Achieved 100% burn from 38 pts to 0 pts on 13 September 2026. Integrated the Python FastAPI AI microservice with the React frontend, delivering live triage, mood indicators, patience scores, and response quality auditing.", bold_prefix="Sprint 3: ")
-    add_bullet(doc, "Sprint 4: Testing, Bug Fixes and Deployment (Weeks 7–8 | 51 Story Points | Status: Closed): Achieved 100% burn from 51 pts to 0 pts on 27 September 2026. Delivered advanced enterprise features (AI Concierge, 1-click tone polisher, HTTP 409 duplicate deflection, Supabase migration, Docker containerization, and Render cloud deployment).", bold_prefix="Sprint 4: ")
+    add_bullet(doc, "Sprint 1: Research and Requirements (Weeks 1–2 | 03 Aug – 17 Aug 2026 | 18 Story Points | Status: Closed): Achieved 100% burn from 18 pts to 0 pts on 17 August 2026. Delivered competitive benchmarking, PRD, user persona mappings, and AI model evaluation.", bold_prefix="Sprint 1: ")
+    add_bullet(doc, "Sprint 2: Prototype Development (Weeks 3–4 | 18 Aug – 31 Aug 2026 | 59 Story Points | Status: Closed): Achieved 100% burn from 59 pts to 0 pts on 31 August 2026. Delivered the core architectural foundation: PostgreSQL relational schema, Express REST server, JWT security, and React SPA frame.", bold_prefix="Sprint 2: ")
+    add_bullet(doc, "Sprint 3: Development and Improvements (Weeks 5–6 | 01 Sep – 14 Sep 2026 | 38 Story Points | Status: Closed): Achieved 100% burn from 38 pts to 0 pts on 14 September 2026. Integrated the Python FastAPI AI microservice with the React frontend, delivering live triage, mood indicators, patience scores, and response quality auditing.", bold_prefix="Sprint 3: ")
+    add_bullet(doc, "Sprint 4: Testing, Bug Fixes and Deployment (Weeks 7–8 | 15 Sep – 27 Sep 2026 | 51 Story Points | Status: Closed): Achieved 100% burn from 51 pts to 0 pts on 27 September 2026. Delivered advanced enterprise features (AI Concierge, 1-click tone polisher, HTTP 409 duplicate deflection, Supabase migration, Docker containerization, and Render cloud deployment).", bold_prefix="Sprint 4: ")
     add_normal(doc,
         "Across all 4 sprints, a total of 166 story points were delivered with zero rollover tasks into backlog, demonstrating rigorous engineering discipline, accurate sizing, and steady delivery velocity.",
         space_after=8

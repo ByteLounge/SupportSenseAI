@@ -28,48 +28,48 @@ sprint_configs = [
     {
         'ax': axs[0, 0],
         'title': 'Sprint 1: Research and Requirements',
-        'dates_str': '03 Aug 2026 – 16 Aug 2026 (14 Days)',
+        'dates_str': '03 Aug 2026 – 17 Aug 2026 (15 Days)',
         'start_date': datetime(2026, 8, 3),
         'total_pts': 18.0,
-        # Daily remaining points closely tracking linear burn
-        'daily_pts': [18.0, 18.0, 15.5, 15.0, 13.0, 12.0, 10.5, 9.0, 8.0, 6.0, 5.0, 3.0, 2.0, 1.0, 0.0],
+        # Daily remaining points closely tracking linear burn across 15 calendar days (Aug 03 to Aug 17)
+        'daily_pts': [18.0, 18.0, 16.0, 15.0, 13.5, 12.0, 10.5, 9.0, 8.0, 6.5, 5.0, 3.5, 2.0, 1.0, 0.0],
         'target_pts': 18.0
     },
     {
         'ax': axs[0, 1],
         'title': 'Sprint 2: Prototype Development',
-        'dates_str': '17 Aug 2026 – 30 Aug 2026 (14 Days)',
-        'start_date': datetime(2026, 8, 17),
+        'dates_str': '18 Aug 2026 – 31 Aug 2026 (14 Days)',
+        'start_date': datetime(2026, 8, 18),
         'total_pts': 59.0,
-        # Daily remaining points closely tracking linear burn
-        'daily_pts': [59.0, 59.0, 52.0, 48.0, 43.5, 39.0, 34.0, 29.5, 25.0, 20.0, 16.0, 11.5, 6.5, 2.5, 0.0],
+        # Daily remaining points closely tracking linear burn across 14 calendar days (Aug 18 to Aug 31)
+        'daily_pts': [59.0, 59.0, 51.0, 46.5, 42.0, 37.5, 33.0, 28.5, 24.0, 19.5, 15.0, 10.0, 5.0, 0.0],
         'target_pts': 59.0
     },
     {
         'ax': axs[1, 0],
         'title': 'Sprint 3: Development and Improvements',
-        'dates_str': '31 Aug 2026 – 13 Sep 2026 (14 Days)',
-        'start_date': datetime(2026, 8, 31),
+        'dates_str': '01 Sep 2026 – 14 Sep 2026 (14 Days)',
+        'start_date': datetime(2026, 9, 1),
         'total_pts': 38.0,
-        # Daily remaining points closely tracking linear burn
-        'daily_pts': [38.0, 38.0, 34.0, 31.0, 27.5, 24.5, 22.0, 19.0, 16.0, 13.0, 9.5, 7.0, 4.0, 1.5, 0.0],
+        # Daily remaining points closely tracking linear burn across 14 calendar days (Sep 01 to Sep 14)
+        'daily_pts': [38.0, 38.0, 33.0, 29.5, 26.0, 23.0, 20.0, 17.0, 14.0, 11.0, 8.0, 5.0, 2.5, 0.0],
         'target_pts': 38.0
     },
     {
         'ax': axs[1, 1],
         'title': 'Sprint 4: Testing, Bug Fixes and Deployment',
-        'dates_str': '14 Sep 2026 – 27 Sep 2026 (14 Days)',
-        'start_date': datetime(2026, 9, 14),
+        'dates_str': '15 Sep 2026 – 27 Sep 2026 (13 Days)',
+        'start_date': datetime(2026, 9, 15),
         'total_pts': 51.0,
-        # Daily remaining points closely tracking linear burn
-        'daily_pts': [51.0, 51.0, 45.0, 42.0, 37.5, 33.0, 29.5, 25.5, 21.0, 17.5, 13.5, 9.5, 5.0, 2.0, 0.0],
+        # Daily remaining points closely tracking linear burn across 13 calendar days (Sep 15 to Sep 27)
+        'daily_pts': [51.0, 51.0, 43.5, 38.0, 34.0, 29.5, 25.0, 21.0, 16.5, 12.0, 7.5, 3.5, 0.0],
         'target_pts': 51.0
     }
 ]
 
 for sc in sprint_configs:
     ax = sc['ax']
-    days = 15  # Day 0 to Day 14 (15 data points)
+    days = len(sc['daily_pts'])
     date_list = [sc['start_date'] + timedelta(days=i) for i in range(days)]
     
     # Ideal guideline (straight line from total_pts to 0.0)
