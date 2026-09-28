@@ -58,11 +58,11 @@ sprint_configs = [
     {
         'ax': axs[1, 1],
         'title': 'Sprint 4: Testing, Bug Fixes and Deployment',
-        'dates_str': '15 Sep 2026 – 27 Sep 2026 (13 Days)',
+        'dates_str': '15 Sep 2026 – 03 Oct 2026 (19 Days)',
         'start_date': datetime(2026, 9, 15),
         'total_pts': 51.0,
-        # Daily remaining points closely tracking linear burn across 13 calendar days (Sep 15 to Sep 27)
-        'daily_pts': [51.0, 51.0, 43.5, 38.0, 34.0, 29.5, 25.0, 21.0, 16.5, 12.0, 7.5, 3.5, 0.0],
+        # Daily remaining points closely tracking linear burn across 19 calendar days (Sep 15 to Oct 03)
+        'daily_pts': [51.0, 51.0, 48.0, 45.0, 42.5, 39.5, 36.5, 33.5, 31.0, 28.0, 25.0, 22.0, 19.0, 16.0, 13.0, 10.0, 6.5, 3.0, 0.0],
         'target_pts': 51.0
     }
 ]

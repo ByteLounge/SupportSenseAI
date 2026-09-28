@@ -7,10 +7,10 @@ headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
 print('=================== BURNDOWN CHART & SPRINT AUDIT ===================')
 sprint_info = [
-    (174, 'Sprint 1: Research and Requirements', 18.0, 6, 'Aug 03 – Aug 17, 2026', 'closed'),
-    (175, 'Sprint 2: Prototype Development', 59.0, 10, 'Aug 18 – Aug 31, 2026', 'closed'),
-    (176, 'Sprint 3: Development and Improvements', 38.0, 7, 'Sep 01 – Sep 14, 2026', 'closed'),
-    (177, 'Sprint 4: Testing, Bug Fixes & Deploy', 51.0, 10, 'Sep 15 – Sep 27, 2026', 'closed')
+    (184, 'Sprint 1: Research and Requirements', 18.0, 6, 'Aug 03 – Aug 17, 2026', 'closed'),
+    (185, 'Sprint 2: Prototype Development', 59.0, 10, 'Aug 18 – Aug 31, 2026', 'closed'),
+    (186, 'Sprint 3: Development and Improvements', 38.0, 7, 'Sep 01 – Sep 14, 2026', 'closed'),
+    (187, 'Sprint 4: Testing, Bug Fixes & Deploy', 51.0, 10, 'Sep 15 – Oct 03, 2026', 'closed')
 ]
 
 for sid, name, target_pts, target_count, dates, state in sprint_info:

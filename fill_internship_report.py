@@ -301,7 +301,7 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
         ("Semester / Year", "____________________"),
         ("Roll No.", "23CO76"),
         ("Organization", "Persistent Systems Ltd."),
-        ("Internship Duration", "8 Weeks (03 August 2026 – 27 September 2026)")
+        ("Internship Duration", "03 August 2026 – 03 October 2026 (8–9 Weeks)")
     ]
     t0 = doc.add_table(rows=6, cols=2)
     t0.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -373,13 +373,13 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
     r_ch.font.color.rgb = COLOR_NAVY
     
     add_normal(doc, 
-        "This is to certify that Mr. Yash Sanikop, bearing Roll No. 23CO76, a bona fide student of Computer Engineering at Agnel Institute of Engineering & Management (AIEM), Assagao, Goa, has successfully completed an 8-week industrial internship at Persistent Systems Ltd. from 03 August 2026 to 27 September 2026.\n\n"
+        "This is to certify that Mr. Yash Sanikop, bearing Roll No. 23CO76, a bona fide student of Computer Engineering at Agnel Institute of Engineering & Management (AIEM), Assagao, Goa, has successfully completed an industrial internship at Persistent Systems Ltd. from 03 August 2026 to 03 October 2026.\n\n"
         "During this tenure, he was placed within the Cloud & AI Innovations Group and actively spearheaded the design and implementation of the enterprise software project entitled “SupportSense AI: Enterprise Customer Support Ticketing Ecosystem with Real-Time Triage, Sentiment Monitoring, and Dataset-Grounded Resolution Benchmarks”. He accomplished all planned architectural deliverables, microservice integrations, and quality assurance benchmarks under the guidance of Mr. Vishal Bidikar, Senior Software Engineer at Persistent Systems Ltd.",
         space_after=10
     )
     
     add_normal(doc,
-        "The internship was completed for a full-time duration of 8 weeks. Throughout the program, the student displayed exemplary technical acumen, high analytical discipline, diligent workplace conduct, and commendable participation in collaborative Agile sprints. His performance, initiative, and project outcomes were found to be satisfactory and commendable.",
+        "The internship was completed for a full-time duration of 8 to 9 weeks. Throughout the program, the student displayed exemplary technical acumen, high analytical discipline, diligent workplace conduct, and commendable participation in collaborative Agile sprints. His performance, initiative, and project outcomes were found to be satisfactory and commendable.",
         space_after=16
     )
     
@@ -397,7 +397,7 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
     add_subtitle(doc, "Student declaration regarding originality and authenticity of the report.")
     
     add_normal(doc,
-        "I, Yash Sanikop, hereby declare that this internship report entitled “SupportSense AI: Enterprise Customer Support Ticketing Ecosystem with Real-Time Triage, Sentiment Monitoring, and Dataset-Grounded Resolution Benchmarks” is an authentic record of the original engineering work carried out by me during my 8-week industrial internship at Persistent Systems Ltd. from 03 August 2026 to 27 September 2026.",
+        "I, Yash Sanikop, hereby declare that this internship report entitled “SupportSense AI: Enterprise Customer Support Ticketing Ecosystem with Real-Time Triage, Sentiment Monitoring, and Dataset-Grounded Resolution Benchmarks” is an authentic record of the original engineering work carried out by me during my industrial internship at Persistent Systems Ltd. from 03 August 2026 to 03 October 2026.",
         space_after=10
     )
     
@@ -461,7 +461,7 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
     add_subtitle(doc, "A concise overview of the internship, project, methods, and outcomes.")
     
     add_normal(doc,
-        "This report documents the engineering achievements and professional learning acquired during an 8-week industrial internship conducted at Persistent Systems Ltd. from 03 August 2026 to 27 September 2026. Modern customer support operations face acute operational bottlenecks: escalating ticket volumes, First Response Times (FRT) exceeding 8 to 12 hours, high agent burnout due to repetitive manual triage, and severe cognitive fatigue caused by reviewing lengthy multi-agent conversation threads. Traditional support software either relies on rigid, keyword-based rule engines or autonomous AI bots that hallucinate unvetted policies and cause customer frustration.",
+        "This report documents the engineering achievements and professional learning acquired during an industrial internship conducted at Persistent Systems Ltd. from 03 August 2026 to 03 October 2026. Modern customer support operations face acute operational bottlenecks: escalating ticket volumes, First Response Times (FRT) exceeding 8 to 12 hours, high agent burnout due to repetitive manual triage, and severe cognitive fatigue caused by reviewing lengthy multi-agent conversation threads. Traditional support software either relies on rigid, keyword-based rule engines or autonomous AI bots that hallucinate unvetted policies and cause customer frustration.",
         space_after=8
     )
     add_normal(doc,
@@ -648,7 +648,7 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
             "Enterprise features completed (SSAI-406 to 410).\nReopened timeline banner and FAQ deflection successfully verified."
         ),
         (
-            "Week 8\n(22 Sep - 27 Sep)",
+            "Week 8\n(22 Sep - 03 Oct)",
             "• Migrated PostgreSQL database to managed Supabase Cloud with SSL pooling.\n• Containerized all tiers using Docker multi-stage builds and compose.\n• Configured Render Blueprint (render.yaml) for cloud orchestration and HTTPS.\n• Executed comprehensive automated test suite (Jest unit/concurrency + Pytest).\n• Compiled 13 technical documentation modules and finalized internship report.",
             "• Docker multi-stage image optimization and Nginx static reverse proxying.\n• Cloud database migration, SSL connection hygiene, and pooling.\n• Automated CI/CD pipeline configuration with GitHub Actions.",
             "Completed Sprint 4 delivery (51 Story Points burned).\nAll 31 Jira tasks burned to 0 pts (166 pts total). Production live on Render."
@@ -659,13 +659,13 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
     
     add_heading_2(doc, "Agile Sprint Execution & Burndown Analytics")
     add_normal(doc,
-        "The project maintained exceptional agile velocity across the 4 sprint iterations (strictly 2 weeks each):",
+        "The project maintained exceptional agile velocity across the 4 sprint iterations:",
         space_after=4
     )
     add_bullet(doc, "Sprint 1: Research and Requirements (Weeks 1–2 | 03 Aug – 17 Aug 2026 | 18 Story Points | Status: Closed): Achieved 100% burn from 18 pts to 0 pts on 17 August 2026. Delivered competitive benchmarking, PRD, user persona mappings, and AI model evaluation.", bold_prefix="Sprint 1: ")
     add_bullet(doc, "Sprint 2: Prototype Development (Weeks 3–4 | 18 Aug – 31 Aug 2026 | 59 Story Points | Status: Closed): Achieved 100% burn from 59 pts to 0 pts on 31 August 2026. Delivered the core architectural foundation: PostgreSQL relational schema, Express REST server, JWT security, and React SPA frame.", bold_prefix="Sprint 2: ")
     add_bullet(doc, "Sprint 3: Development and Improvements (Weeks 5–6 | 01 Sep – 14 Sep 2026 | 38 Story Points | Status: Closed): Achieved 100% burn from 38 pts to 0 pts on 14 September 2026. Integrated the Python FastAPI AI microservice with the React frontend, delivering live triage, mood indicators, patience scores, and response quality auditing.", bold_prefix="Sprint 3: ")
-    add_bullet(doc, "Sprint 4: Testing, Bug Fixes and Deployment (Weeks 7–8 | 15 Sep – 27 Sep 2026 | 51 Story Points | Status: Closed): Achieved 100% burn from 51 pts to 0 pts on 27 September 2026. Delivered advanced enterprise features (AI Concierge, 1-click tone polisher, HTTP 409 duplicate deflection, Supabase migration, Docker containerization, and Render cloud deployment).", bold_prefix="Sprint 4: ")
+    add_bullet(doc, "Sprint 4: Testing, Bug Fixes and Deployment (Weeks 7–8 | 15 Sep – 03 Oct 2026 | 51 Story Points | Status: Closed): Achieved 100% burn from 51 pts to 0 pts on 03 October 2026. Delivered advanced enterprise features (AI Concierge, 1-click tone polisher, HTTP 409 duplicate deflection, Supabase migration, Docker containerization, and Render cloud deployment).", bold_prefix="Sprint 4: ")
     add_normal(doc,
         "Across all 4 sprints, a total of 166 story points were delivered with zero rollover tasks into backlog, demonstrating rigorous engineering discipline, accurate sizing, and steady delivery velocity.",
         space_after=8
