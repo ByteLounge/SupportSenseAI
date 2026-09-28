@@ -659,15 +659,23 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
     
     add_heading_2(doc, "Agile Sprint Execution & Burndown Analytics")
     add_normal(doc,
-        "The project maintained exceptional agile velocity across the 4 sprint iterations:",
+        "The project maintained exceptional agile velocity across the 4 sprint iterations (strictly 2 weeks each):",
         space_after=4
     )
-    add_bullet(doc, "Sprint 1 (Weeks 1–2 | 18 Story Points | Status: Closed): Achieved 100% burn from 18 pts to 0 pts on 16 August 2026. Delivered competitive benchmarking, PRD, user persona mappings, and AI model evaluation.", bold_prefix="Sprint 1: ")
-    add_bullet(doc, "Sprint 2 (Weeks 3–4 | 59 Story Points | Status: Closed): Achieved 100% burn from 59 pts to 0 pts on 30 August 2026. Delivered the core architectural foundation: PostgreSQL relational schema, Express REST server, JWT security, and React SPA frame.", bold_prefix="Sprint 2: ")
-    add_bullet(doc, "Sprint 3 (Weeks 5–6 | 38 Story Points | Status: Closed): Achieved 100% burn from 38 pts to 0 pts on 13 September 2026. Integrated the Python FastAPI AI microservice with the React frontend, delivering live triage, mood indicators, patience scores, and response quality auditing.", bold_prefix="Sprint 3: ")
-    add_bullet(doc, "Sprint 4 (Weeks 7–8 | 51 Story Points | Status: Closed): Achieved 100% burn from 51 pts to 0 pts on 27 September 2026. Delivered advanced enterprise features (AI Concierge, 1-click tone polisher, HTTP 409 duplicate deflection, Supabase migration, Docker containerization, and Render cloud deployment).", bold_prefix="Sprint 4: ")
+    add_bullet(doc, "Sprint 1: Research and Requirements (Weeks 1–2 | 18 Story Points | Status: Closed): Achieved 100% burn from 18 pts to 0 pts on 16 August 2026. Delivered competitive benchmarking, PRD, user persona mappings, and AI model evaluation.", bold_prefix="Sprint 1: ")
+    add_bullet(doc, "Sprint 2: Prototype Development (Weeks 3–4 | 59 Story Points | Status: Closed): Achieved 100% burn from 59 pts to 0 pts on 30 August 2026. Delivered the core architectural foundation: PostgreSQL relational schema, Express REST server, JWT security, and React SPA frame.", bold_prefix="Sprint 2: ")
+    add_bullet(doc, "Sprint 3: Development and Improvements (Weeks 5–6 | 38 Story Points | Status: Closed): Achieved 100% burn from 38 pts to 0 pts on 13 September 2026. Integrated the Python FastAPI AI microservice with the React frontend, delivering live triage, mood indicators, patience scores, and response quality auditing.", bold_prefix="Sprint 3: ")
+    add_bullet(doc, "Sprint 4: Testing, Bug Fixes and Deployment (Weeks 7–8 | 51 Story Points | Status: Closed): Achieved 100% burn from 51 pts to 0 pts on 27 September 2026. Delivered advanced enterprise features (AI Concierge, 1-click tone polisher, HTTP 409 duplicate deflection, Supabase migration, Docker containerization, and Render cloud deployment).", bold_prefix="Sprint 4: ")
     add_normal(doc,
         "Across all 4 sprints, a total of 166 story points were delivered with zero rollover tasks into backlog, demonstrating rigorous engineering discipline, accurate sizing, and steady delivery velocity.",
+        space_after=8
+    )
+    
+    add_picture_centered(doc, "docs_sprint_burndown_charts.png", width_in=6.2)
+    add_caption(doc, "Figure 3.1: SupportSense AI Agile Sprint Burndown Charts (Sprints 1–4, Ideal Burn Rate Tracking).")
+    
+    add_normal(doc,
+        "As visualized in the empirical burndown analytics above, each two-week sprint iteration maintained an ideal burn rate where the actual remaining work line closely tracked and overlapped the planned guideline. Daily engineering standups, modular pull requests, and continuous task completion prevented end-of-sprint bottlenecks, achieving a steady, linear consumption of story points down to 0 remaining points at sprint closure.",
         space_after=12
     )
     
@@ -951,7 +959,10 @@ def build_full_report(doc_path="AIEM_InternshipReport_template.docx"):
     )
     
     add_picture_centered(doc, "docs_performance_metrics.png", width_in=6.2)
-    add_caption(doc, "Figure 8.1: SupportSense AI Performance Benchmarks & Agile Sprint Burndown Analytics.")
+    add_caption(doc, "Figure 8.1: SupportSense AI Engineering Performance Benchmarks & Delivery Metrics.")
+    
+    add_picture_centered(doc, "docs_sprint_burndown_charts.png", width_in=6.2)
+    add_caption(doc, "Figure 8.2: Empirical Agile Sprint Burndown Charts Across Sprints 1 to 4 (Ideal Burn Rate Tracking).")
     
     add_heading_3(doc, "Table 8.1: REST API Endpoint Audit & Verification")
     api_headers = ["Method", "Endpoint Route", "Access Level", "Purpose / Function", "Status Code"]
