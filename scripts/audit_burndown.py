@@ -9,8 +9,8 @@ print('=================== BURNDOWN CHART & SPRINT AUDIT ===================')
 sprint_info = [
     (1, 'Sprint 1: Research & Plan', 18.0, 4, 'Aug 03 – Aug 16, 2026', 'closed'),
     (35, 'Sprint 2: Prototype Build', 59.0, 10, 'Aug 17 – Aug 30, 2026', 'closed'),
-    (68, 'Sprint 3: AI & Integration', 38.0, 7, 'Aug 31 – Sep 13, 2026', 'active'),
-    (69, 'Sprint 4: QA & Deployment', 51.0, 10, 'Sep 14 – Sep 27, 2026', 'future')
+    (68, 'Sprint 3: AI & Integration', 38.0, 7, 'Aug 31 – Sep 13, 2026', 'closed'),
+    (69, 'Sprint 4: QA & Deployment', 51.0, 10, 'Sep 14 – Sep 27, 2026', 'closed')
 ]
 
 for sid, name, target_pts, target_count, dates, state in sprint_info:
