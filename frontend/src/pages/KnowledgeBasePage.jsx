@@ -112,7 +112,7 @@ export default function KnowledgeBasePage() {
         {isCustomer && (
           <div className="p-6 rounded-xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 space-y-4">
             <div>
-              <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded">
+              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300/40 dark:border-emerald-700/50 px-2 py-0.5 rounded">
                 Self-Service Knowledge Base
               </span>
               <h2 className="text-lg font-bold text-token-text-primary mt-1">Frequently Asked Questions</h2>
@@ -173,7 +173,7 @@ export default function KnowledgeBasePage() {
                       className="w-full p-3.5 text-left text-xs font-semibold text-token-text-primary flex items-center justify-between hover:bg-token-muted"
                     >
                       <span className="flex items-center gap-2.5">
-                        <HelpCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <HelpCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         <span>{faq.question}</span>
                       </span>
                       {isOpen ? <ChevronUp className="w-4 h-4 text-token-text-muted" /> : <ChevronDown className="w-4 h-4 text-token-text-muted" />}
@@ -250,9 +250,9 @@ export default function KnowledgeBasePage() {
               <Card title="Top Repeated Customer Issues (Weekly)">
                 <div className="space-y-2 text-xs">
                   {topIssues.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2.5 bg-token-secondary border border-token-border rounded-[4px]">
+                    <div key={idx} className="flex items-center justify-between p-2.5 bg-token-secondary border border-token-border rounded-xl">
                       <span className="font-medium text-token-text-primary">{item.issue}</span>
-                      <span className="text-xs bg-token-card px-2 py-0.5 border border-token-border font-bold text-amber-600">
+                      <span className="text-xs bg-token-card px-2 py-0.5 border border-token-border font-bold text-amber-600 dark:text-amber-400 rounded-md">
                         {item.count} occurrences
                       </span>
                     </div>

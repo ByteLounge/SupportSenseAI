@@ -30,9 +30,9 @@ export default function AISuggestionsPanel({
     <Card
       title="AI Recommendation"
       actions={
-        <div className="flex items-center gap-1.5 text-xs text-[#6B7280]">
-          <Cpu className="w-3.5 h-3.5 text-[#2563EB]" />
-          <span>Confidence: <strong className="text-[#111827]">{formatConfidence(confidence)}</strong></span>
+        <div className="flex items-center gap-1.5 text-xs text-token-text-secondary">
+          <Cpu className="w-3.5 h-3.5 text-token-accent" />
+          <span>Confidence: <strong className="text-token-text-primary">{formatConfidence(confidence)}</strong></span>
         </div>
       }
       className={className}
@@ -40,24 +40,24 @@ export default function AISuggestionsPanel({
       <div className="space-y-4 text-xs">
         {/* Suggested Category & Department */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="p-2.5 bg-[#F8F9FA] border border-[#E5E7EB] rounded-[4px] space-y-1">
-            <span className="text-[#6B7280] font-medium block">AI Suggested Category</span>
-            <span className="font-semibold text-[#111827]">{suggestedCategory}</span>
+          <div className="p-2.5 bg-token-muted border border-token-border rounded-xl space-y-1">
+            <span className="text-token-text-secondary font-medium block">AI Suggested Category</span>
+            <span className="font-semibold text-token-text-primary">{suggestedCategory}</span>
           </div>
 
-          <div className="p-2.5 bg-[#F8F9FA] border border-[#E5E7EB] rounded-[4px] space-y-1">
-            <span className="text-[#6B7280] font-medium block">AI Suggested Department</span>
-            <span className="font-semibold text-[#111827]">{suggestedDepartment}</span>
+          <div className="p-2.5 bg-token-muted border border-token-border rounded-xl space-y-1">
+            <span className="text-token-text-secondary font-medium block">AI Suggested Department</span>
+            <span className="font-semibold text-token-text-primary">{suggestedDepartment}</span>
           </div>
         </div>
 
         {/* Suggested Reply Box */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[#6B7280] font-medium">AI Suggested Reply</span>
+            <span className="text-token-text-secondary font-medium">AI Suggested Reply</span>
             <Badge variant="primary" size="sm">Auto-Generated</Badge>
           </div>
-          <div className="p-3 bg-[#F8F9FA] border border-[#E5E7EB] rounded-[4px] text-[#111827] leading-relaxed whitespace-pre-line font-mono text-xs">
+          <div className="p-3 bg-token-muted border border-token-border rounded-xl text-token-text-primary leading-relaxed whitespace-pre-line font-mono text-xs">
             {suggestedReply}
           </div>
         </div>

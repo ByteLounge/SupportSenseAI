@@ -766,12 +766,12 @@ export default function TicketDetailPage() {
                           onClick={() => handleToggleChecklist(item.id, item.is_completed)}
                           className={`w-full p-2.5 rounded-xl border text-left flex items-start gap-2.5 text-xs transition-colors ${
                             item.is_completed
-                              ? 'bg-emerald-50/60 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300 border-emerald-200 line-through font-medium'
+                              ? 'bg-emerald-50/60 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50 line-through font-medium'
                               : 'bg-token-muted border-token-border text-token-text-primary hover:bg-token-card'
                           }`}
                         >
                           {item.is_completed ? (
-                            <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                            <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                           ) : (
                             <Square className="w-4 h-4 text-token-text-muted shrink-0 mt-0.5" />
                           )}

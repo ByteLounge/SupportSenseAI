@@ -3,7 +3,7 @@
  * Multi-Role Auth Provider supporting Customer, Agent, and Admin personas.
  */
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { loginApi, registerApi } from '../services/api';
 
 export const DEMO_PERSONAS = {
@@ -117,6 +117,30 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('supportsense_token') || 'mock-jwt-token-supportsense');
   const [loading, setLoading] = useState(false);
 
+  // Silently acquire real backend JWT if missing or using demo persona
+  useEffect(() => {
+    const currentToken = localStorage.getItem('supportsense_token');
+    const isRealJwt = currentToken && currentToken.startsWith('ey') && currentToken.split('.').length === 3;
+
+    if (!isRealJwt && user?.email) {
+      loginApi(user.email, 'Password123!')
+        .then((res) => {
+          if (res?.data?.token) {
+            setToken(res.data.token);
+            localStorage.setItem('supportsense_token', res.data.token);
+            if (res.data.user) {
+              const merged = { ...user, ...res.data.user };
+              setUser(merged);
+              localStorage.setItem('supportsense_user', JSON.stringify(merged));
+            }
+          }
+        })
+        .catch(() => {
+          // Seamless mock fallback if offline or backend is cold-starting
+        });
+    }
+  }, []);
+
   const login = async (email, password) => {
     setLoading(true);
     try {
@@ -151,10 +175,26 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const switchPersona = (personaKey) => {
+  const switchPersona = async (personaKey) => {
     const targetPersona = DEMO_PERSONAS[personaKey] || DEMO_PERSONAS.agent;
     setUser(targetPersona);
     localStorage.setItem('supportsense_user', JSON.stringify(targetPersona));
+
+    // Silently attempt backend login for the new persona to get real JWT
+    try {
+      const res = await loginApi(targetPersona.email, 'Password123!');
+      if (res?.data?.token) {
+        setToken(res.data.token);
+        localStorage.setItem('supportsense_token', res.data.token);
+        if (res.data.user) {
+          const merged = { ...targetPersona, ...res.data.user };
+          setUser(merged);
+          localStorage.setItem('supportsense_user', JSON.stringify(merged));
+        }
+      }
+    } catch (e) {
+      // Seamless demo mode if backend is unreachable
+    }
   };
 
   const logout = () => {

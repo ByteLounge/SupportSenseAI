@@ -167,7 +167,7 @@ export default function DepartmentsPage() {
                       <span>•</span>
                       <span>Active Tickets: <strong className="text-token-accent">{dept.open_tickets}</strong></span>
                       <span>•</span>
-                      <span className="text-emerald-600 font-medium">{dept.target_sla} SLA</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">{dept.target_sla} SLA</span>
                     </div>
                   </div>
 
@@ -220,7 +220,7 @@ export default function DepartmentsPage() {
 
                 <div className="flex items-center justify-between text-[11px] text-token-text-secondary pt-1">
                   <span>Target SLA: <strong className="text-token-text-primary">{dept.target_sla}</strong></span>
-                  <span>Min AI Confidence: <strong className="text-emerald-600">{dept.min_confidence}</strong></span>
+                  <span>Min AI Confidence: <strong className="text-emerald-600 dark:text-emerald-400">{dept.min_confidence}</strong></span>
                 </div>
               </div>
             </Card>

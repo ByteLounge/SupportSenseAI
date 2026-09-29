@@ -127,7 +127,7 @@ export default function LoginPage() {
                 className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/20 transition-all text-left"
               >
                 <div className="text-[11px] font-bold text-token-text-primary leading-tight">Elena Rostova</div>
-                <div className="text-[9px] text-emerald-600 font-medium truncate">Finance & Billing</div>
+                <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium truncate">Finance & Billing</div>
               </button>
 
               <button
@@ -140,7 +140,7 @@ export default function LoginPage() {
                 className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950/20 transition-all text-left"
               >
                 <div className="text-[11px] font-bold text-token-text-primary leading-tight">Marcus Vance</div>
-                <div className="text-[9px] text-blue-600 font-medium truncate">Tech Support</div>
+                <div className="text-[9px] text-blue-600 dark:text-blue-400 font-medium truncate">Tech Support</div>
               </button>
 
               <button
@@ -153,7 +153,7 @@ export default function LoginPage() {
                 className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-indigo-50 hover:border-indigo-300 dark:hover:bg-indigo-950/20 transition-all text-left"
               >
                 <div className="text-[11px] font-bold text-token-text-primary leading-tight">Liam Scott</div>
-                <div className="text-[9px] text-indigo-600 font-medium truncate">Identity & Access</div>
+                <div className="text-[9px] text-indigo-600 dark:text-indigo-400 font-medium truncate">Identity & Access</div>
               </button>
 
               <button
@@ -166,7 +166,7 @@ export default function LoginPage() {
                 className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-amber-50 hover:border-amber-300 dark:hover:bg-amber-950/20 transition-all text-left"
               >
                 <div className="text-[11px] font-bold text-token-text-primary leading-tight">Priya Sharma</div>
-                <div className="text-[9px] text-amber-600 font-medium truncate">API Platform</div>
+                <div className="text-[9px] text-amber-600 dark:text-amber-400 font-medium truncate">API Platform</div>
               </button>
 
               <button
@@ -179,7 +179,7 @@ export default function LoginPage() {
                 className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950/20 transition-all text-left"
               >
                 <div className="text-[11px] font-bold text-token-text-primary leading-tight">Admin User</div>
-                <div className="text-[9px] text-purple-600 font-medium truncate">Governance</div>
+                <div className="text-[9px] text-purple-600 dark:text-purple-400 font-medium truncate">Governance</div>
               </button>
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function LoginPage() {
                 className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-teal-50 hover:border-teal-300 dark:hover:bg-teal-950/20 transition-all text-left"
               >
                 <div className="text-[11px] font-bold text-token-text-primary leading-tight">Alex Rivera</div>
-                <div className="text-[9px] text-teal-600 font-medium truncate">Acme Corp</div>
+                <div className="text-[9px] text-teal-600 dark:text-teal-400 font-medium truncate">Acme Corp</div>
               </button>
 
               <button
@@ -211,7 +211,7 @@ export default function LoginPage() {
                 className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-teal-50 hover:border-teal-300 dark:hover:bg-teal-950/20 transition-all text-left"
               >
                 <div className="text-[11px] font-bold text-token-text-primary leading-tight">Samantha Reed</div>
-                <div className="text-[9px] text-teal-600 font-medium truncate">Globex Systems</div>
+                <div className="text-[9px] text-teal-600 dark:text-teal-400 font-medium truncate">Globex Systems</div>
               </button>
 
               <button
@@ -224,7 +224,7 @@ export default function LoginPage() {
                 className="p-2 rounded-xl border border-token-border bg-token-muted/40 hover:bg-teal-50 hover:border-teal-300 dark:hover:bg-teal-950/20 transition-all text-left"
               >
                 <div className="text-[11px] font-bold text-token-text-primary leading-tight">David Kim</div>
-                <div className="text-[9px] text-teal-600 font-medium truncate">Nexus Tech</div>
+                <div className="text-[9px] text-teal-600 dark:text-teal-400 font-medium truncate">Nexus Tech</div>
               </button>
             </div>
           </div>

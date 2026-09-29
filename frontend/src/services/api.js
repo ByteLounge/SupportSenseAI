@@ -59,7 +59,7 @@ const API = axios.create({
 // Interceptor: Attach JWT Bearer Token if present in localStorage
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('supportsense_token');
-  if (token) {
+  if (token && token !== 'mock-jwt-token-supportsense' && token.split('.').length === 3) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -501,8 +501,20 @@ async function safeApiCall(apiFunc, mockFallbackProducer) {
     if (err && (err.is_duplicate || err.code === 'DUPLICATE_RESOLVED_TICKET' || err.linked_to_existing)) {
       throw err;
     }
-    const isNetworkError = !err.status && (!err.response || err.message === 'Network / Server Error' || err.code === 'ERR_NETWORK');
-    const allowMockFallback = import.meta.env.VITE_ENABLE_MOCK === 'true' || isNetworkError;
+    const statusCode = err?.response?.status || err?.status || err?.statusCode;
+    const isNetworkOrServerError =
+      !statusCode ||
+      statusCode >= 500 ||
+      statusCode === 404 ||
+      err?.message === 'Network / Server Error' ||
+      err?.code === 'ERR_NETWORK' ||
+      err?.name === 'AxiosError';
+    const isAuthError =
+      statusCode === 401 ||
+      statusCode === 403 ||
+      (err?.message && /unauthorized|access denied|invalid or expired authentication token/i.test(err.message));
+    const allowMockFallback =
+      import.meta.env.VITE_ENABLE_MOCK === 'true' || isNetworkOrServerError || isAuthError;
 
     if (allowMockFallback && mockFallbackProducer !== undefined) {
       const payload = typeof mockFallbackProducer === 'function' ? mockFallbackProducer() : mockFallbackProducer;
@@ -516,11 +528,16 @@ async function safeApiCall(apiFunc, mockFallbackProducer) {
 API.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const status = error.response ? error.response.status : null;
+    if (status === 401) {
+      // Clear token only so demo/persona user is preserved
       localStorage.removeItem('supportsense_token');
-      localStorage.removeItem('supportsense_user');
     }
-    return Promise.reject(error.response?.data || { message: 'Network / Server Error' });
+    const errPayload = error.response?.data || { message: 'Network / Server Error' };
+    if (typeof errPayload === 'object' && !errPayload.status && status) {
+      errPayload.status = status;
+    }
+    return Promise.reject(errPayload);
   }
 );
 

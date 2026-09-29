@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
       target: '< 30 mins',
       rate: 98.4,
       status: 'Excellent',
-      color: 'text-emerald-600 bg-emerald-500',
+      color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500',
     },
     {
       metric: 'Mean Time to Resolution (MTTR)',
@@ -71,7 +71,7 @@ export default function AnalyticsPage() {
       target: '< 4.0 hours',
       rate: 96.2,
       status: 'Compliant',
-      color: 'text-blue-600 bg-blue-500',
+      color: 'text-blue-600 dark:text-blue-400 bg-blue-500',
     },
     {
       metric: 'First Contact Resolution (FCR)',
@@ -79,7 +79,7 @@ export default function AnalyticsPage() {
       target: '> 70.0%',
       rate: 89.0,
       status: 'On Target',
-      color: 'text-purple-600 bg-purple-500',
+      color: 'text-purple-600 dark:text-purple-400 bg-purple-500',
     },
     {
       metric: 'AI Auto-Triage Accuracy',
@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
       target: '> 90.0%',
       rate: 94.2,
       status: 'Precision High',
-      color: 'text-amber-600 bg-amber-500',
+      color: 'text-amber-600 dark:text-amber-400 bg-amber-500',
     },
   ];
 
@@ -238,7 +238,7 @@ export default function AnalyticsPage() {
 
               <div className="pt-2 border-t border-token-border/60 flex items-center justify-between text-xs text-token-text-secondary">
                 <span>Total Received: <strong className="text-token-text-primary">142 Tickets</strong></span>
-                <span>Total Resolved: <strong className="text-emerald-600">139 Tickets (97.8%)</strong></span>
+                <span>Total Resolved: <strong className="text-emerald-600 dark:text-emerald-400">139 Tickets (97.8%)</strong></span>
               </div>
             </div>
           </Card>
@@ -247,7 +247,7 @@ export default function AnalyticsPage() {
           <Card
             title={
               <div className="flex items-center gap-2">
-                <PieChart className="w-4 h-4 text-purple-600" />
+                <PieChart className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 <span>Department Load</span>
               </div>
             }
@@ -259,7 +259,7 @@ export default function AnalyticsPage() {
                 <div className="relative w-36 h-36 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                     {/* SVG Ring Slices */}
-                    <circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" strokeWidth="4" className="dark:stroke-neutral-800" />
+                    <circle cx="18" cy="18" r="14" fill="none" stroke="#E2E8F0" strokeWidth="4" className="dark:stroke-slate-700" />
                     {/* Tech: 34% */}
                     <circle cx="18" cy="18" r="14" fill="none" stroke="#3B82F6" strokeWidth="4" strokeDasharray="34 100" strokeDashoffset="0" />
                     {/* Finance: 26% */}
