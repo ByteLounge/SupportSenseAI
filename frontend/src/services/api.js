@@ -3,6 +3,8 @@
  * Clean REST API client with Axios interceptors and rich multi-role mock fallback data.
  */
 
+import axios from 'axios';
+
 /**
  * Normalizes the API base URL to ensure valid external resolution in browser runtimes.
  * Resolves edge-cases where Render Blueprints or internal service names (e.g., 'supportsense-backend')
