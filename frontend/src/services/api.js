@@ -1242,181 +1242,190 @@ export const chatConciergeApi = (payload) =>
   safeApiCall(
     () => API.post('/ai/concierge', payload),
     () => {
-      const msg = (payload.message || '').toLowerCase();
-      const name = payload.customerName || 'Alex Rivera';
+      try {
+        const msg = (payload?.message || '').toLowerCase();
+        const name = payload?.customerName || 'Alex Rivera';
 
-      if (['hi', 'hello', 'hey', 'help'].includes(msg.trim())) {
-        return {
-          reply: `Hello ${name}! 👋 I'm your SupportSense AI Concierge. Describe your issue or question in simple, everyday words, and I'll immediately analyze it, offer quick diagnostics, and construct a formal support ticket for our engineering or finance specialists.`,
-          ticket_draft: null,
-          suggested_quick_actions: [
-            'Duplicate charge on credit card',
-            'API Webhook 401 Unauthorized error',
-            'Cannot receive Okta MFA push challenge',
-            'Database connection timeout under load'
-          ],
-          confidence_score: 0.98
+        if (['hi', 'hello', 'hey', 'help'].includes(msg.trim())) {
+          return {
+            reply: `Hello ${name}! 👋 I'm your SupportSense AI Concierge. Describe your issue or question in simple, everyday words, and I'll immediately analyze it, offer quick diagnostics, and construct a formal support ticket for our engineering or finance specialists.`,
+            ticket_draft: null,
+            suggested_quick_actions: [
+              'Duplicate charge on credit card',
+              'API Webhook 401 Unauthorized error',
+              'Cannot receive Okta MFA push challenge',
+              'Database connection timeout under load'
+            ],
+            confidence_score: 0.98
+          };
+        }
+
+        const currentUser = JSON.parse(localStorage.getItem('supportsense_user') || 'null') || {
+          id: payload?.customerId || 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+          name: payload?.customerName || 'Alex Rivera',
+          email: payload?.customerEmail || 'alex.rivera@customer.com'
         };
-      }
 
-      const currentUser = JSON.parse(localStorage.getItem('supportsense_user') || 'null') || {
-        id: payload.customerId || 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-        name: payload.customerName || 'Alex Rivera',
-        email: payload.customerEmail || 'alex.rivera@customer.com'
-      };
+        const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need', 'hey', 'hi', 'cannot', 'cant']);
+        const terms = msg.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
 
-      const userTickets = MOCK_TICKETS.filter(t => 
-        (currentUser.id && t.customer_id === currentUser.id) || 
-        (currentUser.email && t.customer_email?.toLowerCase() === currentUser.email?.toLowerCase()) ||
-        (payload.customerId && t.customer_id === payload.customerId) ||
-        (payload.customerEmail && t.customer_email?.toLowerCase() === payload.customerEmail?.toLowerCase())
-      );
+        const userTickets = MOCK_TICKETS.filter(t => 
+          (currentUser.id && t.customer_id === currentUser.id) || 
+          (currentUser.email && t.customer_email?.toLowerCase() === currentUser.email?.toLowerCase()) ||
+          (payload?.customerId && t.customer_id === payload.customerId) ||
+          (payload?.customerEmail && t.customer_email?.toLowerCase() === payload.customerEmail?.toLowerCase())
+        );
 
-      // 1. DUPLICATE PREVENTION: Check if this user already created ANY ticket for this exact issue
-      for (const t of userTickets) {
-        if (isDuplicateInquiry(payload.message, t) || isDuplicateInquiry(msg, t)) {
-          // If active open or in-progress ticket exists:
-          if (['OPEN', 'IN_PROGRESS', 'PENDING', 'APPROVED'].includes(t.status)) {
-            return {
-              reply: `⚠️ Ticket Already Created: You already have an active ticket created for this issue: #${t.ticket_number || t.id} — "${t.title}" (Status: ${t.status}). To prevent duplicate tickets in the queue, duplicate tickets cannot be created.`,
-              is_ticket_already_created: true,
-              is_active_linked: true,
-              active_ticket: {
-                id: t.id,
-                ticket_number: t.ticket_number || t.id,
-                title: t.title,
-                status: t.status,
-                category: t.category,
-                assigned_department: t.assigned_department,
-                assigned_agent_name: t.assigned_agent_name,
-                created_at: t.created_at,
-                description: t.description
-              },
-              ticket_draft: null, // Strictly prevent duplicate creation
-              suggested_quick_actions: [
-                `View Existing Ticket #${t.ticket_number || t.id}`,
-                'Redirect to FAQs',
-                'Ask a different question'
-              ],
-              confidence_score: 0.99
-            };
-          }
+        // 1. DUPLICATE PREVENTION: Check if this user already created ANY ticket for this exact issue
+        for (const t of userTickets) {
+          if (isDuplicateInquiry(payload?.message, t) || isDuplicateInquiry(msg, t)) {
+            // If active open or in-progress ticket exists:
+            if (['OPEN', 'IN_PROGRESS', 'PENDING', 'APPROVED'].includes(t.status)) {
+              return {
+                reply: `⚠️ Ticket Already Created: You already have an active ticket created for this issue: #${t.ticket_number || t.id} — "${t.title}" (Status: ${t.status}). To prevent duplicate tickets in the queue, duplicate tickets cannot be created.`,
+                is_ticket_already_created: true,
+                is_active_linked: true,
+                active_ticket: {
+                  id: t.id,
+                  ticket_number: t.ticket_number || t.id,
+                  title: t.title,
+                  status: t.status,
+                  category: t.category,
+                  assigned_department: t.assigned_department,
+                  assigned_agent_name: t.assigned_agent_name,
+                  created_at: t.created_at,
+                  description: t.description
+                },
+                ticket_draft: null, // Strictly prevent duplicate creation
+                suggested_quick_actions: [
+                  `View Existing Ticket #${t.ticket_number || t.id}`,
+                  'Redirect to FAQs',
+                  'Ask a different question'
+                ],
+                confidence_score: 0.99
+              };
+            }
 
-          // If resolved ticket exists:
-          if (t.status === 'RESOLVED' || t.status === 'CLOSED') {
-            const resolutionSummary = t.messages?.filter(m => m.sender_role === 'AGENT')?.slice(-1)[0]?.message_body
-              || t.ai_suggested_reply
-              || 'Issue was investigated and verified resolved by support engineering.';
+            // If resolved ticket exists:
+            if (t.status === 'RESOLVED' || t.status === 'CLOSED') {
+              const resolutionSummary = t.messages?.filter(m => m.sender_role === 'AGENT')?.slice(-1)[0]?.message_body
+                || t.ai_suggested_reply
+                || 'Issue was investigated and verified resolved by support engineering.';
 
-            return {
-              reply: `⚠️ Ticket Already Created: You previously submitted ticket #${t.ticket_number || t.id} — "${t.title}", which has been RESOLVED. Duplicate tickets are not created. Here is the verified resolution:`,
-              is_ticket_already_created: true,
-              is_duplicate_resolved: true,
-              resolved_ticket: {
-                id: t.id,
-                ticket_number: t.ticket_number || t.id,
-                title: t.title,
-                status: t.status,
-                category: t.category,
-                assigned_department: t.assigned_department,
-                resolution_summary: resolutionSummary,
-                created_at: t.created_at,
-                description: t.description
-              },
-              ticket_draft: null, // Strictly prevent duplicate creation
-              suggested_quick_actions: [
-                'View Resolved Ticket Details',
-                'Redirect to FAQs',
-                'Ask a different question'
-              ],
-              confidence_score: 0.99
-            };
+              return {
+                reply: `⚠️ Ticket Already Created: You previously submitted ticket #${t.ticket_number || t.id} — "${t.title}", which has been RESOLVED. Duplicate tickets are not created. Here is the verified resolution:`,
+                is_ticket_already_created: true,
+                is_duplicate_resolved: true,
+                resolved_ticket: {
+                  id: t.id,
+                  ticket_number: t.ticket_number || t.id,
+                  title: t.title,
+                  status: t.status,
+                  category: t.category,
+                  assigned_department: t.assigned_department,
+                  resolution_summary: resolutionSummary,
+                  created_at: t.created_at,
+                  description: t.description
+                },
+                ticket_draft: null, // Strictly prevent duplicate creation
+                suggested_quick_actions: [
+                  'View Resolved Ticket Details',
+                  'Redirect to FAQs',
+                  'Ask a different question'
+                ],
+                confidence_score: 0.99
+              };
+            }
           }
         }
-      }
 
-      let category = 'Technical';
-      let dept = 'Technical Support';
-      let priority = 'MEDIUM';
-      let title = `[Support] ${payload.message.slice(0, 55)}...`;
-      let summary = `Inquiry submitted by ${name}.`;
-      let checklist = [
-        'Review customer account logs',
-        'Verify reproduction steps',
-        'Follow up with status update'
-      ];
-      let diagnostics = 'Standard intake triage. Awaiting agent assignment.';
-
-      if (/charge|refund|card|bill|invoice|payment|stripe|subscription|\$/i.test(msg)) {
-        category = 'Billing';
-        dept = 'Finance & Billing';
-        priority = /twice|duplicate|emergency|asap|urgent|locked/i.test(msg) ? 'URGENT' : 'HIGH';
-        title = `[Billing] Duplicate Payment Discrepancy & Gateway Audit - ${name}`;
-        summary = `Customer reports payment discrepancies or duplicate charges on active payment card.`;
-        checklist = [
-          'Inspect Stripe / Adyen transaction settlement logs',
-          'Verify duplicate charge ID vs pending authorization hold',
-          'Process refund or credit adjustment via merchant ledger',
-          'Send customer confirmation with bank settlement window (3-5 business days)'
+        let category = 'Technical';
+        let dept = 'Technical Support';
+        let priority = 'MEDIUM';
+        let title = `[Support] ${(payload?.message || '').slice(0, 55)}...`;
+        let summary = `Inquiry submitted by ${name}.`;
+        let checklist = [
+          'Review customer account logs',
+          'Verify reproduction steps',
+          'Follow up with status update'
         ];
-        diagnostics = 'High confidence payment ledger query. Pre-authorized for automated transaction lookup.';
-      } else if (/login|password|mfa|2fa|sso|okta|saml|locked/i.test(msg)) {
-        category = 'Account';
-        dept = 'Identity & Access';
-        priority = 'HIGH';
-        title = `[Access] SSO Authentication & MFA Challenge Obstacle - ${name}`;
-        summary = `User authentication blocked by multi-factor challenge failure or directory sync error.`;
-        checklist = [
-          'Verify Okta / Auth0 directory status and active session tokens',
-          'Check for rate-limiting lockouts on customer IP range',
-          'Trigger secure one-time verification link to verified contact email',
-          'Validate successful token re-issuance'
-        ];
-        diagnostics = 'Identity provider session barrier. Directory sync check advised.';
-      } else if (/webhook|api|401|403|404|500|502|504|endpoint|rate limit/i.test(msg)) {
-        category = 'Technical';
-        dept = 'API Platform Team';
-        priority = /outage|down|broken|urgent|asap/i.test(msg) ? 'URGENT' : 'HIGH';
-        title = `[API Platform] Webhook Dispatch Failure (HTTP 401/500) - ${name}`;
-        summary = `API endpoint integration experiencing authentication rejections or ingress dropped events.`;
-        checklist = [
-          'Verify webhook HMAC signing secret in customer API configuration',
-          'Inspect ingress reverse proxy access logs for status code clusters',
-          'Validate tenant rate limit token bucket capacity',
-          'Trigger synthetic test webhook payload to confirm resolution'
-        ];
-        diagnostics = 'Authentication handshake failure on incoming webhook event receiver.';
-      } else if (/bug|crash|error|exception|slow|latency|lag/i.test(msg)) {
-        category = 'Bug';
-        dept = 'Technical Support';
-        priority = 'HIGH';
-        title = `[Bug] System Performance Degraded & Runtime Exception - ${name}`;
-        summary = `Customer reports reproducible application anomaly or elevated latency.`;
-        checklist = [
-          'Capture client browser agent and environment details',
-          'Inspect application error traces in Sentry telemetry',
-          'Attempt reproduction in isolated staging sandbox',
-          'Tag engineering sprint sub-task if confirmed defect'
-        ];
-        diagnostics = 'Application runtime exception detected in customer session.';
-      }
+        let diagnostics = 'Standard intake triage. Awaiting agent assignment.';
 
-      // 2. CATEGORIZATION & FAQ DEFLECTION: Find verified FAQs / solutions for tickets with similar problems
-      const allFaqs = getAllMockFaqs();
-      const matchedFaqs = allFaqs.filter(f =>
-        f.category.toLowerCase().includes(category.toLowerCase()) ||
-        terms.some(t => f.question.toLowerCase().includes(t) || (f.tags && f.tags.some(tag => tag.toLowerCase().includes(t))))
-      ).slice(0, 2);
+        if (/charge|refund|card|bill|invoice|payment|stripe|subscription|\$/i.test(msg)) {
+          category = 'Billing';
+          dept = 'Finance & Billing';
+          priority = /twice|duplicate|emergency|asap|urgent|locked/i.test(msg) ? 'URGENT' : 'HIGH';
+          title = `[Billing] Duplicate Payment Discrepancy & Gateway Audit - ${name}`;
+          summary = `Customer reports payment discrepancies or duplicate charges on active payment card.`;
+          checklist = [
+            'Inspect Stripe / Adyen transaction settlement logs',
+            'Verify duplicate charge ID vs pending authorization hold',
+            'Process refund or credit adjustment via merchant ledger',
+            'Send customer confirmation with bank settlement window (3-5 business days)'
+          ];
+          diagnostics = 'High confidence payment ledger query. Pre-authorized for automated transaction lookup.';
+        } else if (/login|password|mfa|2fa|sso|okta|saml|locked/i.test(msg)) {
+          category = 'Account';
+          dept = 'Identity & Access';
+          priority = 'HIGH';
+          title = `[Access] SSO Authentication & MFA Challenge Obstacle - ${name}`;
+          summary = `User authentication blocked by multi-factor challenge failure or directory sync error.`;
+          checklist = [
+            'Verify Okta / Auth0 directory status and active session tokens',
+            'Check for rate-limiting lockouts on customer IP range',
+            'Trigger secure one-time verification link to verified contact email',
+            'Validate successful token re-issuance'
+          ];
+          diagnostics = 'Identity provider session barrier. Directory sync check advised.';
+        } else if (/webhook|api|401|403|404|500|502|504|endpoint|rate limit/i.test(msg)) {
+          category = 'Technical';
+          dept = 'API Platform Team';
+          priority = /outage|down|broken|urgent|asap/i.test(msg) ? 'URGENT' : 'HIGH';
+          title = `[API Platform] Webhook Dispatch Failure (HTTP 401/500) - ${name}`;
+          summary = `API endpoint integration experiencing authentication rejections or ingress dropped events.`;
+          checklist = [
+            'Verify webhook HMAC signing secret in customer API configuration',
+            'Inspect ingress reverse proxy access logs for status code clusters',
+            'Validate tenant rate limit token bucket capacity',
+            'Trigger synthetic test webhook payload to confirm resolution'
+          ];
+          diagnostics = 'Authentication handshake failure on incoming webhook event receiver.';
+        } else if (/bug|crash|error|exception|slow|latency|lag/i.test(msg)) {
+          category = 'Bug';
+          dept = 'Technical Support';
+          priority = 'HIGH';
+          title = `[Bug] System Performance Degraded & Runtime Exception - ${name}`;
+          summary = `Customer reports reproducible application anomaly or elevated latency.`;
+          checklist = [
+            'Capture client browser agent and environment details',
+            'Inspect application error traces in Sentry telemetry',
+            'Attempt reproduction in isolated staging sandbox',
+            'Tag engineering sprint sub-task if confirmed defect'
+          ];
+          diagnostics = 'Application runtime exception detected in customer session.';
+        }
 
-      const replyLead = matchedFaqs.length > 0
-        ? `I've categorized your inquiry under **${category}**. Tickets with similar problems have already been resolved. Here is the verified FAQ resolution below:`
-        : `I understand how urgent this is, ${name}. I've synthesized your request into a formal enterprise support ticket, classified it under **${category}**, routed it to **${dept}**, and prepared a diagnostic verification checklist. Review the ticket specification below and click **Dispatch Ticket** to launch it!`;
+        // 2. CATEGORIZATION & FAQ DEFLECTION: Find verified FAQs / solutions for tickets with similar problems
+        let matchedFaqs = [];
+        try {
+          const allFaqs = getAllMockFaqs();
+          matchedFaqs = allFaqs.filter(f =>
+            f.category.toLowerCase().includes(category.toLowerCase()) ||
+            terms.some(t => f.question.toLowerCase().includes(t) || (f.tags && f.tags.some(tag => tag.toLowerCase().includes(t))))
+          ).slice(0, 2);
+        } catch (faqErr) {
+          console.warn('FAQ lookup fallback:', faqErr);
+        }
 
-      const formalDescription = `### 1. Executive Summary
+        const replyLead = matchedFaqs.length > 0
+          ? `I've categorized your inquiry under **${category}**. Tickets with similar problems have already been resolved. Here is the verified FAQ resolution below:`
+          : `I understand how urgent this is, ${name}. I've synthesized your request into a formal enterprise support ticket, classified it under **${category}**, routed it to **${dept}**, and prepared a diagnostic verification checklist. Review the ticket specification below and click **Dispatch Ticket** to launch it!`;
+
+        const formalDescription = `### 1. Executive Summary
 ${summary}
 
 ### 2. Customer Statement & Observed Symptoms
-"${payload.message}"
+"${payload?.message || ''}"
 
 ### 3. Business & Operational Impact
 Issue interrupts standard user workflow and requires departmental investigation.
@@ -1430,30 +1439,50 @@ Issue interrupts standard user workflow and requires departmental investigation.
 ${diagnostics}
 `;
 
-      return {
-        reply: replyLead,
-        matched_faqs: matchedFaqs,
-        ticket_draft: {
-          title,
-          category,
-          priority,
-          target_department: dept,
-          executive_summary: summary,
-          formal_description: formalDescription,
-          checklist,
-          customer_mood: /angry|upset|frustrated|broken|fail|emergency|asap/i.test(msg) ? 'FRUSTRATED' : 'NEUTRAL',
-          patience_score: priority === 'URGENT' ? 'CRITICAL' : 'CONCERNED',
-          predicted_resolution_time: priority === 'URGENT' ? '2-4 hours' : '1-2 business days',
-          urgency_reasoning: `Derived from reported ${category.toLowerCase()} operational friction.`,
-          is_ready_for_ticket: true
-        },
-        suggested_quick_actions: [
-          `Confirm & Dispatch to ${dept}`,
-          'Add error code or screenshot details',
-          'Check system status page'
-        ],
-        confidence_score: 0.94
-      };
+        return {
+          reply: replyLead,
+          matched_faqs: matchedFaqs,
+          ticket_draft: {
+            title,
+            category,
+            priority,
+            target_department: dept,
+            executive_summary: summary,
+            formal_description: formalDescription,
+            checklist,
+            customer_mood: /angry|upset|frustrated|broken|fail|emergency|asap/i.test(msg) ? 'FRUSTRATED' : 'NEUTRAL',
+            patience_score: priority === 'URGENT' ? 'CRITICAL' : 'CONCERNED',
+            predicted_resolution_time: priority === 'URGENT' ? '2-4 hours' : '1-2 business days',
+            urgency_reasoning: `Derived from reported ${category.toLowerCase()} operational friction.`,
+            is_ready_for_ticket: true
+          },
+          suggested_quick_actions: [
+            `Confirm & Dispatch to ${dept}`,
+            'Add error code or screenshot details',
+            'Check system status page'
+          ],
+          confidence_score: 0.94
+        };
+      } catch (fallbackError) {
+        console.error('Safe fallback in chatConciergeApi:', fallbackError);
+        return {
+          reply: `Hello ${payload?.customerName || 'there'}! I've analyzed your inquiry and drafted a formal support ticket. Review the details below to dispatch it.`,
+          ticket_draft: {
+            title: `[Support] ${String(payload?.message || 'Customer Inquiry').slice(0, 50)}`,
+            category: 'Technical',
+            priority: 'MEDIUM',
+            target_department: 'Technical Support',
+            executive_summary: String(payload?.message || ''),
+            formal_description: `### Reported Issue\n${payload?.message || ''}`,
+            checklist: ['Review inquiry details', 'Follow up with customer'],
+            customer_mood: 'NEUTRAL',
+            patience_score: 'CONCERNED',
+            predicted_resolution_time: '1-2 business days',
+            is_ready_for_ticket: true
+          },
+          confidence_score: 0.90
+        };
+      }
     }
   );
 
