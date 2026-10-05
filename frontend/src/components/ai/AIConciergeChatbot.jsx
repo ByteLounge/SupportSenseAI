@@ -494,17 +494,27 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
 
         {/* Live Formal Ticket Specification Card */}
         {activeTicketDraft && !createdTicketResult && (
-          <div className="my-3 p-4 bg-moonrow-canvas dark:bg-token-secondary/40 border border-moonrow-primary/30 rounded-2xl shadow-md space-y-3.5 transition-all">
-            <div className="flex items-start justify-between gap-2 border-b border-token-border pb-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-moonrow-primary text-white">
+          <div className="my-3 p-4 bg-[#0a101d] border border-moonrow-primary/40 rounded-2xl shadow-xl space-y-3.5 transition-all text-slate-100">
+            <div className="flex items-start justify-between gap-2 border-b border-slate-700/60 pb-3">
+              <div className="space-y-1.5 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-moonrow-primary text-white shadow-xs">
                     ✨ Synthesized Formal Ticket Draft
                   </span>
-                  <Badge variant={getPriorityBadgeVariant(editableDraft?.priority || activeTicketDraft.priority)} size="sm">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-semibold tracking-wide ${
+                      (editableDraft?.priority || activeTicketDraft.priority) === 'URGENT' || (editableDraft?.priority || activeTicketDraft.priority) === 'CRITICAL'
+                        ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                        : (editableDraft?.priority || activeTicketDraft.priority) === 'HIGH'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                        : (editableDraft?.priority || activeTicketDraft.priority) === 'MEDIUM'
+                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                        : 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+                    }`}
+                  >
                     {editableDraft?.priority || activeTicketDraft.priority}
-                  </Badge>
-                  <span className="text-[11px] font-medium text-token-text-muted flex items-center gap-1">
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-300 flex items-center gap-1">
                     <Building2 className="w-3 h-3 text-moonrow-primary" />
                     {editableDraft?.target_department || activeTicketDraft.target_department}
                   </span>
@@ -515,20 +525,21 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                     type="text"
                     value={editableDraft.title}
                     onChange={(e) => setEditableDraft({ ...editableDraft, title: e.target.value })}
-                    className="w-full text-xs font-semibold px-2 py-1 bg-token-card border border-token-border rounded-lg"
+                    className="w-full text-xs font-semibold px-2.5 py-1.5 bg-[#141e33] text-white border border-slate-600 rounded-lg focus:outline-hidden focus:border-moonrow-primary"
                   />
                 ) : (
-                  <h4 className="text-xs sm:text-sm font-semibold text-token-text-primary">
+                  <h4 className="text-xs sm:text-sm font-semibold text-white">
                     {editableDraft?.title || activeTicketDraft.title}
                   </h4>
                 )}
               </div>
 
               <Button
-                variant="ghost"
+                variant="dark"
                 size="xs"
                 icon={Edit3}
                 onClick={() => setIsEditingDraft(!isEditingDraft)}
+                className="bg-[#141e33] hover:bg-[#1e2c47] text-slate-200 border-slate-700 shrink-0"
               >
                 {isEditingDraft ? 'Save' : 'Edit'}
               </Button>
@@ -536,8 +547,8 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
 
             {/* Quick Metadata Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
-              <div className="p-2 rounded-xl bg-token-card border border-token-border">
-                <div className="text-token-text-muted flex items-center gap-1">
+              <div className="p-2.5 rounded-xl bg-[#141e33] border border-slate-700/70">
+                <div className="text-slate-400 flex items-center gap-1 font-medium">
                   <Tag className="w-3 h-3 text-moonrow-primary" />
                   Category
                 </div>
@@ -545,7 +556,7 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                   <select
                     value={editableDraft.category}
                     onChange={(e) => setEditableDraft({ ...editableDraft, category: e.target.value })}
-                    className="w-full bg-token-secondary border border-token-border rounded text-[11px] p-0.5 mt-1"
+                    className="w-full bg-[#1e2c47] text-white border border-slate-600 rounded text-[11px] p-1 mt-1 focus:outline-hidden"
                   >
                     <option value="Billing">Billing</option>
                     <option value="Technical">Technical</option>
@@ -554,14 +565,14 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                     <option value="Feature Request">Feature Request</option>
                   </select>
                 ) : (
-                  <div className="font-semibold text-token-text-primary mt-0.5">
+                  <div className="font-semibold text-white mt-1">
                     {editableDraft?.category || activeTicketDraft.category}
                   </div>
                 )}
               </div>
 
-              <div className="p-2 rounded-xl bg-token-card border border-token-border">
-                <div className="text-token-text-muted flex items-center gap-1">
+              <div className="p-2.5 rounded-xl bg-[#141e33] border border-slate-700/70">
+                <div className="text-slate-400 flex items-center gap-1 font-medium">
                   <Building2 className="w-3 h-3 text-moonrow-primary" />
                   Routing
                 </div>
@@ -569,7 +580,7 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                   <select
                     value={editableDraft.target_department}
                     onChange={(e) => setEditableDraft({ ...editableDraft, target_department: e.target.value })}
-                    className="w-full bg-token-secondary border border-token-border rounded text-[11px] p-0.5 mt-1"
+                    className="w-full bg-[#1e2c47] text-white border border-slate-600 rounded text-[11px] p-1 mt-1 focus:outline-hidden"
                   >
                     <option value="Finance & Billing">Finance & Billing</option>
                     <option value="Technical Support">Technical Support</option>
@@ -577,52 +588,52 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                     <option value="API Platform Team">API Platform Team</option>
                   </select>
                 ) : (
-                  <div className="font-semibold text-token-text-primary mt-0.5 truncate">
+                  <div className="font-semibold text-white mt-1 truncate">
                     {editableDraft?.target_department || activeTicketDraft.target_department}
                   </div>
                 )}
               </div>
 
-              <div className="p-2 rounded-xl bg-token-card border border-token-border">
-                <div className="text-token-text-muted flex items-center gap-1">
+              <div className="p-2.5 rounded-xl bg-[#141e33] border border-slate-700/70">
+                <div className="text-slate-400 flex items-center gap-1 font-medium">
                   <Clock className="w-3 h-3 text-moonrow-primary" />
                   SLA Estimate
                 </div>
-                <div className="font-semibold text-token-text-primary mt-0.5">
+                <div className="font-semibold text-white mt-1">
                   {activeTicketDraft.predicted_resolution_time || '1-2 business days'}
                 </div>
               </div>
 
-              <div className="p-2 rounded-xl bg-token-card border border-token-border">
-                <div className="text-token-text-muted flex items-center gap-1">
-                  <ShieldAlert className="w-3 h-3 text-amber-500" />
+              <div className="p-2.5 rounded-xl bg-[#141e33] border border-slate-700/70">
+                <div className="text-slate-400 flex items-center gap-1 font-medium">
+                  <ShieldAlert className="w-3 h-3 text-amber-400" />
                   Customer Mood
                 </div>
-                <div className="font-semibold text-token-text-primary mt-0.5">
+                <div className="font-semibold text-amber-300 mt-1">
                   {activeTicketDraft.customer_mood} ({activeTicketDraft.patience_score})
                 </div>
               </div>
             </div>
 
             {/* Executive Summary */}
-            <div className="p-2.5 rounded-xl bg-token-card border border-token-border text-xs">
-              <span className="font-medium text-token-text-muted">Executive Summary: </span>
-              <span className="text-token-text-primary">
+            <div className="p-3 rounded-xl bg-[#141e33] border border-slate-700/70 text-xs space-y-1">
+              <span className="font-semibold text-slate-300">Executive Summary: </span>
+              <span className="text-slate-100 font-normal leading-relaxed">
                 {activeTicketDraft.executive_summary}
               </span>
             </div>
 
             {/* Actionable Verification Checklist */}
             {activeTicketDraft.checklist && activeTicketDraft.checklist.length > 0 && (
-              <div className="space-y-1.5 text-xs">
-                <div className="font-medium text-token-text-secondary flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <div className="p-3 rounded-xl bg-[#141e33] border border-slate-700/70 space-y-2 text-xs">
+                <div className="font-semibold text-slate-200 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                   <span>AI Pre-configured Engineering Checklist ({activeTicketDraft.checklist.length} verification steps):</span>
                 </div>
-                <div className="space-y-1 pl-1">
+                <div className="space-y-1.5 pl-1">
                   {activeTicketDraft.checklist.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-[11px] text-token-text-primary">
-                      <span className="w-1.5 h-1.5 rounded-full bg-moonrow-primary shrink-0" />
+                    <div key={idx} className="flex items-start gap-2 text-[11px] text-slate-300 leading-normal">
+                      <span className="w-1.5 h-1.5 rounded-full bg-moonrow-primary shrink-0 mt-1.5" />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -631,11 +642,11 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
             )}
 
             {/* Collapsible Formal Markdown Specification */}
-            <div className="pt-2 border-t border-token-border">
+            <div className="pt-2 border-t border-slate-700/60">
               <button
                 type="button"
                 onClick={() => setShowFullMarkdown(!showFullMarkdown)}
-                className="text-[11px] font-medium text-moonrow-primary hover:underline flex items-center gap-1"
+                className="text-[11px] font-medium text-moonrow-400 hover:text-moonrow-300 flex items-center gap-1 transition-colors"
               >
                 <FileText className="w-3 h-3" />
                 <span>{showFullMarkdown ? 'Hide full markdown specification' : 'View full formal markdown specification'}</span>
@@ -643,14 +654,14 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
               </button>
 
               {showFullMarkdown && (
-                <div className="mt-2 p-3 bg-token-card border border-token-border rounded-xl text-[11px] font-mono whitespace-pre-line text-token-text-secondary overflow-x-auto max-h-48">
+                <div className="mt-2 p-3 bg-[#141e33] border border-slate-700/70 rounded-xl text-[11px] font-mono whitespace-pre-line text-slate-200 overflow-x-auto max-h-48 leading-relaxed">
                   {activeTicketDraft.formal_description}
                 </div>
               )}
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-token-border">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-700/60">
               <Button
                 variant="primary"
                 size="sm"
