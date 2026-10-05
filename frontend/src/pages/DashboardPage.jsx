@@ -107,12 +107,28 @@ export default function DashboardPage() {
   const handleApproveRouting = async (ticket) => {
     try {
       await forwardTicketApi(ticket.id, {
-        targetDepartment: ticket.ai_suggested_department || 'Technical Support',
+        targetDepartment: ticket.ai_suggested_department || ticket.assigned_department || 'Technical Support',
+        status: 'APPROVED',
+        ai_routing_approved: true,
         comments: 'Approved automated AI department routing.',
       });
-      addToast(`Routed to ${ticket.ai_suggested_department || 'Technical Support'}`, 'success');
+      // Optimistically update ticket status so it immediately leaves the AI Triage list and updates in table
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === ticket.id
+            ? {
+                ...t,
+                status: 'APPROVED',
+                ai_routing_approved: true,
+                assigned_department: ticket.ai_suggested_department || t.assigned_department,
+              }
+            : t
+        )
+      );
+      addToast(`Ticket #${ticket.ticket_number || ticket.id} approved and routed to ${ticket.ai_suggested_department || 'Technical Support'}`, 'success');
       fetchDashboardData();
     } catch (err) {
+      console.error('Failed to approve routing:', err);
       addToast('Failed to approve routing', 'error');
     }
   };
@@ -159,7 +175,9 @@ export default function DashboardPage() {
   const openCount = tickets.filter((t) => t.status === 'OPEN').length;
   const inProgressCount = tickets.filter((t) => t.status === 'IN_PROGRESS' || t.status === 'PENDING').length;
   const resolvedCount = tickets.filter((t) => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
-  const unapprovedAiTickets = tickets.filter((t) => !t.ai_routing_approved && t.status !== 'RESOLVED');
+  const unapprovedAiTickets = tickets.filter(
+    (t) => !t.ai_routing_approved && t.status !== 'APPROVED' && t.status !== 'RESOLVED' && t.status !== 'CLOSED'
+  );
 
   const filteredFaqs = faqs.filter(
     (f) =>
@@ -698,6 +716,7 @@ export default function DashboardPage() {
             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
             options={[
               { label: 'OPEN', value: 'OPEN' },
+              { label: 'APPROVED', value: 'APPROVED' },
               { label: 'IN_PROGRESS', value: 'IN_PROGRESS' },
               { label: 'RESOLVED', value: 'RESOLVED' },
               { label: 'CLOSED', value: 'CLOSED' },

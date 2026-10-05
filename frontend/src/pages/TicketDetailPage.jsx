@@ -250,12 +250,21 @@ export default function TicketDetailPage() {
   const handleApproveAiRouting = async () => {
     try {
       await forwardTicketApi(id, {
-        targetDepartment: ticket.ai_suggested_department || 'Technical Support',
+        targetDepartment: ticket.ai_suggested_department || ticket.assigned_department || 'Technical Support',
+        status: 'APPROVED',
+        ai_routing_approved: true,
         comments: 'Approved Gemini AI recommended department routing.',
       });
-      addToast(`Routed to ${ticket.ai_suggested_department || 'Technical Support'}`, 'success');
+      setTicket((prev) => ({
+        ...prev,
+        status: 'APPROVED',
+        ai_routing_approved: true,
+        assigned_department: ticket.ai_suggested_department || prev?.assigned_department,
+      }));
+      addToast(`Ticket #${ticket.ticket_number || id} approved successfully`, 'success');
       fetchTicket();
     } catch (err) {
+      console.error('Failed to approve routing:', err);
       addToast('Failed to approve routing', 'error');
     }
   };
@@ -672,6 +681,7 @@ export default function TicketDetailPage() {
                     onChange={(e) => handleStatusChange(e.target.value)}
                     options={[
                       { label: 'Open', value: 'OPEN' },
+                      { label: 'Approved', value: 'APPROVED' },
                       { label: 'In Progress', value: 'IN_PROGRESS' },
                       { label: 'Resolved', value: 'RESOLVED' },
                       { label: 'Closed', value: 'CLOSED' },
@@ -732,7 +742,7 @@ export default function TicketDetailPage() {
                     </span>
                   </div>
 
-                  {!ticket.ai_routing_approved ? (
+                  {!ticket.ai_routing_approved && ticket.status !== 'APPROVED' ? (
                     <Button
                       variant="primary"
                       size="sm"
@@ -908,6 +918,7 @@ export default function TicketDetailPage() {
             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
             options={[
               { label: 'OPEN', value: 'OPEN' },
+              { label: 'APPROVED', value: 'APPROVED' },
               { label: 'IN_PROGRESS', value: 'IN_PROGRESS' },
               { label: 'RESOLVED', value: 'RESOLVED' },
               { label: 'CLOSED', value: 'CLOSED' },

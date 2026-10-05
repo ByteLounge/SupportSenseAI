@@ -46,6 +46,12 @@ export function formatShortDate(dateString) {
 export function getStatusBadgeStyle(status) {
   const normalized = (status || 'OPEN').toUpperCase();
   switch (normalized) {
+    case 'APPROVED':
+      return {
+        bg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+        dot: 'bg-emerald-500',
+        label: 'Approved'
+      };
     case 'RESOLVED':
     case 'CLOSED':
       return {

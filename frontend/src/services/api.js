@@ -758,6 +758,9 @@ export const updateTicketStatusApi = (id, data) =>
       const idx = MOCK_TICKETS.findIndex(t => t.id === id || t.ticket_number === id);
       if (idx !== -1) {
         MOCK_TICKETS[idx].status = data.status || MOCK_TICKETS[idx].status;
+        if (data.status === 'APPROVED') {
+          MOCK_TICKETS[idx].ai_routing_approved = true;
+        }
         if (data.assignedAgentId) MOCK_TICKETS[idx].assigned_agent_id = data.assignedAgentId;
       }
       return { success: true, status: data.status };
@@ -773,24 +776,30 @@ export const forwardTicketApi = (id, data) =>
       const idx = MOCK_TICKETS.findIndex(t => t.id === id || t.ticket_number === id);
       if (idx !== -1) {
         const ticket = MOCK_TICKETS[idx];
-        ticket.assigned_department = data.targetDepartment;
-        ticket.ai_routing_approved = true;
-        ticket.status = 'IN_PROGRESS';
+        if (data.targetDepartment) {
+          ticket.assigned_department = data.targetDepartment;
+        }
+        const newStatus = data.status || (data.ai_routing_approved ? 'APPROVED' : 'IN_PROGRESS');
+        ticket.status = newStatus;
+        ticket.ai_routing_approved = data.ai_routing_approved !== undefined ? data.ai_routing_approved : (newStatus === 'APPROVED');
 
         const forwardEntry = {
           forwarded_by: currentUser.name,
-          forwarded_to: data.targetDepartment,
+          forwarded_to: data.targetDepartment || ticket.assigned_department,
           date: new Date().toISOString(),
-          comments: data.comments || 'Approved AI department routing.'
+          comments: data.comments || (newStatus === 'APPROVED' ? 'Approved AI department routing.' : 'Approved AI department routing.')
         };
         ticket.forward_history = [forwardEntry, ...(ticket.forward_history || [])];
 
+        const isApproval = newStatus === 'APPROVED' || data.ai_routing_approved;
         const forwardNote = {
           id: `m-fwd-${Date.now()}`,
           sender_name: currentUser.name,
           sender_role: currentUser.role,
           sender_avatar: currentUser.avatar_url,
-          message_body: `[Inter-Department Forwarding]: Ticket routed to ${data.targetDepartment} by ${currentUser.name}.${data.comments ? ` Comments: "${data.comments}"` : ''}`,
+          message_body: isApproval
+            ? `[AI Triage Verification]: Ticket routing approved to ${data.targetDepartment || ticket.assigned_department} by ${currentUser.name}.${data.comments ? ` Comments: "${data.comments}"` : ''}`
+            : `[Inter-Department Forwarding]: Ticket routed to ${data.targetDepartment || ticket.assigned_department} by ${currentUser.name}.${data.comments ? ` Comments: "${data.comments}"` : ''}`,
           created_at: new Date().toISOString(),
           is_internal_note: true
         };
@@ -800,6 +809,15 @@ export const forwardTicketApi = (id, data) =>
       return { success: true };
     }
   );
+
+// Explicit 1-Click Ticket Approval (Agent & Admin)
+export const approveTicketApi = (id, data = {}) =>
+  forwardTicketApi(id, {
+    ...data,
+    status: 'APPROVED',
+    ai_routing_approved: true,
+    comments: data.comments || 'Approved automated AI department routing.'
+  });
 
 // Full Ticket Modification (Admin Master Control)
 export const modifyTicketApi = (id, data) =>

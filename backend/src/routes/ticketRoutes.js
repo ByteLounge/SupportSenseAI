@@ -20,6 +20,7 @@ router.get('/:id', ticketController.getTicketById);
 // Agent / Admin restricted routes
 router.patch('/:id/status', authorizeRoles('AGENT', 'ADMIN'), ticketController.updateStatus);
 router.post('/:id/forward', authorizeRoles('AGENT', 'ADMIN'), ticketController.forwardTicket);
+router.post('/:id/approve', authorizeRoles('AGENT', 'ADMIN'), ticketController.approveTicket);
 router.patch('/:id', authorizeRoles('AGENT', 'ADMIN'), ticketController.modifyTicket);
 router.delete('/:id', authorizeRoles('ADMIN'), ticketController.deleteTicket);
 router.post('/:id/messages', ticketController.postMessage);

@@ -108,7 +108,8 @@ async function createTicketWithInitialMessage({
 async function getAllTickets({ status, priority, search, userRole, userId }) {
   let sql = `
     SELECT 
-      t.id, t.ticket_number, t.title, t.description, t.status, t.category, t.priority, t.created_at, t.updated_at,
+      t.id, t.ticket_number, t.customer_id, t.title, t.description, t.status, t.category, t.priority, t.created_at, t.updated_at,
+      t.assigned_department, t.ai_routing_approved,
       u.name AS customer_name, u.email AS customer_email,
       a.name AS assigned_agent_name,
       ai.customer_mood, ai.mood_confidence, ai.patience_score, ai.predicted_resolution_time
@@ -215,7 +216,7 @@ async function getTicketById(ticketId, userRole = null) {
 /**
  * Update ticket status or assigned agent.
  */
-async function updateTicketStatus(ticketId, { status, assignedAgentId }) {
+async function updateTicketStatus(ticketId, { status, assignedAgentId, aiRoutingApproved }) {
   let sql = `UPDATE tickets SET updated_at = CURRENT_TIMESTAMP`;
   const params = [];
 
@@ -229,6 +230,11 @@ async function updateTicketStatus(ticketId, { status, assignedAgentId }) {
     sql += `, assigned_agent_id = $${params.length}`;
   }
 
+  if (aiRoutingApproved !== undefined) {
+    params.push(aiRoutingApproved);
+    sql += `, ai_routing_approved = $${params.length}`;
+  }
+
   params.push(ticketId);
   sql += ` WHERE id = $${params.length} RETURNING *;`;
 
@@ -240,7 +246,7 @@ async function updateTicketStatus(ticketId, { status, assignedAgentId }) {
  * Modify ticket attributes (Admin / Agent escalation override).
  */
 async function modifyTicket(ticketId, fields = {}) {
-  const allowedFields = ['title', 'description', 'category', 'priority', 'status', 'assigned_agent_id'];
+  const allowedFields = ['title', 'description', 'category', 'priority', 'status', 'assigned_agent_id', 'assigned_department', 'ai_routing_approved'];
   const setClauses = ['updated_at = CURRENT_TIMESTAMP'];
   const params = [];
 

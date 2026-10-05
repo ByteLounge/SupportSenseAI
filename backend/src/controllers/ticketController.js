@@ -12,10 +12,12 @@ const logger = require('../utils/logger');
 const { sendSuccess, sendError } = require('../utils/responseFormatter');
 
 const ALLOWED_STATUS_TRANSITIONS = {
-  OPEN: ['IN_PROGRESS'],
-  IN_PROGRESS: ['RESOLVED'],
+  OPEN: ['IN_PROGRESS', 'APPROVED'],
+  APPROVED: ['IN_PROGRESS', 'RESOLVED', 'CLOSED'],
+  IN_PROGRESS: ['APPROVED', 'RESOLVED', 'PENDING'],
+  PENDING: ['IN_PROGRESS', 'RESOLVED'],
   RESOLVED: ['OPEN', 'CLOSED'],
-  CLOSED: []
+  CLOSED: ['OPEN']
 };
 /**
  * Create a new ticket & trigger AI Triage + Department Auto-Reply evaluation.
@@ -222,7 +224,8 @@ if (status) {
 
 const updatedTicket = await ticketModel.updateTicketStatus(ticketId, {
       status,
-      assignedAgentId
+      assignedAgentId,
+      aiRoutingApproved: status === 'APPROVED' ? true : undefined
     });
     logger.info('Timeline summary check', {
       ticketId,
@@ -244,13 +247,13 @@ const updatedTicket = await ticketModel.updateTicketStatus(ticketId, {
 }
 
 /**
- * Forward ticket to specific department with agent comments.
+ * Forward ticket to specific department with agent comments, or 1-click approve AI routing.
  * POST /api/v1/tickets/:id/forward
  */
 async function forwardTicket(req, res, next) {
   try {
     const ticketId = req.params.id;
-    const { targetDepartment, comments, assignedAgentId } = req.body;
+    const { targetDepartment, comments, assignedAgentId, status, ai_routing_approved } = req.body;
 
     if (!targetDepartment) {
       return sendError(res, 400, 'Target department is required for forwarding.');
@@ -261,25 +264,43 @@ async function forwardTicket(req, res, next) {
       return sendError(res, 404, 'Ticket not found.');
     }
 
-    // Update status to IN_PROGRESS and reassign if specified
+    const newStatus = status || (ai_routing_approved ? 'APPROVED' : 'IN_PROGRESS');
+    const isApproved = ai_routing_approved !== undefined ? Boolean(ai_routing_approved) : (newStatus === 'APPROVED');
+
+    // Update status, department, and ai_routing_approved
     const updatedTicket = await ticketModel.modifyTicket(ticketId, {
-      status: 'IN_PROGRESS',
+      status: newStatus,
+      assigned_department: targetDepartment,
+      ai_routing_approved: isApproved,
       assigned_agent_id: assignedAgentId || currentTicket.assigned_agent_id
     });
 
     // Record internal handover note
     const handoverComment = comments ? ` [Comments: ${comments}]` : '';
+    const notePrefix = isApproved
+      ? '[AI Triage Verification]: Ticket routing approved to'
+      : '[Inter-Department Forwarding]: Ticket routed to';
     await ticketModel.createMessage({
       ticketId,
       senderId: req.user.id,
-      messageBody: `[Inter-Department Forwarding]: Ticket routed to ${targetDepartment} by ${req.user.name}.${handoverComment}`,
+      messageBody: `${notePrefix} ${targetDepartment} by ${req.user.name}.${handoverComment}`,
       isInternalNote: true
     });
 
-    return sendSuccess(res, 200, `Ticket successfully forwarded to ${targetDepartment}.`, updatedTicket);
+    return sendSuccess(res, 200, `Ticket successfully ${isApproved ? 'approved and routed' : 'forwarded'} to ${targetDepartment}.`, updatedTicket);
   } catch (error) {
     next(error);
   }
+}
+
+/**
+ * 1-Click Approve AI Routing & Set status to APPROVED.
+ * POST /api/v1/tickets/:id/approve
+ */
+async function approveTicket(req, res, next) {
+  req.body.status = 'APPROVED';
+  req.body.ai_routing_approved = true;
+  return forwardTicket(req, res, next);
 }
 
 /**
@@ -391,6 +412,7 @@ module.exports = {
   getTicketById,
   updateStatus,
   forwardTicket,
+  approveTicket,
   modifyTicket,
   deleteTicket,
   postMessage,

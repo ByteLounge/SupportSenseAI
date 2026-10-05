@@ -50,7 +50,18 @@ async function initializeDatabase() {
         logger.error(`Seed file not found at ${seedPath}`);
       }
     } else {
-      logger.info('PostgreSQL database tables already present.');
+      logger.info('PostgreSQL database tables already present. Ensuring schema migrations are up to date...');
+      try {
+        await pool.query(`
+          ALTER TABLE tickets ADD COLUMN IF NOT EXISTS assigned_department VARCHAR(100) DEFAULT 'Technical Support';
+          ALTER TABLE tickets ADD COLUMN IF NOT EXISTS ai_routing_approved BOOLEAN DEFAULT FALSE;
+          ALTER TABLE tickets DROP CONSTRAINT IF EXISTS tickets_status_check;
+          ALTER TABLE tickets ADD CONSTRAINT tickets_status_check CHECK (status IN ('OPEN', 'APPROVED', 'IN_PROGRESS', 'PENDING', 'RESOLVED', 'CLOSED'));
+        `);
+        logger.info('✅ Schema migrations verified (APPROVED status & triage columns).');
+      } catch (migrationErr) {
+        logger.warn('Schema incremental migration warning:', migrationErr.message);
+      }
     }
   } catch (error) {
     logger.error('Failed to auto-initialize database tables:', error);

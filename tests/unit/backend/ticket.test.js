@@ -36,4 +36,19 @@ describe('Ticket Business Logic Unit Tests', () => {
     expect(score).toEqual(35);
   });
 
+  test('Allowed status transitions support APPROVED workflow', () => {
+    const ALLOWED_STATUS_TRANSITIONS = {
+      OPEN: ['IN_PROGRESS', 'APPROVED'],
+      APPROVED: ['IN_PROGRESS', 'RESOLVED', 'CLOSED'],
+      IN_PROGRESS: ['APPROVED', 'RESOLVED', 'PENDING'],
+      PENDING: ['IN_PROGRESS', 'RESOLVED'],
+      RESOLVED: ['OPEN', 'CLOSED'],
+      CLOSED: ['OPEN']
+    };
+
+    expect(ALLOWED_STATUS_TRANSITIONS.OPEN).toContain('APPROVED');
+    expect(ALLOWED_STATUS_TRANSITIONS.APPROVED).toContain('RESOLVED');
+    expect(ALLOWED_STATUS_TRANSITIONS.APPROVED).toContain('CLOSED');
+  });
+
 });

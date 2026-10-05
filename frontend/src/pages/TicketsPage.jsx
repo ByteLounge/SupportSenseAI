@@ -388,6 +388,7 @@ export default function TicketsPage() {
                 options={[
                   { label: 'All Statuses', value: '' },
                   { label: 'Open', value: 'OPEN' },
+                  { label: 'Approved', value: 'APPROVED' },
                   { label: 'In Progress', value: 'IN_PROGRESS' },
                   { label: 'Resolved', value: 'RESOLVED' },
                   { label: 'Closed', value: 'CLOSED' },
@@ -528,6 +529,7 @@ export default function TicketsPage() {
             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
             options={[
               { label: 'OPEN', value: 'OPEN' },
+              { label: 'APPROVED', value: 'APPROVED' },
               { label: 'IN_PROGRESS', value: 'IN_PROGRESS' },
               { label: 'RESOLVED', value: 'RESOLVED' },
               { label: 'CLOSED', value: 'CLOSED' },

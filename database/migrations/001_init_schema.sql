@@ -35,9 +35,11 @@ CREATE TABLE IF NOT EXISTS tickets (
     assigned_agent_id UUID REFERENCES users(id) ON DELETE SET NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'IN_PROGRESS', 'PENDING', 'RESOLVED', 'CLOSED')),
+    status VARCHAR(20) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'APPROVED', 'IN_PROGRESS', 'PENDING', 'RESOLVED', 'CLOSED')),
     category VARCHAR(50) DEFAULT 'General',
     priority VARCHAR(20) NOT NULL DEFAULT 'MEDIUM' CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'URGENT')),
+    assigned_department VARCHAR(100) DEFAULT 'Technical Support',
+    ai_routing_approved BOOLEAN DEFAULT FALSE,
     linked_ticket_id UUID REFERENCES tickets(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
