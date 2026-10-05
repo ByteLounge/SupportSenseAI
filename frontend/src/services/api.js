@@ -644,45 +644,45 @@ export const createTicketApi = (data) =>
       // Check for matching resolved ticket or active ticket
       const userTickets = MOCK_TICKETS.filter(t => t.customer_id === currentUser.id || t.customer_email === currentUser.email);
       
-      if (!data.forceCreate) {
-        for (const t of userTickets) {
-          const tText = `${t.title} ${t.description}`.toLowerCase();
-          const words = (data.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
-          const matchWords = words.filter(w => tText.includes(w));
-          const isMatch = words.length > 0 && matchWords.length / words.length >= 0.5;
+      for (const t of userTickets) {
+        const tText = `${t.title} ${t.description}`.toLowerCase();
+        const words = (data.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
+        const matchWords = words.filter(w => tText.includes(w));
+        const isMatch = words.length > 0 && matchWords.length / words.length >= 0.45;
 
-          // 1. If resolved ticket exists, reject as duplicate
-          if (isMatch && (t.status === 'RESOLVED' || t.status === 'CLOSED')) {
-            const err = new Error(`A resolved ticket for this issue already exists: #${t.ticket_number} - "${t.title}". This issue was already resolved.`);
-            err.is_duplicate = true;
-            err.code = 'DUPLICATE_RESOLVED_TICKET';
-            err.data = {
-              resolved_ticket: t,
-              resolution_summary: t.messages?.[t.messages.length - 1]?.message_body || 'Issue was investigated and resolved by support specialists.'
-            };
-            throw err;
-          }
+        // 1. If resolved ticket exists, strictly reject as duplicate and show resolved ticket
+        if (isMatch && (t.status === 'RESOLVED' || t.status === 'CLOSED')) {
+          const err = new Error(`A resolved ticket for this issue already exists: #${t.ticket_number} - "${t.title}". This issue was already resolved.`);
+          err.is_duplicate = true;
+          err.code = 'DUPLICATE_RESOLVED_TICKET';
+          err.data = {
+            resolved_ticket: t,
+            resolution_summary: t.messages?.filter(m => m.sender_role === 'AGENT')?.slice(-1)[0]?.message_body
+              || t.ai_suggested_reply
+              || 'Issue was investigated and verified resolved by support specialists.'
+          };
+          throw err;
+        }
 
-          // 2. If follow-up on active open ticket, link message to existing ticket
-          if ((isFollowUp || isMatch) && ['OPEN', 'IN_PROGRESS', 'PENDING'].includes(t.status)) {
-            const followUpMsg = {
-              id: `m-followup-${Date.now()}`,
-              sender_name: currentUser.name,
-              sender_role: currentUser.role || 'CUSTOMER',
-              sender_avatar: currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name}`,
-              message_body: `[Follow-up Inquiry from Customer]:\n${data.description || data.title}`,
-              created_at: new Date().toISOString(),
-              is_internal_note: false
-            };
-            t.messages = [...(t.messages || []), followUpMsg];
-            t.updated_at = new Date().toISOString();
-            return {
-              linked_to_existing: true,
-              ticket: t,
-              id: t.id,
-              ticket_number: t.ticket_number
-            };
-          }
+        // 2. If follow-up on active open ticket, link message to existing ticket
+        if ((isFollowUp || isMatch) && ['OPEN', 'IN_PROGRESS', 'PENDING'].includes(t.status)) {
+          const followUpMsg = {
+            id: `m-followup-${Date.now()}`,
+            sender_name: currentUser.name,
+            sender_role: currentUser.role || 'CUSTOMER',
+            sender_avatar: currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name}`,
+            message_body: `[Follow-up Inquiry from Customer]:\n${data.description || data.title}`,
+            created_at: new Date().toISOString(),
+            is_internal_note: false
+          };
+          t.messages = [...(t.messages || []), followUpMsg];
+          t.updated_at = new Date().toISOString();
+          return {
+            linked_to_existing: true,
+            ticket: t,
+            id: t.id,
+            ticket_number: t.ticket_number
+          };
         }
       }
 
@@ -911,15 +911,90 @@ export const updateUserRoleApi = (id, role) =>
     }
   );
 
+// Helper: Auto-promoted FAQs synthesized from recurring resolved tickets
+export const getAutoPromotedFaqs = () => {
+  const resolved = MOCK_TICKETS.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED');
+
+  const billingCount = resolved.filter(t => t.category === 'Billing' || /refund|charge|bill/i.test(t.title)).length;
+  const ssoCount = resolved.filter(t => t.category === 'Security' || t.category === 'Account' || /okta|saml|sso/i.test(t.title)).length;
+  const techCount = resolved.filter(t => t.category === 'Technical' || /database|timeout|pool/i.test(t.title)).length;
+  const apiCount = resolved.filter(t => t.category === 'API Platform' || /webhook|api|401/i.test(t.title)).length;
+
+  return [
+    {
+      id: 'faq-auto-billing-refund',
+      category: 'Finance & Billing',
+      question: 'What is the refund turnaround time for duplicate billing charges?',
+      answer: 'When a duplicate or erroneous charge occurs, our finance team validates transaction settlement logs and initiates an immediate refund via Stripe/merchant gateway. Funds reflect on your bank statement within 3-5 business days.',
+      tags: ['Billing', 'Refund', 'Credit Card', 'Duplicate', 'Charge', 'Twice', 'Payment'],
+      popular: true,
+      auto_promoted: true,
+      resolution_count: Math.max(3, billingCount),
+      source: 'AI Auto-Promoted from Recurring Resolved Tickets'
+    },
+    {
+      id: 'faq-auto-sso-okta',
+      category: 'Identity & Access',
+      question: 'How do I resolve SAML assertion signature validation failures after rotating Okta X.509 certificates?',
+      answer: 'Navigate to Organization Settings > Security & SSO, sync the new Okta X.509 certificate thumbprint in your tenant SSO settings, and verify SP-initiated SAML login. All active directory users will regain instant portal access.',
+      tags: ['SSO', 'SAML', 'Okta', 'Security', 'Login', 'Access', 'Certificate'],
+      popular: true,
+      auto_promoted: true,
+      resolution_count: Math.max(2, ssoCount),
+      source: 'AI Auto-Promoted from Recurring Resolved Tickets'
+    },
+    {
+      id: 'faq-auto-api-webhook',
+      category: 'API Platform',
+      question: 'Why am I receiving 401 Unauthorized errors on API Webhooks?',
+      answer: 'HTTP 401 Unauthorized errors on webhooks occur when the signature header (X-Webhook-Signature) does not match the computed HMAC SHA-256 hash using your active webhook secret. Verify that your webhook signing secret in Developer Settings matches your consumer endpoint code.',
+      tags: ['API', 'Webhook', '401', 'Unauthorized', 'Secret', 'Signature', 'HMAC'],
+      popular: true,
+      auto_promoted: true,
+      resolution_count: Math.max(2, apiCount),
+      source: 'AI Auto-Promoted from Recurring Resolved Tickets'
+    },
+    {
+      id: 'faq-auto-db-pool',
+      category: 'Technical Support',
+      question: 'How can we resolve database connection pool timeouts and 504 errors during traffic spikes?',
+      answer: 'Configure pgBouncer transaction pooling with max connection pools between 20-50 per instance, and provision read replicas in your primary availability zone to distribute read queries.',
+      tags: ['Technical', 'Database', 'PostgreSQL', 'Pool', 'Timeout', '504', 'pgBouncer'],
+      popular: true,
+      auto_promoted: true,
+      resolution_count: Math.max(2, techCount),
+      source: 'AI Auto-Promoted from Recurring Resolved Tickets'
+    }
+  ];
+};
+
+export const getAllMockFaqs = () => {
+  const autoFaqs = getAutoPromotedFaqs();
+  const list = [...MOCK_FAQS];
+  for (const af of autoFaqs) {
+    if (!list.some(f => f.id === af.id)) {
+      list.push(af);
+    }
+  }
+  return list;
+};
+
 // FAQs & Knowledge Base APIs
 export const getFaqsApi = (category = '') =>
   safeApiCall(
     () => API.get('/ai/faqs', { params: { category } }),
     () => {
-      if (category && category !== 'All') {
-        return MOCK_FAQS.filter(f => f.category === category);
+      const all = getAllMockFaqs();
+      if (category === 'Auto-Promoted FAQs') {
+        return all.filter(f => f.auto_promoted);
       }
-      return MOCK_FAQS;
+      if (category && category !== 'All') {
+        return all.filter(f => 
+          f.category.toLowerCase().includes(category.toLowerCase()) ||
+          category.toLowerCase().includes(f.category.toLowerCase())
+        );
+      }
+      return all;
     }
   );
 
@@ -928,12 +1003,31 @@ export const searchFaqsApi = (query = '') =>
     () => API.get('/ai/faqs/search', { params: { q: query } }),
     () => {
       const q = (query || '').toLowerCase().trim();
-      if (!q) return MOCK_FAQS.slice(0, 3);
-      return MOCK_FAQS.filter(f =>
-        f.question.toLowerCase().includes(q) ||
-        f.answer.toLowerCase().includes(q) ||
-        (f.tags && f.tags.some(tag => tag.toLowerCase().includes(q)))
-      ).slice(0, 4);
+      const all = getAllMockFaqs();
+      if (!q) return all.slice(0, 4);
+
+      const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need']);
+      const terms = q.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+
+      const scored = all.map(f => {
+        let score = 0;
+        const qText = f.question.toLowerCase();
+        const aText = f.answer.toLowerCase();
+        const catText = f.category.toLowerCase();
+        const tags = (f.tags || []).map(t => t.toLowerCase());
+
+        if (qText.includes(q)) score += 10;
+        if (aText.includes(q)) score += 5;
+        for (const t of terms) {
+          if (qText.includes(t)) score += 3;
+          if (tags.some(tag => tag.includes(t))) score += 4;
+          if (aText.includes(t)) score += 1;
+          if (catText.includes(t)) score += 2;
+        }
+        return { ...f, relevance_score: score };
+      });
+
+      return scored.filter(f => f.relevance_score > 0).sort((a, b) => b.relevance_score - a.relevance_score).slice(0, 4);
     }
   );
 
@@ -1067,6 +1161,82 @@ export const chatConciergeApi = (payload) =>
         };
       }
 
+      const currentUser = JSON.parse(localStorage.getItem('supportsense_user') || 'null') || {
+        id: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+        name: payload.customerName || 'Alex Rivera',
+        email: payload.customerEmail || 'alex.rivera@customer.com'
+      };
+
+      const userTickets = MOCK_TICKETS.filter(t => 
+        t.customer_id === currentUser.id || 
+        t.customer_email?.toLowerCase() === currentUser.email?.toLowerCase()
+      );
+
+      const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need', 'hey', 'hi', 'cannot', 'cant']);
+      const terms = msg.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+
+      // 1. DUPLICATE PREVENTION: Check if this same person previously submitted a ticket for this issue
+      for (const t of userTickets) {
+        const tText = `${t.title} ${t.description}`.toLowerCase();
+        const matchCount = terms.filter(w => tText.includes(w)).length;
+        const overlapRatio = terms.length > 0 ? matchCount / terms.length : 0;
+        const isTitleMatch = terms.length >= 2 && (t.title.toLowerCase().includes(msg) || msg.includes(t.title.toLowerCase()));
+
+        if (overlapRatio >= 0.4 || isTitleMatch) {
+          // If this person already has a resolved ticket for this exact issue:
+          if (t.status === 'RESOLVED' || t.status === 'CLOSED') {
+            const resolutionSummary = t.messages?.filter(m => m.sender_role === 'AGENT')?.slice(-1)[0]?.message_body
+              || t.ai_suggested_reply
+              || 'Issue was investigated and verified resolved by support engineering.';
+
+            return {
+              reply: `You previously submitted a ticket for this exact issue: **#${t.ticket_number} — "${t.title}"**, which was **RESOLVED**. To avoid redundant queue submissions, duplicate tickets are not created. Here is the verified resolution summary:`,
+              is_duplicate_resolved: true,
+              resolved_ticket: {
+                id: t.id,
+                ticket_number: t.ticket_number,
+                title: t.title,
+                status: t.status,
+                category: t.category,
+                assigned_department: t.assigned_department,
+                resolution_summary: resolutionSummary,
+                created_at: t.created_at
+              },
+              ticket_draft: null, // Strictly prevent duplicate creation
+              suggested_quick_actions: [
+                'View Resolved Ticket Details',
+                'Ask a different question'
+              ],
+              confidence_score: 0.99
+            };
+          }
+
+          // If active open or in-progress ticket exists:
+          if (['OPEN', 'IN_PROGRESS', 'PENDING'].includes(t.status)) {
+            return {
+              reply: `You already have an active ticket open for this issue: **#${t.ticket_number} — "${t.title}"** (Status: **${t.status}**). To prevent duplicate tickets in the queue, your inquiry has been linked to this active ticket.`,
+              is_active_linked: true,
+              active_ticket: {
+                id: t.id,
+                ticket_number: t.ticket_number,
+                title: t.title,
+                status: t.status,
+                category: t.category,
+                assigned_department: t.assigned_department,
+                assigned_agent_name: t.assigned_agent_name,
+                created_at: t.created_at
+              },
+              ticket_draft: null, // Strictly prevent duplicate creation
+              suggested_quick_actions: [
+                `View Active Ticket #${t.ticket_number}`,
+                'Ask a different question'
+              ],
+              confidence_score: 0.99
+            };
+          }
+        }
+      }
+
       let category = 'Technical';
       let dept = 'Technical Support';
       let priority = 'MEDIUM';
@@ -1133,6 +1303,17 @@ export const chatConciergeApi = (payload) =>
         diagnostics = 'Application runtime exception detected in customer session.';
       }
 
+      // 2. CATEGORIZATION & FAQ DEFLECTION: Find verified FAQs / solutions for tickets with similar problems
+      const allFaqs = getAllMockFaqs();
+      const matchedFaqs = allFaqs.filter(f =>
+        f.category.toLowerCase().includes(category.toLowerCase()) ||
+        terms.some(t => f.question.toLowerCase().includes(t) || (f.tags && f.tags.some(tag => tag.toLowerCase().includes(t))))
+      ).slice(0, 2);
+
+      const replyLead = matchedFaqs.length > 0
+        ? `I've categorized your inquiry under **${category}**. Tickets with similar problems have already been resolved. Here is the verified FAQ resolution below:`
+        : `I understand how urgent this is, ${name}. I've synthesized your request into a formal enterprise support ticket, classified it under **${category}**, routed it to **${dept}**, and prepared a diagnostic verification checklist. Review the ticket specification below and click **Dispatch Ticket** to launch it!`;
+
       const formalDescription = `### 1. Executive Summary
 ${summary}
 
@@ -1152,7 +1333,8 @@ ${diagnostics}
 `;
 
       return {
-        reply: `I understand how urgent this is, ${name}. I've synthesized your request into a formal enterprise support ticket, classified it under **${category}**, routed it to **${dept}**, and prepared a diagnostic verification checklist. Review the ticket specification below and click **Dispatch Ticket** to launch it!`,
+        reply: replyLead,
+        matched_faqs: matchedFaqs,
         ticket_draft: {
           title,
           category,
@@ -1176,6 +1358,7 @@ ${diagnostics}
       };
     }
   );
+
 
 // 1-Click AI Response Tone Polisher
 export const polishToneApi = (payload) =>

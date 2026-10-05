@@ -75,10 +75,18 @@ export default function KnowledgeBasePage() {
     );
   }
 
-  const categories = ['All', 'Finance & Billing', 'Technical Support', 'Identity & Access', 'API Platform'];
+  const categories = ['All', 'Auto-Promoted FAQs', 'Finance & Billing', 'Technical Support', 'Identity & Access', 'API Platform'];
 
   const filteredFaqs = faqs.filter((f) => {
-    const matchesCategory = selectedCategory === 'All' || f.category.toLowerCase().includes(selectedCategory.toLowerCase()) || f.category.toLowerCase() === selectedCategory.toLowerCase();
+    let matchesCategory = false;
+    if (selectedCategory === 'All') {
+      matchesCategory = true;
+    } else if (selectedCategory === 'Auto-Promoted FAQs') {
+      matchesCategory = Boolean(f.auto_promoted);
+    } else {
+      matchesCategory = f.category.toLowerCase().includes(selectedCategory.toLowerCase()) || f.category.toLowerCase() === selectedCategory.toLowerCase();
+    }
+
     const matchesSearch =
       !searchQuery ||
       f.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -172,19 +180,30 @@ export default function KnowledgeBasePage() {
                       onClick={() => setExpandedFaq(isOpen ? null : faq.id)}
                       className="w-full p-3.5 text-left text-xs font-semibold text-token-text-primary flex items-center justify-between hover:bg-token-muted"
                     >
-                      <span className="flex items-center gap-2.5">
+                      <span className="flex items-center gap-2.5 flex-1 pr-2">
                         <HelpCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        <span>{faq.question}</span>
+                        <span className="flex-1">{faq.question}</span>
+                        {faq.auto_promoted && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full shrink-0">
+                            <Sparkles className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                            Auto-Promoted ({faq.resolution_count || 2}x Resolved)
+                          </span>
+                        )}
                       </span>
-                      {isOpen ? <ChevronUp className="w-4 h-4 text-token-text-muted" /> : <ChevronDown className="w-4 h-4 text-token-text-muted" />}
+                      {isOpen ? <ChevronUp className="w-4 h-4 text-token-text-muted shrink-0" /> : <ChevronDown className="w-4 h-4 text-token-text-muted shrink-0" />}
                     </button>
                     {isOpen && (
                       <div className="p-4 pt-1 text-xs text-token-text-secondary leading-relaxed border-t border-token-border/40 bg-token-card">
                         <p className="mt-1">{faq.answer}</p>
-                        <div className="mt-3 flex items-center gap-2">
+                        <div className="mt-3 flex items-center gap-2 flex-wrap">
                           <span className="text-[10px] px-2 py-0.5 rounded bg-token-secondary border border-token-border text-token-text-muted font-medium">
                             Category: {faq.category}
                           </span>
+                          {faq.auto_promoted && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-medium">
+                              ✨ AI Auto-Promoted from {faq.resolution_count || 2} Recurring Resolved Tickets
+                            </span>
+                          )}
                         </div>
                       </div>
                     )}

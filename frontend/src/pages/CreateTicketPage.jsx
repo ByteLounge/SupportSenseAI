@@ -214,19 +214,22 @@ export default function CreateTicketPage() {
 
             {/* Duplicate Resolved Ticket Alert (Requirement 1) */}
             {duplicateAlert && (
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <div className="text-sm font-bold text-token-text-primary">
-                      Issue Previously Resolved — Duplicate Ticket Intercepted
+                    <div className="text-sm font-bold text-token-text-primary flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                        RESOLVED
+                      </span>
+                      <span>Issue Previously Resolved — Duplicate Ticket Creation Blocked</span>
                     </div>
                     <p className="text-xs text-token-text-secondary leading-relaxed">
                       You previously submitted a ticket for this exact issue:{' '}
                       <strong className="text-token-text-primary">
-                        Ticket #{duplicateAlert.resolvedTicket?.ticket_number}: {duplicateAlert.resolvedTicket?.title}
+                        Ticket #{duplicateAlert.resolvedTicket?.ticket_number || duplicateAlert.resolvedTicket?.id}: {duplicateAlert.resolvedTicket?.title}
                       </strong>{' '}
-                      (Status: <span className="font-semibold text-emerald-600">RESOLVED</span>).
+                      (Status: <span className="font-semibold text-emerald-600 dark:text-emerald-400">RESOLVED</span>).
                     </p>
                     <div className="p-3 bg-token-card border border-token-border rounded-xl text-xs space-y-1">
                       <div className="font-semibold text-token-text-muted text-[10px] uppercase">
@@ -238,23 +241,20 @@ export default function CreateTicketPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-amber-500/20">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`/tickets/${duplicateAlert.resolvedTicket?.id || duplicateAlert.resolvedTicket?.ticket_number}`)}
-                  >
-                    View Resolved Ticket
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="sm"
-                    onClick={(e) => handleSubmit(e, true)}
-                  >
-                    Issue Still Persists (Submit Anyway)
-                  </Button>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-emerald-500/20">
+                  <span className="text-[11px] text-token-text-muted">
+                    🚫 To prevent duplicate tickets in the queue, please view your existing resolved ticket.
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={() => navigate(`/tickets/${duplicateAlert.resolvedTicket?.id || duplicateAlert.resolvedTicket?.ticket_number}`)}
+                    >
+                      View Resolved Ticket
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

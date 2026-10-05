@@ -123,21 +123,29 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
       const aiData = response.data || response;
       const assistantReply = aiData.reply || "I've analyzed your inquiry and drafted a formal support ticket.";
       const draft = aiData.ticket_draft;
+      const matchedFaqs = (aiData.matched_faqs && aiData.matched_faqs.length > 0) ? aiData.matched_faqs : foundFaqs;
 
       const aiMsg = {
         id: `ai-${Date.now()}`,
         role: 'assistant',
         content: assistantReply,
         ticket_draft: draft,
-        matched_faqs: foundFaqs,
+        matched_faqs: matchedFaqs,
+        resolved_ticket: aiData.resolved_ticket,
+        is_duplicate_resolved: aiData.is_duplicate_resolved,
+        active_ticket: aiData.active_ticket,
+        is_active_linked: aiData.is_active_linked,
         quick_actions: aiData.suggested_quick_actions || [],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
       setMessages((prev) => [...prev, aiMsg]);
-      if (draft && draft.is_ready_for_ticket) {
+      if (draft && draft.is_ready_for_ticket && !aiData.is_duplicate_resolved && !aiData.is_active_linked) {
         setActiveTicketDraft(draft);
         setEditableDraft({ ...draft });
+      } else {
+        setActiveTicketDraft(null);
+        setEditableDraft(null);
       }
     } catch (err) {
       console.error('Failed to chat with AI Concierge:', err);
@@ -339,38 +347,148 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
               >
                 <div className="whitespace-pre-line font-normal">{msg.content}</div>
 
-                {/* Instant FAQ Deflection Knowledge Base Card (Requirement 3) */}
-                {msg.matched_faqs && msg.matched_faqs.length > 0 && !faqSolved && (
-                  <div className="mt-3 p-3 rounded-xl bg-token-card border border-token-border text-xs space-y-2">
-                    <div className="flex items-center gap-1.5 font-semibold text-token-text-primary text-[11px]">
-                      <Sparkles className="w-3.5 h-3.5 text-[#FD451B]" />
-                      <span>Suggested Self-Serve Solutions (FAQs):</span>
+                {/* Duplicate Resolved Ticket Interception Card (Requirement 1) */}
+                {msg.is_duplicate_resolved && msg.resolved_ticket && (
+                  <div className="mt-3 p-3.5 rounded-xl bg-[#081320] border border-emerald-500/40 text-xs space-y-2.5 shadow-md">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          RESOLVED
+                        </span>
+                        <span className="font-mono font-bold text-emerald-300 text-xs px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                          #{msg.resolved_ticket.ticket_number || msg.resolved_ticket.id}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">
+                        Duplicate Intercepted
+                      </span>
                     </div>
-                    <div className="space-y-1.5">
+
+                    <h5 className="font-semibold text-white text-xs sm:text-sm">
+                      {msg.resolved_ticket.title}
+                    </h5>
+
+                    <div className="p-3 bg-[#0d1c2e] border border-slate-700/70 rounded-lg text-xs space-y-1">
+                      <span className="font-semibold text-emerald-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        Previous Verified Resolution:
+                      </span>
+                      <p className="text-slate-200 leading-relaxed font-normal text-[11px]">
+                        {msg.resolved_ticket.resolution_summary || msg.resolved_ticket.description}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-slate-700/50">
+                      <span className="text-[10px] text-slate-400">
+                        🚫 Duplicate ticket creation prevented. This issue was already resolved.
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="dark"
+                          size="xs"
+                          onClick={() => navigate(`/tickets/${msg.resolved_ticket.id || msg.resolved_ticket.ticket_number}`)}
+                          className="bg-[#122238] hover:bg-[#1a3150] text-emerald-300 border-emerald-500/30"
+                        >
+                          View Resolved Ticket
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="xs"
+                          onClick={handleReset}
+                          className="bg-[#141e33] hover:bg-[#1e2c47] text-slate-300 border-slate-700"
+                        >
+                          Ask Different Question
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Active Ticket Link Card (Requirement 1) */}
+                {msg.is_active_linked && msg.active_ticket && (
+                  <div className="mt-3 p-3.5 rounded-xl bg-[#081320] border border-blue-500/40 text-xs space-y-2.5 shadow-md">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                          {msg.active_ticket.status || 'IN_PROGRESS'}
+                        </span>
+                        <span className="font-mono font-bold text-blue-300 text-xs px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
+                          #{msg.active_ticket.ticket_number || msg.active_ticket.id}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider">
+                        Linked to Active Ticket
+                      </span>
+                    </div>
+
+                    <h5 className="font-semibold text-white text-xs sm:text-sm">
+                      {msg.active_ticket.title}
+                    </h5>
+
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      You already have an active ticket for this issue. Your inquiry was attached as an update so our specialists ({msg.active_ticket.assigned_agent_name || msg.active_ticket.assigned_department}) can handle it without duplicate queue items.
+                    </p>
+
+                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-700/50">
+                      <Button
+                        variant="dark"
+                        size="xs"
+                        onClick={() => navigate(`/tickets/${msg.active_ticket.id || msg.active_ticket.ticket_number}`)}
+                        className="bg-[#122238] hover:bg-[#1a3150] text-blue-300 border-blue-500/30"
+                      >
+                        View Active Ticket
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Instant FAQ Deflection Knowledge Base Card (Requirement 2 & 3) */}
+                {msg.matched_faqs && msg.matched_faqs.length > 0 && !faqSolved && (
+                  <div className="mt-3 p-3.5 rounded-xl bg-[#081320] border border-blue-500/30 text-xs space-y-2.5 shadow-md text-slate-100">
+                    <div className="flex items-center justify-between gap-2 font-semibold text-blue-300 text-[11px]">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-[#FD451B]" />
+                        <span>Similar Issues Already Resolved — Verified FAQ Solutions:</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">Self-Service</span>
+                    </div>
+
+                    <div className="space-y-2">
                       {msg.matched_faqs.map((faq) => (
-                        <div key={faq.id} className="p-2 bg-token-secondary/70 border border-token-border rounded-lg text-xs space-y-1">
+                        <div key={faq.id} className="p-2.5 bg-[#0f1b2d] border border-slate-700/70 rounded-lg text-xs space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-semibold text-token-text-primary text-[11px] leading-snug">
-                              Q: {faq.question}
-                            </span>
+                            <div className="space-y-1">
+                              {faq.auto_promoted && (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded-full">
+                                  <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+                                  Auto-Promoted ({faq.resolution_count || 2} resolutions)
+                                </span>
+                              )}
+                              <div className="font-semibold text-white text-[11px] leading-snug">
+                                Q: {faq.question}
+                              </div>
+                            </div>
                             <button
                               type="button"
                               onClick={() => setExpandedFaqId(expandedFaqId === faq.id ? null : faq.id)}
-                              className="text-[10px] text-[#FD451B] font-bold shrink-0 hover:underline"
+                              className="text-[10px] text-[#FD451B] hover:text-[#FF7E66] font-bold shrink-0 hover:underline cursor-pointer"
                             >
                               {expandedFaqId === faq.id ? 'Hide' : 'Read Solution'}
                             </button>
                           </div>
                           {expandedFaqId === faq.id && (
-                            <p className="text-[11px] text-token-text-secondary whitespace-pre-line pt-1 border-t border-token-border">
+                            <p className="text-[11px] text-slate-200 whitespace-pre-line pt-2 border-t border-slate-700/60 leading-relaxed font-normal">
                               {faq.answer}
                             </p>
                           )}
                         </div>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-token-border/50">
-                      <span className="text-[10px] text-token-text-muted">Did this resolve your issue?</span>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-slate-700/50">
+                      <span className="text-[10px] text-slate-400">Did this resolve your inquiry?</span>
                       <Button
                         variant="secondary"
                         size="xs"
@@ -388,8 +506,9 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                           ]);
                           addToast('Inquiry resolved via Knowledge Base FAQ!', 'success');
                         }}
+                        className="bg-[#12281e] hover:bg-[#1a382b] text-emerald-200 border-emerald-500/40"
                       >
-                        ✅ Solved My Issue
+                        ✅ Solved My Issue (No Ticket Needed)
                       </Button>
                     </div>
                   </div>
@@ -448,46 +567,58 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
 
         {/* Duplicate Ticket Interception Banner (Requirement 1) */}
         {duplicateAlert && (
-          <div className="my-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs space-y-3">
+          <div className="my-3 p-4 bg-[#0a101d] border border-emerald-500/40 rounded-2xl text-xs space-y-3 shadow-xl text-slate-100">
             <div className="flex items-start gap-2.5">
-              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
               <div className="space-y-1.5 flex-1">
-                <h4 className="font-bold text-amber-900 dark:text-amber-200">
-                  Duplicate Ticket Detected: Issue Previously Resolved
-                </h4>
-                <p className="text-token-text-secondary leading-relaxed">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    RESOLVED
+                  </span>
+                  <h4 className="font-bold text-white text-xs sm:text-sm">
+                    Issue Previously Resolved — Duplicate Ticket Creation Blocked
+                  </h4>
+                </div>
+                <p className="text-slate-300 leading-relaxed text-xs">
                   You previously submitted a ticket for this exact issue:{' '}
-                  <strong className="text-token-text-primary">
+                  <strong className="text-white">
                     Ticket #{duplicateAlert.resolvedTicket?.ticket_number || duplicateAlert.resolvedTicket?.id}: {duplicateAlert.resolvedTicket?.title}
                   </strong>{' '}
-                  (Status: <span className="font-semibold text-emerald-600">RESOLVED</span>).
+                  (Status: <span className="font-semibold text-emerald-300">RESOLVED</span>).
                 </p>
-                <div className="p-2.5 bg-token-card border border-token-border rounded-xl text-[11px] space-y-1">
-                  <span className="font-semibold text-token-text-muted uppercase text-[9px]">
-                    Previous Resolution Notes:
+                <div className="p-3 bg-[#141e33] border border-slate-700/70 rounded-xl text-xs space-y-1">
+                  <span className="font-semibold text-emerald-400 uppercase text-[10px] tracking-wide">
+                    Previous Resolution Notes & Actions Taken:
                   </span>
-                  <p className="text-token-text-primary leading-relaxed font-medium">
+                  <p className="text-slate-200 leading-relaxed font-normal">
                     {duplicateAlert.resolutionSummary}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-amber-500/20">
-              <Button
-                variant="secondary"
-                size="xs"
-                onClick={() => navigate(`/tickets/${duplicateAlert.resolvedTicket?.id || duplicateAlert.resolvedTicket?.ticket_number}`)}
-              >
-                View Resolved Ticket
-              </Button>
-              <Button
-                variant="primary"
-                size="xs"
-                onClick={() => handleConfirmAndDispatch(true)}
-              >
-                Issue Still Persists (Submit Anyway)
-              </Button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-700/60">
+              <span className="text-[10px] text-slate-400">
+                🚫 Duplicates are strictly not created. Your issue was already resolved.
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="dark"
+                  size="xs"
+                  onClick={() => navigate(`/tickets/${duplicateAlert.resolvedTicket?.id || duplicateAlert.resolvedTicket?.ticket_number}`)}
+                  className="bg-[#141e33] hover:bg-[#1e2c47] text-white border-slate-700"
+                >
+                  View Resolved Ticket
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={handleReset}
+                  className="bg-[#12281e] hover:bg-[#1a382b] text-emerald-200 border-emerald-500/40"
+                >
+                  Ask Different Question
+                </Button>
+              </div>
             </div>
           </div>
         )}
