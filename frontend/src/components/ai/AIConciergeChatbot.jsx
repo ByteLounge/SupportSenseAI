@@ -25,7 +25,8 @@ import {
   User,
   Bot,
   ExternalLink,
-  Edit3
+  Edit3,
+  BookOpen
 } from 'lucide-react';
 import Button from '../common/Button';
 import Badge from '../common/Badge';
@@ -197,6 +198,23 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
         return;
       }
 
+      // Handle duplicate already created response
+      if (resData.is_duplicate || resData.already_created) {
+        const existingTicket = resData.ticket || resData.resolved_ticket || resData;
+        const resolutionSummary = resData.resolution_summary || existingTicket.resolution_summary || 'This issue was previously resolved.';
+        setCreatedTicketResult({
+          ...existingTicket,
+          is_already_created: true,
+          resolution_summary: resolutionSummary
+        });
+        setDuplicateAlert({
+          resolvedTicket: existingTicket,
+          resolutionSummary
+        });
+        addToast(`Ticket already created: #${existingTicket.ticket_number || existingTicket.id}!`, 'info');
+        return;
+      }
+
       const ticket = resData;
       setCreatedTicketResult(ticket);
       setDuplicateAlert(null);
@@ -209,11 +227,23 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
       console.error('Failed to dispatch ticket:', err);
       const errData = err.data || err.response?.data?.data || err;
       if (err.is_duplicate || err.code === 'DUPLICATE_RESOLVED_TICKET' || errData.resolved_ticket) {
+        const resolvedTicket = errData.resolved_ticket || {
+          ticket_number: 'TCK-PREV',
+          title: draft.title,
+          category: draft.category || 'General',
+          status: 'RESOLVED'
+        };
+        const resolutionSummary = errData.resolution_summary || err.message || 'This issue was previously resolved.';
         setDuplicateAlert({
-          resolvedTicket: errData.resolved_ticket || { ticket_number: 'Previous Ticket', title: draft.title },
-          resolutionSummary: errData.resolution_summary || err.message || 'This issue was previously resolved.'
+          resolvedTicket,
+          resolutionSummary
         });
-        addToast('Duplicate ticket detected: This issue was already resolved!', 'info');
+        setCreatedTicketResult({
+          ...resolvedTicket,
+          is_already_created: true,
+          resolution_summary: resolutionSummary
+        });
+        addToast('Ticket already created: This issue was previously resolved!', 'info');
       } else {
         addToast('Failed to dispatch ticket. Please try again.', 'error');
       }
@@ -349,19 +379,19 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
 
                 {/* Duplicate Resolved Ticket Interception Card (Requirement 1) */}
                 {msg.is_duplicate_resolved && msg.resolved_ticket && (
-                  <div className="mt-3 p-3.5 rounded-xl bg-[#081320] border border-emerald-500/40 text-xs space-y-2.5 shadow-md">
+                  <div className="mt-3 p-3.5 rounded-xl bg-[#081320] border border-amber-500/40 text-xs space-y-2.5 shadow-md">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          RESOLVED
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                          TICKET ALREADY CREATED
                         </span>
-                        <span className="font-mono font-bold text-emerald-300 text-xs px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="font-mono font-bold text-amber-300 text-xs px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
                           #{msg.resolved_ticket.ticket_number || msg.resolved_ticket.id}
                         </span>
                       </div>
                       <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">
-                        Duplicate Intercepted
+                        Status: {msg.resolved_ticket.status || 'RESOLVED'}
                       </span>
                     </div>
 
@@ -383,7 +413,16 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                       <span className="text-[10px] text-slate-400">
                         🚫 Duplicate ticket creation prevented. This issue was already resolved.
                       </span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          variant="primary"
+                          size="xs"
+                          icon={BookOpen}
+                          onClick={() => navigate(`/knowledge-base?search=${encodeURIComponent(msg.resolved_ticket.category || msg.resolved_ticket.title)}`)}
+                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
+                        >
+                          Redirect to FAQs &rarr;
+                        </Button>
                         <Button
                           variant="dark"
                           size="xs"
@@ -412,14 +451,14 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40">
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                          {msg.active_ticket.status || 'IN_PROGRESS'}
+                          TICKET ALREADY CREATED ({msg.active_ticket.status || 'IN_PROGRESS'})
                         </span>
                         <span className="font-mono font-bold text-blue-300 text-xs px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
                           #{msg.active_ticket.ticket_number || msg.active_ticket.id}
                         </span>
                       </div>
                       <span className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider">
-                        Linked to Active Ticket
+                        Active Ticket Linked
                       </span>
                     </div>
 
@@ -431,7 +470,16 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                       You already have an active ticket for this issue. Your inquiry was attached as an update so our specialists ({msg.active_ticket.assigned_agent_name || msg.active_ticket.assigned_department}) can handle it without duplicate queue items.
                     </p>
 
-                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-700/50">
+                    <div className="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-slate-700/50">
+                      <Button
+                        variant="secondary"
+                        size="xs"
+                        icon={BookOpen}
+                        onClick={() => navigate(`/knowledge-base?search=${encodeURIComponent(msg.active_ticket.category || msg.active_ticket.title)}`)}
+                        className="bg-[#1e1b4b] hover:bg-[#2e2b6b] text-indigo-200 border-indigo-500/40"
+                      >
+                        Redirect to FAQs &rarr;
+                      </Button>
                       <Button
                         variant="dark"
                         size="xs"
@@ -567,24 +615,24 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
 
         {/* Duplicate Ticket Interception Banner (Requirement 1) */}
         {duplicateAlert && (
-          <div className="my-3 p-4 bg-[#0a101d] border border-emerald-500/40 rounded-2xl text-xs space-y-3 shadow-xl text-slate-100">
+          <div className="my-3 p-4 bg-[#0a101d] border border-amber-500/40 rounded-2xl text-xs space-y-3 shadow-xl text-slate-100">
             <div className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-1.5 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                    RESOLVED
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    TICKET ALREADY CREATED
                   </span>
                   <h4 className="font-bold text-white text-xs sm:text-sm">
-                    Issue Previously Resolved — Duplicate Ticket Creation Blocked
+                    Ticket Already Created: #{duplicateAlert.resolvedTicket?.ticket_number || duplicateAlert.resolvedTicket?.id}
                   </h4>
                 </div>
                 <p className="text-slate-300 leading-relaxed text-xs">
-                  You previously submitted a ticket for this exact issue:{' '}
+                  You previously submitted a ticket for this issue:{' '}
                   <strong className="text-white">
-                    Ticket #{duplicateAlert.resolvedTicket?.ticket_number || duplicateAlert.resolvedTicket?.id}: {duplicateAlert.resolvedTicket?.title}
+                    #{duplicateAlert.resolvedTicket?.ticket_number || duplicateAlert.resolvedTicket?.id}: {duplicateAlert.resolvedTicket?.title}
                   </strong>{' '}
-                  (Status: <span className="font-semibold text-emerald-300">RESOLVED</span>).
+                  (Status: <span className="font-semibold text-emerald-300">{duplicateAlert.resolvedTicket?.status || 'RESOLVED'}</span>).
                 </p>
                 <div className="p-3 bg-[#141e33] border border-slate-700/70 rounded-xl text-xs space-y-1">
                   <span className="font-semibold text-emerald-400 uppercase text-[10px] tracking-wide">
@@ -601,7 +649,16 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
               <span className="text-[10px] text-slate-400">
                 🚫 Duplicates are strictly not created. Your issue was already resolved.
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="primary"
+                  size="xs"
+                  icon={BookOpen}
+                  onClick={() => navigate(`/knowledge-base?search=${encodeURIComponent(duplicateAlert.resolvedTicket?.category || duplicateAlert.resolvedTicket?.title || '')}`)}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
+                >
+                  Redirect to FAQs &rarr;
+                </Button>
                 <Button
                   variant="dark"
                   size="xs"
@@ -806,17 +863,26 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
           </div>
         )}
 
-        {/* Success Confirmation Card upon creation (or follow-up linking) */}
+        {/* Success Confirmation Card upon creation (or follow-up linking / duplicate detection) */}
         {createdTicketResult && (
           <div
             className={`my-4 p-4 rounded-2xl text-xs space-y-3 shadow-lg border transition-all ${
-              createdTicketResult.is_linked_follow_up
+              createdTicketResult.is_already_created
+                ? 'bg-[#181308] border-amber-500/50 text-amber-100'
+                : createdTicketResult.is_linked_follow_up
                 ? 'bg-[#081224] border-blue-500/40 text-blue-100'
                 : 'bg-[#05150f] border-emerald-500/40 text-emerald-100'
             }`}
           >
             <div className="flex items-center gap-2 font-semibold">
-              {createdTicketResult.is_linked_follow_up ? (
+              {createdTicketResult.is_already_created ? (
+                <>
+                  <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+                  <span className="text-amber-300 font-bold text-xs sm:text-sm">
+                    ⚠️ Ticket Already Created: #{createdTicketResult.ticket_number || createdTicketResult.id}
+                  </span>
+                </>
+              ) : createdTicketResult.is_linked_follow_up ? (
                 <>
                   <span className="text-base">🔗</span>
                   <span className="text-blue-300 font-bold text-xs sm:text-sm">
@@ -835,28 +901,45 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
 
             <div
               className={`p-3.5 rounded-xl border space-y-2 text-white ${
-                createdTicketResult.is_linked_follow_up
+                createdTicketResult.is_already_created
+                  ? 'bg-[#221808] border-amber-500/30'
+                  : createdTicketResult.is_linked_follow_up
                   ? 'bg-[#0e1d38] border-blue-500/30'
                   : 'bg-[#0b241a] border-emerald-500/30'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-emerald-300 text-xs px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
+                <span
+                  className={`font-mono font-bold text-xs px-2 py-0.5 rounded-md border ${
+                    createdTicketResult.is_already_created
+                      ? 'text-amber-300 bg-amber-500/20 border-amber-500/30'
+                      : 'text-emerald-300 bg-emerald-500/20 border-emerald-500/30'
+                  }`}
+                >
                   {createdTicketResult.ticket_number || createdTicketResult.id}
                 </span>
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                    createdTicketResult.is_linked_follow_up
+                    createdTicketResult.is_already_created
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                      : createdTicketResult.is_linked_follow_up
                       ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
                       : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                   }`}
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
-                      createdTicketResult.is_linked_follow_up ? 'bg-blue-400' : 'bg-emerald-400'
+                      createdTicketResult.is_already_created
+                        ? 'bg-amber-400'
+                        : createdTicketResult.is_linked_follow_up
+                        ? 'bg-blue-400'
+                        : 'bg-emerald-400'
                     }`}
                   />
-                  <span>{createdTicketResult.status || 'OPEN'}</span>
+                  <span>
+                    {createdTicketResult.status ||
+                      (createdTicketResult.is_already_created ? 'RESOLVED' : 'OPEN')}
+                  </span>
                 </span>
               </div>
 
@@ -864,16 +947,38 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                 {createdTicketResult.title}
               </p>
 
-              {createdTicketResult.is_linked_follow_up && (
+              {createdTicketResult.is_already_created ? (
+                <div className="space-y-2">
+                  <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                    A ticket for this issue was already submitted and marked as{' '}
+                    <strong className="text-white">
+                      {createdTicketResult.status || 'RESOLVED'}
+                    </strong>
+                    . Duplicate tickets are strictly prevented from entering the queue.
+                  </p>
+                  {createdTicketResult.resolution_summary && (
+                    <div className="p-2.5 bg-[#2d1f0b] border border-amber-500/30 rounded-lg text-xs space-y-1">
+                      <span className="font-semibold text-amber-400 uppercase text-[10px] tracking-wide">
+                        Previous Verified Resolution:
+                      </span>
+                      <p className="text-slate-200 leading-relaxed font-normal text-[11px]">
+                        {createdTicketResult.resolution_summary}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : createdTicketResult.is_linked_follow_up ? (
                 <p className="text-[11px] text-blue-200/90 leading-relaxed">
                   Your inquiry was automatically linked to your existing active ticket under{' '}
                   <strong className="text-white">{createdTicketResult.category}</strong>. No duplicate ticket was registered.
                 </p>
-              )}
+              ) : null}
 
               <div
                 className={`text-[11px] text-slate-300 flex items-center gap-4 pt-1.5 border-t ${
-                  createdTicketResult.is_linked_follow_up
+                  createdTicketResult.is_already_created
+                    ? 'border-amber-500/20'
+                    : createdTicketResult.is_linked_follow_up
                     ? 'border-blue-500/20'
                     : 'border-emerald-500/20'
                 }`}
@@ -881,9 +986,11 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                 <span>
                   Category: <strong className="text-white">{createdTicketResult.category}</strong>
                 </span>
-                <span>
-                  Priority: <strong className="text-white">{createdTicketResult.priority}</strong>
-                </span>
+                {createdTicketResult.priority && (
+                  <span>
+                    Priority: <strong className="text-white">{createdTicketResult.priority}</strong>
+                  </span>
+                )}
                 {createdTicketResult.assigned_department && (
                   <span>
                     Department: <strong className="text-white">{createdTicketResult.assigned_department}</strong>
@@ -892,24 +999,87 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
               </div>
             </div>
 
-            <div className="flex items-center gap-2 justify-end pt-1">
-              <Button
-                variant="dark"
-                size="xs"
-                icon={RefreshCw}
-                onClick={handleReset}
-                className="bg-[#12281e] hover:bg-[#1a382b] text-emerald-200 border-emerald-500/40"
-              >
-                Submit Another Request
-              </Button>
-              <Button
-                variant="primary"
-                size="xs"
-                icon={ExternalLink}
-                onClick={() => navigate(`/tickets/${createdTicketResult.id}`)}
-              >
-                Open Ticket Workspace &rarr;
-              </Button>
+            <div className="flex flex-wrap items-center gap-2 justify-end pt-1">
+              {createdTicketResult.is_already_created ? (
+                <>
+                  <Button
+                    variant="primary"
+                    size="xs"
+                    icon={BookOpen}
+                    onClick={() => navigate(`/knowledge-base?search=${encodeURIComponent(createdTicketResult.category || createdTicketResult.title || '')}`)}
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-sm"
+                  >
+                    Redirect to FAQs &rarr;
+                  </Button>
+                  <Button
+                    variant="dark"
+                    size="xs"
+                    icon={ExternalLink}
+                    onClick={() => navigate(`/tickets/${createdTicketResult.id || createdTicketResult.ticket_number}`)}
+                    className="bg-[#1e2a3d] hover:bg-[#283852] text-white border-slate-700"
+                  >
+                    View Existing Ticket
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="xs"
+                    icon={RefreshCw}
+                    onClick={handleReset}
+                    className="bg-[#1c2230] hover:bg-[#283042] text-slate-300 border-slate-700"
+                  >
+                    Ask Different Question
+                  </Button>
+                </>
+              ) : createdTicketResult.is_linked_follow_up ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="xs"
+                    icon={BookOpen}
+                    onClick={() => navigate(`/knowledge-base?search=${encodeURIComponent(createdTicketResult.category || createdTicketResult.title || '')}`)}
+                    className="bg-[#1e1b4b] hover:bg-[#2e2b6b] text-indigo-200 border-indigo-500/40"
+                  >
+                    Redirect to FAQs &rarr;
+                  </Button>
+                  <Button
+                    variant="dark"
+                    size="xs"
+                    icon={RefreshCw}
+                    onClick={handleReset}
+                    className="bg-[#141e33] hover:bg-[#1e2c47] text-slate-300 border-slate-700"
+                  >
+                    Ask Different Question
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="xs"
+                    icon={ExternalLink}
+                    onClick={() => navigate(`/tickets/${createdTicketResult.id || createdTicketResult.ticket_number}`)}
+                  >
+                    Open Ticket Workspace &rarr;
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="dark"
+                    size="xs"
+                    icon={RefreshCw}
+                    onClick={handleReset}
+                    className="bg-[#12281e] hover:bg-[#1a382b] text-emerald-200 border-emerald-500/40"
+                  >
+                    Submit Another Request
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="xs"
+                    icon={ExternalLink}
+                    onClick={() => navigate(`/tickets/${createdTicketResult.id}`)}
+                  >
+                    Open Ticket Workspace &rarr;
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}

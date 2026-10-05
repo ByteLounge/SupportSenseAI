@@ -16,7 +16,7 @@ import { getInsightsApi, getFaqsApi } from '../services/api';
 import { formatConfidence } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   BookOpen,
   Plus,
@@ -33,15 +33,23 @@ import {
 
 export default function KnowledgeBasePage() {
   const { user, isCustomer, isAgent, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [insights, setInsights] = useState(null);
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [expandedFaq, setExpandedFaq] = useState(null);
 
-  const navigate = useNavigate();
   const { addToast } = useToast();
+
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q !== null && q !== undefined) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function loadData() {
