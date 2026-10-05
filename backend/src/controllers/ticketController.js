@@ -42,12 +42,13 @@ async function createTicket(req, res, next) {
     });
 
     // 1. If exact/similar issue was ALREADY RESOLVED, inform user instead of creating duplicate
-    if (dupCheck.isDuplicate && !forceCreate) {
+    if (dupCheck.duplicateTicket && ['RESOLVED', 'CLOSED'].includes(dupCheck.duplicateTicket.status) && !forceCreate) {
       return res.status(409).json({
         success: false,
         is_duplicate: true,
+        already_created: true,
         code: 'DUPLICATE_RESOLVED_TICKET',
-        message: `A resolved ticket for this issue already exists: #${dupCheck.duplicateTicket.ticket_number} — "${dupCheck.duplicateTicket.title}". This issue was previously resolved.`,
+        message: `Ticket already created: #${dupCheck.duplicateTicket.ticket_number} — "${dupCheck.duplicateTicket.title}". This issue was previously resolved.`,
         data: {
           resolved_ticket: dupCheck.duplicateTicket,
           resolution_summary: dupCheck.duplicateTicket.resolution_summary || 'Issue was investigated and resolved by support engineering.'
@@ -55,18 +56,26 @@ async function createTicket(req, res, next) {
       });
     }
 
-    // 2. If user is issuing a new ticket as a follow-up on an active open ticket, link message to that ticket
-    if (dupCheck.isFollowUp && dupCheck.existingTicket && !forceCreate) {
+    // 2. If exact/similar issue is ALREADY ACTIVE (OPEN, IN_PROGRESS, PENDING, APPROVED), do not create duplicate
+    if (dupCheck.duplicateTicket && ['OPEN', 'IN_PROGRESS', 'PENDING', 'APPROVED'].includes(dupCheck.duplicateTicket.status) && !forceCreate) {
       const followUpMsg = await ticketModel.createMessage({
-        ticketId: dupCheck.existingTicket.id,
+        ticketId: dupCheck.duplicateTicket.id,
         senderId: customerId,
-        messageBody: `[Follow-up Inquiry from Customer]:\n${description}`,
+        messageBody: `[Customer Additional Inquiry]:\n${description || title}`,
         isInternalNote: false
       });
 
-      return sendSuccess(res, 200, `Your follow-up has been linked to your existing active ticket #${dupCheck.existingTicket.ticket_number}.`, {
+      return sendSuccess(res, 200, `Ticket already created: #${dupCheck.duplicateTicket.ticket_number}. Your inquiry was linked to your existing ticket.`, {
+        already_created: true,
+        is_duplicate: true,
         linked_to_existing: true,
-        ticket: dupCheck.existingTicket,
+        ticket: dupCheck.duplicateTicket,
+        id: dupCheck.duplicateTicket.id,
+        ticket_number: dupCheck.duplicateTicket.ticket_number,
+        title: dupCheck.duplicateTicket.title,
+        status: dupCheck.duplicateTicket.status,
+        category: dupCheck.duplicateTicket.category,
+        assigned_department: dupCheck.duplicateTicket.assigned_department,
         message: followUpMsg
       });
     }

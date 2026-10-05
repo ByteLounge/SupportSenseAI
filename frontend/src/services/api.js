@@ -564,7 +564,66 @@ export const loginApi = (email, password) =>
 export const registerApi = (userData) => API.post('/auth/register', userData);
 export const getMeApi = () => API.get('/auth/me');
 
-// Ticket Endpoints with Role-Aware Mock Filtering
+// Stemming & Concept Cluster Duplicate Detector
+export const isDuplicateInquiry = (textA, ticketB) => {
+  if (!textA || !ticketB) return false;
+  const strA = (textA || '').toLowerCase();
+  const titleB = (ticketB.title || '').toLowerCase();
+  const descB = (ticketB.description || '').toLowerCase();
+  const strB = `${titleB} ${descB}`;
+
+  // 1. Direct or normalized substring match
+  const cleanA = strA.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const cleanTitleB = titleB.replace(/^\[.*?\]\s*/, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (cleanA.length > 5 && cleanTitleB.length > 5) {
+    if (cleanA.includes(cleanTitleB) || cleanTitleB.includes(cleanA)) return true;
+  }
+
+  // 2. Stemming helper
+  const stem = (w) => w.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/(ing|edly|ed|ly|es|s|ment|tion|ions)$/, '');
+  const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need', 'hey', 'hi', 'cannot', 'cant', 'want', 'report', 'issue', 'ticket', 'problem', 'ticket_number']);
+
+  const getStems = (text) => {
+    return text.replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopWords.has(w.toLowerCase()))
+      .map(stem)
+      .filter(s => s.length >= 3);
+  };
+
+  const stemsA = getStems(strA);
+  const stemsB = getStems(strB);
+  if (stemsA.length === 0 || stemsB.length === 0) return false;
+
+  const setB = new Set(stemsB);
+  let matchCount = 0;
+  for (const s of stemsA) {
+    if (setB.has(s)) matchCount++;
+  }
+  const ratio = stemsA.length > 0 ? matchCount / stemsA.length : 0;
+
+  // 3. Concept clusters
+  const clusters = [
+    ['charg', 'bill', 'pay', 'card', 'refund', 'invoic', 'subscript', 'renew', 'twice', 'doubl', 'duplic', 'money', 'credit', 'visa', 'stripe', 'debit'],
+    ['login', 'log', 'sso', 'okta', 'auth', 'password', 'mfa', '2fa', 'authent', 'saml', 'token', 'access', 'challeng', 'push', 'lock'],
+    ['webhook', 'api', '401', '403', '500', 'endpoint', 'rate', 'limit', 'payload', 'secret', 'hmac'],
+    ['timeout', 'slow', 'latenc', 'pool', 'databas', 'postgr', 'cluster', 'fail', 'error', 'crash', 'bug', 'connect']
+  ];
+
+  for (const cluster of clusters) {
+    const matchA = stemsA.some(s => cluster.includes(s));
+    const matchB = stemsB.some(s => cluster.includes(s));
+    if (matchA && matchB && (matchCount >= 1 || ratio >= 0.25)) {
+      return true;
+    }
+  }
+
+  if (ratio >= 0.35 || matchCount >= 3) return true;
+
+  return false;
+};
+
+// Ticket Endpoints with Role-Aware Mock Filtering and Duplicate Consolidation
 export const getTicketsApi = (params = {}) =>
   safeApiCall(
     () => API.get('/tickets', { params }),
@@ -606,7 +665,38 @@ export const getTicketsApi = (params = {}) =>
         );
       }
 
-      return list;
+      // Deduplicate tickets: If the same customer created multiple tickets for the same issue,
+      // consolidate into 1 entry so it is NOT displayed multiple times in the ticket list
+      const seen = new Map();
+      const deduplicatedList = [];
+
+      for (const t of list) {
+        const normalizedTitle = (t.title || '')
+          .toLowerCase()
+          .replace(/^\[.*?\]\s*/, '')
+          .replace(/[^a-z0-9]/g, ' ')
+          .trim()
+          .split(/\s+/)
+          .filter(w => w.length > 2)
+          .slice(0, 4)
+          .join('-');
+
+        const customerKey = t.customer_id || t.customer_email || 'unknown';
+        const dedupKey = `${customerKey}_${t.category}_${normalizedTitle}`;
+
+        if (!seen.has(dedupKey)) {
+          const entry = { ...t, duplicate_count: 1, duplicate_ticket_ids: [t.id] };
+          seen.set(dedupKey, entry);
+          deduplicatedList.push(entry);
+        } else {
+          const existing = seen.get(dedupKey);
+          existing.duplicate_count = (existing.duplicate_count || 1) + 1;
+          existing.duplicate_ticket_ids = existing.duplicate_ticket_ids || [existing.id];
+          existing.duplicate_ticket_ids.push(t.id);
+        }
+      }
+
+      return deduplicatedList;
     }
   );
 
@@ -621,7 +711,7 @@ export const getTicketByIdApi = (id) =>
       if (currentUser && currentUser.role === 'CUSTOMER') {
         return {
           ...ticket,
-          messages: (ticket.messages || []).filter(m => !m.is_internal_note)
+          messages: (ticket.messages || []).filter((m) => !m.is_internal_note),
         };
       }
       return ticket;
@@ -639,21 +729,22 @@ export const createTicketApi = (data) =>
       };
 
       const queryText = `${data.title || ''} ${data.description || ''}`.toLowerCase();
-      const isFollowUp = /\b(update|status|follow\s*up|following\s*up|any\s*news|check\s*status|progress|still\s*waiting)\b/i.test(queryText);
 
       // Check for matching resolved ticket or active ticket
-      const userTickets = MOCK_TICKETS.filter(t => t.customer_id === currentUser.id || t.customer_email === currentUser.email);
+      const userTickets = MOCK_TICKETS.filter(t => 
+        t.customer_id === currentUser.id || 
+        t.customer_email === currentUser.email ||
+        (data.customer_email && t.customer_email?.toLowerCase() === data.customer_email.toLowerCase())
+      );
       
       for (const t of userTickets) {
-        const tText = `${t.title} ${t.description}`.toLowerCase();
-        const words = (data.title || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
-        const matchWords = words.filter(w => tText.includes(w));
-        const isMatch = words.length > 0 && matchWords.length / words.length >= 0.45;
+        const isMatch = isDuplicateInquiry(data.title, t) || isDuplicateInquiry(data.description, t) || isDuplicateInquiry(queryText, t);
 
         // 1. If resolved ticket exists, strictly reject as duplicate and show resolved ticket
         if (isMatch && (t.status === 'RESOLVED' || t.status === 'CLOSED')) {
-          const err = new Error(`A resolved ticket for this issue already exists: #${t.ticket_number} - "${t.title}". This issue was already resolved.`);
+          const err = new Error(`Ticket already created: #${t.ticket_number || t.id} — "${t.title}". This issue was already resolved.`);
           err.is_duplicate = true;
+          err.already_created = true;
           err.code = 'DUPLICATE_RESOLVED_TICKET';
           err.data = {
             resolved_ticket: t,
@@ -664,24 +755,31 @@ export const createTicketApi = (data) =>
           throw err;
         }
 
-        // 2. If follow-up on active open ticket, link message to existing ticket
-        if ((isFollowUp || isMatch) && ['OPEN', 'IN_PROGRESS', 'PENDING'].includes(t.status)) {
+        // 2. If active ticket exists, link to active ticket and return ticket already created
+        if (isMatch && ['OPEN', 'IN_PROGRESS', 'PENDING', 'APPROVED'].includes(t.status)) {
           const followUpMsg = {
             id: `m-followup-${Date.now()}`,
-            sender_name: currentUser.name,
-            sender_role: currentUser.role || 'CUSTOMER',
-            sender_avatar: currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name}`,
-            message_body: `[Follow-up Inquiry from Customer]:\n${data.description || data.title}`,
+            sender_name: currentUser.name || data.customer_name || 'Customer',
+            sender_role: 'CUSTOMER',
+            sender_avatar: currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'Customer'}`,
+            message_body: `[Customer Follow-up Inquiry]:\n${data.description || data.title}`,
             created_at: new Date().toISOString(),
             is_internal_note: false
           };
           t.messages = [...(t.messages || []), followUpMsg];
           t.updated_at = new Date().toISOString();
           return {
+            already_created: true,
+            is_duplicate: true,
             linked_to_existing: true,
             ticket: t,
             id: t.id,
-            ticket_number: t.ticket_number
+            ticket_number: t.ticket_number,
+            title: t.title,
+            status: t.status,
+            category: t.category,
+            assigned_department: t.assigned_department,
+            resolution_summary: `You already have active ticket #${t.ticket_number || t.id} for this issue. Duplicate ticket was not created.`
           };
         }
       }
@@ -1162,73 +1260,73 @@ export const chatConciergeApi = (payload) =>
       }
 
       const currentUser = JSON.parse(localStorage.getItem('supportsense_user') || 'null') || {
-        id: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+        id: payload.customerId || 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
         name: payload.customerName || 'Alex Rivera',
         email: payload.customerEmail || 'alex.rivera@customer.com'
       };
 
       const userTickets = MOCK_TICKETS.filter(t => 
-        t.customer_id === currentUser.id || 
-        t.customer_email?.toLowerCase() === currentUser.email?.toLowerCase()
+        (currentUser.id && t.customer_id === currentUser.id) || 
+        (currentUser.email && t.customer_email?.toLowerCase() === currentUser.email?.toLowerCase()) ||
+        (payload.customerId && t.customer_id === payload.customerId) ||
+        (payload.customerEmail && t.customer_email?.toLowerCase() === payload.customerEmail?.toLowerCase())
       );
 
-      const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need', 'hey', 'hi', 'cannot', 'cant']);
-      const terms = msg.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
-
-      // 1. DUPLICATE PREVENTION: Check if this same person previously submitted a ticket for this issue
+      // 1. DUPLICATE PREVENTION: Check if this user already created ANY ticket for this exact issue
       for (const t of userTickets) {
-        const tText = `${t.title} ${t.description}`.toLowerCase();
-        const matchCount = terms.filter(w => tText.includes(w)).length;
-        const overlapRatio = terms.length > 0 ? matchCount / terms.length : 0;
-        const isTitleMatch = terms.length >= 2 && (t.title.toLowerCase().includes(msg) || msg.includes(t.title.toLowerCase()));
-
-        if (overlapRatio >= 0.4 || isTitleMatch) {
-          // If this person already has a resolved ticket for this exact issue:
-          if (t.status === 'RESOLVED' || t.status === 'CLOSED') {
-            const resolutionSummary = t.messages?.filter(m => m.sender_role === 'AGENT')?.slice(-1)[0]?.message_body
-              || t.ai_suggested_reply
-              || 'Issue was investigated and verified resolved by support engineering.';
-
+        if (isDuplicateInquiry(payload.message, t) || isDuplicateInquiry(msg, t)) {
+          // If active open or in-progress ticket exists:
+          if (['OPEN', 'IN_PROGRESS', 'PENDING', 'APPROVED'].includes(t.status)) {
             return {
-              reply: `You previously submitted a ticket for this exact issue: **#${t.ticket_number} — "${t.title}"**, which was **RESOLVED**. To avoid redundant queue submissions, duplicate tickets are not created. Here is the verified resolution summary:`,
-              is_duplicate_resolved: true,
-              resolved_ticket: {
+              reply: `⚠️ Ticket Already Created: You already have an active ticket created for this issue: #${t.ticket_number || t.id} — "${t.title}" (Status: ${t.status}). To prevent duplicate tickets in the queue, duplicate tickets cannot be created.`,
+              is_ticket_already_created: true,
+              is_active_linked: true,
+              active_ticket: {
                 id: t.id,
-                ticket_number: t.ticket_number,
+                ticket_number: t.ticket_number || t.id,
                 title: t.title,
                 status: t.status,
                 category: t.category,
                 assigned_department: t.assigned_department,
-                resolution_summary: resolutionSummary,
-                created_at: t.created_at
+                assigned_agent_name: t.assigned_agent_name,
+                created_at: t.created_at,
+                description: t.description
               },
               ticket_draft: null, // Strictly prevent duplicate creation
               suggested_quick_actions: [
-                'View Resolved Ticket Details',
+                `View Existing Ticket #${t.ticket_number || t.id}`,
+                'Redirect to FAQs',
                 'Ask a different question'
               ],
               confidence_score: 0.99
             };
           }
 
-          // If active open or in-progress ticket exists:
-          if (['OPEN', 'IN_PROGRESS', 'PENDING'].includes(t.status)) {
+          // If resolved ticket exists:
+          if (t.status === 'RESOLVED' || t.status === 'CLOSED') {
+            const resolutionSummary = t.messages?.filter(m => m.sender_role === 'AGENT')?.slice(-1)[0]?.message_body
+              || t.ai_suggested_reply
+              || 'Issue was investigated and verified resolved by support engineering.';
+
             return {
-              reply: `You already have an active ticket open for this issue: **#${t.ticket_number} — "${t.title}"** (Status: **${t.status}**). To prevent duplicate tickets in the queue, your inquiry has been linked to this active ticket.`,
-              is_active_linked: true,
-              active_ticket: {
+              reply: `⚠️ Ticket Already Created: You previously submitted ticket #${t.ticket_number || t.id} — "${t.title}", which has been RESOLVED. Duplicate tickets are not created. Here is the verified resolution:`,
+              is_ticket_already_created: true,
+              is_duplicate_resolved: true,
+              resolved_ticket: {
                 id: t.id,
-                ticket_number: t.ticket_number,
+                ticket_number: t.ticket_number || t.id,
                 title: t.title,
                 status: t.status,
                 category: t.category,
                 assigned_department: t.assigned_department,
-                assigned_agent_name: t.assigned_agent_name,
-                created_at: t.created_at
+                resolution_summary: resolutionSummary,
+                created_at: t.created_at,
+                description: t.description
               },
               ticket_draft: null, // Strictly prevent duplicate creation
               suggested_quick_actions: [
-                `View Active Ticket #${t.ticket_number}`,
+                'View Resolved Ticket Details',
+                'Redirect to FAQs',
                 'Ask a different question'
               ],
               confidence_score: 0.99

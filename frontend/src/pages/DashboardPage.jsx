@@ -211,6 +211,11 @@ export default function DashboardPage() {
               >
                 {val}
               </Link>
+              {row.duplicate_count > 1 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 ml-2" title="Duplicate submissions deduplicated into one ticket">
+                  Consolidated ({row.duplicate_count}x)
+                </span>
+              )}
               <div className="text-[11px] text-token-text-secondary mt-0.5">
                 Category: <span className="font-semibold text-token-text-primary">{row.category}</span>
               </div>
@@ -269,6 +274,11 @@ export default function DashboardPage() {
             >
               {val}
             </Link>
+            {row.duplicate_count > 1 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 ml-2" title="Duplicate submissions deduplicated into one ticket">
+                Consolidated ({row.duplicate_count}x)
+              </span>
+            )}
             <div className="text-[11px] text-token-text-secondary mt-0.5 flex items-center gap-2">
               <span className="font-semibold text-token-text-primary">{row.customer_name}</span>
               <span>•</span>

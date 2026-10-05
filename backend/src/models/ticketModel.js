@@ -145,7 +145,38 @@ async function getAllTickets({ status, priority, search, userRole, userId }) {
   sql += ` ORDER BY t.created_at DESC;`;
 
   const result = await db.query(sql, params);
-  return result.rows;
+  const rows = result.rows;
+
+  // Deduplicate tickets: If the same customer created multiple tickets for the same issue,
+  // consolidate them into 1 primary ticket with duplicate_count so it doesn't display multiple times
+  const seen = new Map();
+  const deduplicatedRows = [];
+
+  for (const t of rows) {
+    const normalizedTitle = (t.title || '')
+      .toLowerCase()
+      .replace(/^\[.*?\]\s*/, '')
+      .replace(/[^a-z0-9]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter(w => w.length > 2)
+      .slice(0, 4)
+      .join('-');
+
+    const customerKey = t.customer_id || 'unknown';
+    const dedupKey = `${customerKey}_${t.category}_${normalizedTitle}`;
+
+    if (!seen.has(dedupKey)) {
+      const entry = { ...t, duplicate_count: 1 };
+      seen.set(dedupKey, entry);
+      deduplicatedRows.push(entry);
+    } else {
+      const existing = seen.get(dedupKey);
+      existing.duplicate_count = (existing.duplicate_count || 1) + 1;
+    }
+  }
+
+  return deduplicatedRows;
 }
 
 /**
@@ -331,16 +362,27 @@ async function findDuplicateOrRelatedTickets({ customerId, title, description, c
 
   const queryText = `${title || ''} ${description || ''}`.toLowerCase();
   
-  const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need']);
+  const stopWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'with', 'on', 'at', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around', 'among', 'hello', 'please', 'help', 'my', 'i', 'was', 'am', 'we', 'our', 'need', 'hey', 'hi', 'want', 'report', 'issue', 'ticket', 'problem']);
+  const stem = (w) => (w || '').toLowerCase().replace(/[^a-z0-9]/g, '').replace(/(ing|edly|ed|ly|es|s|ment|tion|ions)$/, '');
+
   const getKeywords = (text) => {
     return (text || '').toLowerCase()
       .replace(/[^a-z0-9\s]/g, ' ')
       .split(/\s+/)
-      .filter(w => w.length > 2 && !stopWords.has(w));
+      .filter(w => w.length > 2 && !stopWords.has(w))
+      .map(stem)
+      .filter(s => s.length >= 3);
   };
 
   const queryKeywords = new Set(getKeywords(queryText));
   const isFollowUpIntent = /\b(update|status|follow\s*up|following\s*up|any\s*news|check\s*status|progress|still\s*waiting|any\s*update)\b/i.test(queryText);
+
+  const clusters = [
+    ['charg', 'bill', 'pay', 'card', 'refund', 'invoic', 'subscript', 'renew', 'twice', 'doubl', 'duplic', 'money', 'credit', 'visa', 'stripe', 'debit'],
+    ['login', 'log', 'sso', 'okta', 'auth', 'password', 'mfa', '2fa', 'authent', 'saml', 'token', 'access', 'challeng', 'push', 'lock'],
+    ['webhook', 'api', '401', '403', '500', 'endpoint', 'rate', 'limit', 'payload', 'secret', 'hmac'],
+    ['timeout', 'slow', 'latenc', 'pool', 'databas', 'postgr', 'cluster', 'fail', 'error', 'crash', 'bug', 'connect']
+  ];
 
   let duplicateMatch = null;
   let followUpMatch = null;
@@ -359,22 +401,32 @@ async function findDuplicateOrRelatedTickets({ customerId, title, description, c
     const isCategoryMatch = category && t.category && category.toLowerCase() === t.category.toLowerCase();
     const isExactTitle = (title || '').trim().toLowerCase() === (t.title || '').trim().toLowerCase();
 
+    let hasClusterMatch = false;
+    for (const cluster of clusters) {
+      const matchA = [...queryKeywords].some(s => cluster.includes(s));
+      const matchB = tKeywords.some(s => cluster.includes(s));
+      if (matchA && matchB && (matchCount >= 1 || overlapRatio >= 0.25)) {
+        hasClusterMatch = true;
+        break;
+      }
+    }
+
     // Check for follow-up on active tickets
-    if (isFollowUpIntent && ['OPEN', 'IN_PROGRESS', 'PENDING'].includes(t.status)) {
+    if (isFollowUpIntent && ['OPEN', 'IN_PROGRESS', 'PENDING', 'APPROVED'].includes(t.status)) {
       if (!followUpMatch && (isCategoryMatch || overlapRatio > 0.2 || userTickets.length === 1)) {
         followUpMatch = t;
       }
     }
 
     // Check for duplicate issue
-    if (isExactTitle || overlapRatio >= 0.5) {
+    if (isExactTitle || hasClusterMatch || overlapRatio >= 0.35 || (isCategoryMatch && overlapRatio >= 0.2)) {
       if (!duplicateMatch) {
         duplicateMatch = t;
       }
     }
 
     // Related tickets
-    if (isCategoryMatch || overlapRatio >= 0.3) {
+    if (isCategoryMatch || overlapRatio >= 0.25 || hasClusterMatch) {
       relatedTickets.push({
         id: t.id,
         ticket_number: t.ticket_number,
@@ -388,10 +440,10 @@ async function findDuplicateOrRelatedTickets({ customerId, title, description, c
   }
 
   return {
-    isDuplicate: !!duplicateMatch && ['RESOLVED', 'CLOSED'].includes(duplicateMatch.status),
+    isDuplicate: !!duplicateMatch, // true for ANY duplicate match (active or resolved)
     duplicateTicket: duplicateMatch,
-    isFollowUp: !!followUpMatch,
-    existingTicket: followUpMatch,
+    isFollowUp: !!followUpMatch || (!!duplicateMatch && ['OPEN', 'IN_PROGRESS', 'PENDING', 'APPROVED'].includes(duplicateMatch.status)),
+    existingTicket: followUpMatch || duplicateMatch,
     relatedTickets
   };
 }

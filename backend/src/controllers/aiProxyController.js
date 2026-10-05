@@ -156,15 +156,18 @@ async function chatConcierge(req, res, next) {
         });
 
         // 1. If issue was already resolved for this person, return resolved ticket and prevent duplicate creation
-        if (dupCheck.isDuplicate && dupCheck.duplicateTicket) {
+        if (dupCheck.duplicateTicket && ['RESOLVED', 'CLOSED'].includes(dupCheck.duplicateTicket.status)) {
           return sendSuccess(res, 200, 'Duplicate resolved ticket intercepted', {
-            reply: `You previously submitted a ticket for this exact issue: #${dupCheck.duplicateTicket.ticket_number} — "${dupCheck.duplicateTicket.title}". This issue was investigated and RESOLVED by our engineering team. No duplicate ticket was created.`,
+            reply: `⚠️ Ticket Already Created: You previously submitted ticket #${dupCheck.duplicateTicket.ticket_number} — "${dupCheck.duplicateTicket.title}", which has been RESOLVED. Duplicate tickets are not created. Here is the verified resolution:`,
+            is_ticket_already_created: true,
             is_duplicate_resolved: true,
             resolved_ticket: dupCheck.duplicateTicket,
+            existing_ticket: dupCheck.duplicateTicket,
             resolution_summary: dupCheck.duplicateTicket.resolution_summary || 'Issue was investigated and resolved by support specialists.',
             ticket_draft: null,
             suggested_quick_actions: [
               'View Resolved Ticket Details',
+              'Redirect to FAQs',
               'Ask a different question'
             ],
             confidence_score: 0.99
@@ -172,14 +175,17 @@ async function chatConcierge(req, res, next) {
         }
 
         // 2. If issue is already an active open/in-progress ticket, link follow-up and prevent duplicate creation
-        if (dupCheck.isFollowUp && dupCheck.existingTicket) {
-          return sendSuccess(res, 200, 'Active ticket follow-up linked', {
-            reply: `You already have an active ticket open for this issue: #${dupCheck.existingTicket.ticket_number} — "${dupCheck.existingTicket.title}" (${dupCheck.existingTicket.status}). Your update has been noted on this existing ticket to avoid creating duplicate tickets.`,
+        if (dupCheck.duplicateTicket && ['OPEN', 'IN_PROGRESS', 'PENDING', 'APPROVED'].includes(dupCheck.duplicateTicket.status)) {
+          return sendSuccess(res, 200, 'Active ticket already created intercepted', {
+            reply: `⚠️ Ticket Already Created: You already have an active ticket open for this issue: #${dupCheck.duplicateTicket.ticket_number} — "${dupCheck.duplicateTicket.title}" (Status: ${dupCheck.duplicateTicket.status}). Duplicate tickets cannot be created.`,
+            is_ticket_already_created: true,
             is_active_linked: true,
-            active_ticket: dupCheck.existingTicket,
+            active_ticket: dupCheck.duplicateTicket,
+            existing_ticket: dupCheck.duplicateTicket,
             ticket_draft: null,
             suggested_quick_actions: [
-              `View Active Ticket #${dupCheck.existingTicket.ticket_number}`,
+              `View Existing Ticket #${dupCheck.duplicateTicket.ticket_number}`,
+              'Redirect to FAQs',
               'Ask a different question'
             ],
             confidence_score: 0.99

@@ -117,6 +117,7 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
       const response = await chatConciergeApi({
         message: query,
         history: historyPayload,
+        customerId: user?.id,
         customerName: user?.name || 'Customer User',
         customerEmail: user?.email || 'customer@acme.corp'
       });
@@ -125,23 +126,25 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
       const assistantReply = aiData.reply || "I've analyzed your inquiry and drafted a formal support ticket.";
       const draft = aiData.ticket_draft;
       const matchedFaqs = (aiData.matched_faqs && aiData.matched_faqs.length > 0) ? aiData.matched_faqs : foundFaqs;
+      const isAlreadyCreated = aiData.is_duplicate_resolved || aiData.is_active_linked || aiData.is_ticket_already_created;
 
       const aiMsg = {
         id: `ai-${Date.now()}`,
         role: 'assistant',
         content: assistantReply,
-        ticket_draft: draft,
+        ticket_draft: isAlreadyCreated ? null : draft,
         matched_faqs: matchedFaqs,
         resolved_ticket: aiData.resolved_ticket,
         is_duplicate_resolved: aiData.is_duplicate_resolved,
         active_ticket: aiData.active_ticket,
         is_active_linked: aiData.is_active_linked,
+        is_ticket_already_created: isAlreadyCreated,
         quick_actions: aiData.suggested_quick_actions || [],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
       setMessages((prev) => [...prev, aiMsg]);
-      if (draft && draft.is_ready_for_ticket && !aiData.is_duplicate_resolved && !aiData.is_active_linked) {
+      if (draft && draft.is_ready_for_ticket && !isAlreadyCreated) {
         setActiveTicketDraft(draft);
         setEditableDraft({ ...draft });
       } else {
@@ -446,19 +449,19 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
 
                 {/* Active Ticket Link Card (Requirement 1) */}
                 {msg.is_active_linked && msg.active_ticket && (
-                  <div className="mt-3 p-3.5 rounded-xl bg-[#081320] border border-blue-500/40 text-xs space-y-2.5 shadow-md">
+                  <div className="mt-3 p-3.5 rounded-xl bg-[#081320] border border-amber-500/40 text-xs space-y-2.5 shadow-md">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                          TICKET ALREADY CREATED ({msg.active_ticket.status || 'IN_PROGRESS'})
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                          TICKET ALREADY CREATED
                         </span>
-                        <span className="font-mono font-bold text-blue-300 text-xs px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
+                        <span className="font-mono font-bold text-amber-300 text-xs px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
                           #{msg.active_ticket.ticket_number || msg.active_ticket.id}
                         </span>
                       </div>
-                      <span className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider">
-                        Active Ticket Linked
+                      <span className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider">
+                        Status: {msg.active_ticket.status || 'OPEN'}
                       </span>
                     </div>
 
@@ -467,16 +470,16 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                     </h5>
 
                     <p className="text-slate-300 text-xs leading-relaxed">
-                      You already have an active ticket for this issue. Your inquiry was attached as an update so our specialists ({msg.active_ticket.assigned_agent_name || msg.active_ticket.assigned_department}) can handle it without duplicate queue items.
+                      You already created a ticket for this issue. Duplicate submissions are strictly prevented. Your inquiry has been attached as an update so our specialists ({msg.active_ticket.assigned_agent_name || msg.active_ticket.assigned_department}) can handle it without duplicate queue items.
                     </p>
 
                     <div className="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-slate-700/50">
                       <Button
-                        variant="secondary"
+                        variant="primary"
                         size="xs"
                         icon={BookOpen}
                         onClick={() => navigate(`/knowledge-base?search=${encodeURIComponent(msg.active_ticket.category || msg.active_ticket.title)}`)}
-                        className="bg-[#1e1b4b] hover:bg-[#2e2b6b] text-indigo-200 border-indigo-500/40"
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
                       >
                         Redirect to FAQs &rarr;
                       </Button>
@@ -486,7 +489,15 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
                         onClick={() => navigate(`/tickets/${msg.active_ticket.id || msg.active_ticket.ticket_number}`)}
                         className="bg-[#122238] hover:bg-[#1a3150] text-blue-300 border-blue-500/30"
                       >
-                        View Active Ticket
+                        View Existing Ticket
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="xs"
+                        onClick={handleReset}
+                        className="bg-[#141e33] hover:bg-[#1e2c47] text-slate-300 border-slate-700"
+                      >
+                        Ask Different Question
                       </Button>
                     </div>
                   </div>
