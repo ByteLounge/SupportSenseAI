@@ -666,56 +666,97 @@ export default function AIConciergeChatbot({ embedded = false, onClose, onTicket
 
         {/* Success Confirmation Card upon creation (or follow-up linking) */}
         {createdTicketResult && (
-          <div className={`my-4 p-4 rounded-2xl text-xs space-y-3 ${
-            createdTicketResult.is_linked_follow_up
-              ? 'bg-blue-500/10 border border-blue-500/30'
-              : 'bg-emerald-500/10 border border-emerald-500/30'
-          }`}>
+          <div
+            className={`my-4 p-4 rounded-2xl text-xs space-y-3 shadow-lg border transition-all ${
+              createdTicketResult.is_linked_follow_up
+                ? 'bg-[#081224] border-blue-500/40 text-blue-100'
+                : 'bg-[#05150f] border-emerald-500/40 text-emerald-100'
+            }`}
+          >
             <div className="flex items-center gap-2 font-semibold">
               {createdTicketResult.is_linked_follow_up ? (
                 <>
                   <span className="text-base">🔗</span>
-                  <span className="text-blue-900 dark:text-blue-300">
+                  <span className="text-blue-300 font-bold text-xs sm:text-sm">
                     Follow-Up Linked to Active Ticket #{createdTicketResult.ticket_number || createdTicketResult.id}!
                   </span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <span className="text-emerald-800 dark:text-emerald-300">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span className="text-emerald-300 font-bold text-xs sm:text-sm">
                     Formal Ticket Created & Dispatched to {createdTicketResult.assigned_department}!
                   </span>
                 </>
               )}
             </div>
 
-            <div className="p-3 bg-token-card border border-token-border rounded-xl space-y-1.5">
+            <div
+              className={`p-3.5 rounded-xl border space-y-2 text-white ${
+                createdTicketResult.is_linked_follow_up
+                  ? 'bg-[#0e1d38] border-blue-500/30'
+                  : 'bg-[#0b241a] border-emerald-500/30'
+              }`}
+            >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-token-text-primary text-xs">
+                <span className="font-mono font-bold text-emerald-300 text-xs px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
                   {createdTicketResult.ticket_number || createdTicketResult.id}
                 </span>
-                <Badge variant={createdTicketResult.is_linked_follow_up ? 'info' : 'success'} size="xs">
-                  {createdTicketResult.status || 'OPEN'}
-                </Badge>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                    createdTicketResult.is_linked_follow_up
+                      ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      createdTicketResult.is_linked_follow_up ? 'bg-blue-400' : 'bg-emerald-400'
+                    }`}
+                  />
+                  <span>{createdTicketResult.status || 'OPEN'}</span>
+                </span>
               </div>
-              <p className="text-token-text-primary font-medium">{createdTicketResult.title}</p>
+
+              <p className="text-white font-semibold text-xs leading-snug">
+                {createdTicketResult.title}
+              </p>
+
               {createdTicketResult.is_linked_follow_up && (
-                <p className="text-[11px] text-blue-700 dark:text-blue-300">
-                  Your inquiry was automatically linked to your existing active ticket under <strong>{createdTicketResult.category}</strong>. No duplicate ticket was registered.
+                <p className="text-[11px] text-blue-200/90 leading-relaxed">
+                  Your inquiry was automatically linked to your existing active ticket under{' '}
+                  <strong className="text-white">{createdTicketResult.category}</strong>. No duplicate ticket was registered.
                 </p>
               )}
-              <div className="text-[11px] text-token-text-secondary flex items-center gap-3 pt-1">
-                <span>Category: <strong>{createdTicketResult.category}</strong></span>
-                <span>Priority: <strong>{createdTicketResult.priority}</strong></span>
+
+              <div
+                className={`text-[11px] text-slate-300 flex items-center gap-4 pt-1.5 border-t ${
+                  createdTicketResult.is_linked_follow_up
+                    ? 'border-blue-500/20'
+                    : 'border-emerald-500/20'
+                }`}
+              >
+                <span>
+                  Category: <strong className="text-white">{createdTicketResult.category}</strong>
+                </span>
+                <span>
+                  Priority: <strong className="text-white">{createdTicketResult.priority}</strong>
+                </span>
+                {createdTicketResult.assigned_department && (
+                  <span>
+                    Department: <strong className="text-white">{createdTicketResult.assigned_department}</strong>
+                  </span>
+                )}
               </div>
             </div>
 
             <div className="flex items-center gap-2 justify-end pt-1">
               <Button
-                variant="secondary"
+                variant="dark"
                 size="xs"
                 icon={RefreshCw}
                 onClick={handleReset}
+                className="bg-[#12281e] hover:bg-[#1a382b] text-emerald-200 border-emerald-500/40"
               >
                 Submit Another Request
               </Button>
