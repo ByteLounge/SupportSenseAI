@@ -172,7 +172,7 @@ export default function TicketDetailPage() {
           title: data.title,
           category: data.category,
           priority: data.priority,
-          status: data.status,
+          status: data.status === 'CLOSED' ? 'RESOLVED' : data.status,
           assigned_department: data.assigned_department,
         });
       }
@@ -393,6 +393,7 @@ export default function TicketDetailPage() {
                 ].map((s) => {
                   const isDone =
                     ticket.status === 'RESOLVED' ||
+                    ticket.status === 'CLOSED' ||
                     (s.step === 1) ||
                     (s.step === 2 && ticket.status !== 'OPEN') ||
                     (s.step === 3 && ticket.assigned_department);
@@ -677,14 +678,13 @@ export default function TicketDetailPage() {
                 <div>
                   <span className="text-[11px] font-bold text-token-text-secondary block mb-1">Status</span>
                   <Dropdown
-                    value={ticket.status}
+                    value={ticket.status === 'CLOSED' ? 'RESOLVED' : ticket.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
                     options={[
                       { label: 'Open', value: 'OPEN' },
                       { label: 'Approved', value: 'APPROVED' },
                       { label: 'In Progress', value: 'IN_PROGRESS' },
                       { label: 'Resolved', value: 'RESOLVED' },
-                      { label: 'Closed', value: 'CLOSED' },
                     ]}
                     size="sm"
                   />
@@ -921,7 +921,6 @@ export default function TicketDetailPage() {
               { label: 'APPROVED', value: 'APPROVED' },
               { label: 'IN_PROGRESS', value: 'IN_PROGRESS' },
               { label: 'RESOLVED', value: 'RESOLVED' },
-              { label: 'CLOSED', value: 'CLOSED' },
             ]}
           />
 

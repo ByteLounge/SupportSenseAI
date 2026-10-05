@@ -646,7 +646,11 @@ export const getTicketsApi = (params = {}) =>
 
       // Filter by Status
       if (params.status) {
-        list = list.filter(t => t.status === params.status);
+        if (params.status === 'RESOLVED') {
+          list = list.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED');
+        } else {
+          list = list.filter(t => t.status === params.status);
+        }
       }
 
       // Filter by Priority

@@ -328,7 +328,7 @@ export default function DashboardPage() {
                     title: row.title,
                     category: row.category,
                     priority: row.priority,
-                    status: row.status,
+                    status: row.status === 'CLOSED' ? 'RESOLVED' : row.status,
                     assigned_department: row.assigned_department,
                   });
                   setEditModalOpen(true);
@@ -729,7 +729,6 @@ export default function DashboardPage() {
               { label: 'APPROVED', value: 'APPROVED' },
               { label: 'IN_PROGRESS', value: 'IN_PROGRESS' },
               { label: 'RESOLVED', value: 'RESOLVED' },
-              { label: 'CLOSED', value: 'CLOSED' },
             ]}
           />
 

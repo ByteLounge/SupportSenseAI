@@ -128,8 +128,12 @@ async function getAllTickets({ status, priority, search, userRole, userId }) {
   }
 
   if (status) {
-    params.push(status);
-    sql += ` AND t.status = $${params.length}`;
+    if (status === 'RESOLVED') {
+      sql += ` AND t.status IN ('RESOLVED', 'CLOSED')`;
+    } else {
+      params.push(status);
+      sql += ` AND t.status = $${params.length}`;
+    }
   }
 
   if (priority) {
